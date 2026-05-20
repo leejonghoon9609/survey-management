@@ -298,7 +298,7 @@ function getFiltered(){
     if(currentFilter==='SKB')mf=(r.client||'')==='SKB';
     else if(currentFilter==='SKT')mf=(r.client||'')==='SKT';
     else if(currentFilter==='정산완료')mf=(r.settle||'')==='정산완료';
-    else if(currentFilter==='미지급')mf=(r.settle||'')==='미지급';
+    else if(currentFilter==='미지급')mf=(r.settle||'')==='미지급'||!r.settle||r.settle==='NULL';
     else if(currentFilter==='탐사')mf=r.method==='탐사';
     else if(currentFilter==='실시간')mf=r.method==='실시간';
     const ms=!q||((r.partner||'')+(r.name||'')+(r.area||'')+(r.mgmt_no||'')+(r.issue||'')).toLowerCase().includes(q);
