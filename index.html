@@ -274,9 +274,10 @@ function badgeMethod(m){
   return `<span class="badge ${cls}">${m||'-'}</span>`;
 }
 function badgeSettle(s){
-  if(!s)return '-';
-  const cls=s==='정산완료'?'b-정산완료':s==='미지급'?'b-미지급':'b-정산제외';
-  return `<span class="badge ${cls}">${s}</span>`;
+  if(!s)return '<span class="badge b-미지급">미지급</span>';
+  if(s==='정산완료')return '<span class="badge b-정산완료">정산완료</span>';
+  if(s==='정산제외')return '<span class="badge b-정산제외">정산제외</span>';
+  return `<span class="badge b-미지급" title="${s}">미지급</span>`;
 }
 
 function cellVal(r,key){
@@ -298,7 +299,7 @@ function getFiltered(){
     if(currentFilter==='SKB')mf=(r.client||'')==='SKB';
     else if(currentFilter==='SKT')mf=(r.client||'')==='SKT';
     else if(currentFilter==='정산완료')mf=(r.settle||'')==='정산완료';
-    else if(currentFilter==='미지급')mf=(r.settle||'')==='미지급'||!r.settle||r.settle==='NULL';
+    else if(currentFilter==='미지급')mf=(r.settle||'')==='정산완료'||r.settle==='정산제외'?false:true;
     else if(currentFilter==='탐사')mf=r.method==='탐사';
     else if(currentFilter==='실시간')mf=r.method==='실시간';
     const ms=!q||((r.partner||'')+(r.name||'')+(r.area||'')+(r.mgmt_no||'')+(r.issue||'')).toLowerCase().includes(q);
@@ -439,15 +440,12 @@ function onDragStart(e){dragSrcIdx=parseInt(e.target.dataset.i);e.dataTransfer.e
 function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
 function onDrop(e){
   e.preventDefault();
-  const destIdx=parseInt(e.target.closest('th').dataset.i);
+  const th=e.target.closest('th');
+  if(!th)return;
+  const destIdx=parseInt(th.dataset.i);
   if(dragSrcIdx===null||dragSrcIdx===destIdx)return;
-  const cols=getVisibleCols();
-  const allCols=[...BASE_COLS,...EXTRA_COLS.filter(c=>extraVisible.has(c.key))];
-  const moved=allCols.splice(dragSrcIdx,1)[0];
-  allCols.splice(destIdx,0,moved);
-  // BASE_COLS 순서 업데이트
-  const baseKeys=allCols.filter(c=>BASE_COLS.find(b=>b.key===c.key)).map(c=>c.key);
-  BASE_COLS.sort((a,b)=>baseKeys.indexOf(a.key)-baseKeys.indexOf(b.key));
+  const moved=BASE_COLS.splice(dragSrcIdx,1)[0];
+  BASE_COLS.splice(destIdx,0,moved);
   dragSrcIdx=null;
   renderTable();
 }
