@@ -90,6 +90,10 @@ td.left{text-align:left;}
         <input type="file" id="file" accept=".xls,.xlsx" class="hide">
       </div>
       <p class="note">※ 파일은 브라우저 안에서만 처리됩니다(서버 전송 없음). 발주처(SKT·SKB·원인자)가 있는 모든 사업을, 엑셀의 모든 칸 그대로 불러옵니다.</p>
+      <div id="upResult" class="hide" style="margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <span id="upMsg" style="font-size:14px;color:#166534;"></span>
+        <button class="btn btn-primary" onclick="goTab('manage')">사업관리로 이동 →</button>
+      </div>
     </div>
     <div class="card hide" id="mode-in">
       <div class="form-grid">
@@ -225,8 +229,10 @@ function parseMaster(aoa){
     DATA.push({row:x,baal,gubun:String(x[COL.구분]||''),region:String(x[COL.행정]||''),work,method:String(x[COL.측량구분]||'').trim(),tango:num(x[COL.탱고거리]),jisa:String(x[COL.지사]||''),시행:String(x[COL.시행]||''),eng:String(x[COL.eng]||''),tangoType:String(x[COL.사업구분]||''),jin:String(x[COL.진행]||'').trim(),jeong:String(x[COL.정산상황]||'').trim(),amt:num(x[COL.정산금액])});}
   if(!DATA.length){toast('읽을 데이터가 없습니다',true);return;}
   loaded=true;buildHead();buildFilters();renderCards();render();renderSettle();
-  toast('전체 '+DATA.length+'건 · 측량완료 '+DATA.filter(able).length+'건 · 칸 '+DISP.length+'개');
-  goTab('manage');
+  const msg='전체 '+DATA.length+'건 · 측량완료(정산가능) '+DATA.filter(able).length+'건을 읽었습니다. 사업관리로 넘길까요?';
+  document.getElementById('upMsg').textContent=msg;
+  document.getElementById('upResult').classList.remove('hide');
+  toast('전체 '+DATA.length+'건 읽음');
 }
 
 function addManual(){
