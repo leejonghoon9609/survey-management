@@ -59,7 +59,8 @@ header .sub{font-size:13px;color:#64748b;}
 .thf{color:#94a3b8;font-size:15px;cursor:pointer;padding:0 2px;flex:none;}
 .thf.fon{color:#EA002C;font-weight:700;}
 #mtable{table-layout:fixed;}
-#mtable thead th{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-right:12px;position:relative;}
+#mtable thead th{position:relative;padding-right:14px;}
+.thin{display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;}
 #mtable .thtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:left;}
 .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
 .rsz:hover{background:#FFB400;}
@@ -291,7 +292,7 @@ function buildHead(){
   let cg='<col style="width:36px">',total=36;
   vis.forEach(o=>{const w=colWidth[o.c.idx]||defW(o.c.label);total+=w;cg+='<col data-ci="'+o.i+'" style="width:'+w+'px">';});
   let h='<th class="cb"></th>';
-  vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thtxt" title="클릭=정렬">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
+  vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
 }
