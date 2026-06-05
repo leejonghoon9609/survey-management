@@ -45,6 +45,7 @@ header .sub{font-size:13px;color:#64748b;}
 .tblwrap{overflow:auto;max-height:calc(100vh - 360px);min-height:280px;border:1px solid #64748b;border-radius:10px;background:#fff;}
 .mgr{display:flex;gap:12px;align-items:flex-start;}
 .mgr .tblwrap{flex:1;min-width:0;}
+.tblwrap:focus{outline:2px solid #FFB400;outline-offset:-2px;}
 .colpanel{width:230px;flex:none;border:1px solid #94a3b8;border-radius:10px;background:#fff;max-height:calc(100vh - 360px);overflow:auto;padding:8px;}
 .colpanel.hide{display:none;}
 .cp-title{font-size:13px;font-weight:500;color:#475569;padding:4px 6px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
@@ -106,6 +107,7 @@ td.left{text-align:left;}
         <span id="upMsg" style="font-size:14px;color:#166534;"></span>
         <button class="btn btn-primary" onclick="goTab('manage')">사업관리로 이동 →</button>
       </div>
+      <div id="upPreview" class="hide" style="margin-top:14px;"></div>
     </div>
     <div class="card hide" id="mode-in">
       <div class="form-grid">
@@ -149,7 +151,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note">엑셀의 모든 칸을 그대로 보여줍니다. "컬럼 설정"에서 보고 싶은 칸만 체크하고 ↑↓로 순서를 바꿀 수 있어요. 표가 넓으면 좌우로 스크롤하세요.</p>
+      <p class="note">표를 한 번 클릭한 뒤 ← → (↑↓) 키로 이동할 수 있고, 칸 머리글을 클릭하면 그 칸 기준으로 정렬(▲▼)됩니다. "컬럼 설정"에서 보고 싶은 칸만 체크하고 순서도 바꿀 수 있어요.</p>
     </div>
   </div>
 
@@ -198,7 +200,7 @@ function calcCost(exposedKm,probeKm,method,jisa){
 }
 const won=n=>Math.round(n).toLocaleString('ko-KR')+' 원';
 const km=n=>(n==null||n==='')?'—':Number(n).toFixed(3);
-let DATA=[],DISP=[],COL={},loaded=false;
+let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1;
 function able(d){return (d.method==='실시간'||d.method==='탐사')&&typeof d.tango==='number'&&d.tango>0;}
 function estAmt(d){const ex=d.method==='실시간'?d.tango:0;return calcCost(ex,d.tango,d.method==='실시간'?'realtime':'probe',d.jisa).total;}
 function cellVal(v){if(v==null||v==='')return '';if(typeof v==='number')return Number.isInteger(v)&&Math.abs(v)>=1000?v.toLocaleString('ko-KR'):String(v);return String(v);}
@@ -248,6 +250,7 @@ function parseMaster(aoa){
   const msg='전체 '+DATA.length+'건 · 측량완료(정산가능) '+DATA.filter(able).length+'건을 읽었습니다. 사업관리로 넘길까요?';
   document.getElementById('upMsg').textContent=msg;
   document.getElementById('upResult').classList.remove('hide');
+  renderPreview();
   toast('전체 '+DATA.length+'건 읽음');
 }
 
@@ -265,7 +268,7 @@ function addManual(){
   toast('추가했습니다 · 사업관리 탭에서 확인하세요');
 }
 
-function buildHead(){let h='<th class="cb"></th>';DISP.forEach(c=>{if(c.vis)h+='<th title="'+esc(c.label)+'">'+esc(c.label)+'</th>';});document.getElementById('head').innerHTML=h;}
+function buildHead(){let h='<th class="cb"></th>';DISP.forEach((c,i)=>{if(!c.vis)return;const ar=sortCI===i?(sortDir>0?' ▲':' ▼'):'';h+='<th data-ci="'+i+'" style="cursor:pointer;user-select:none;" title="'+esc(c.label)+' (클릭=정렬)">'+esc(c.label)+ar+'</th>';});document.getElementById('head').innerHTML=h;}
 function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
 function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();}});
@@ -296,8 +299,10 @@ function visible(){
   const fj=document.getElementById('fJisa').value,fjin=document.getElementById('fJin').value,fjeo=document.getElementById('fJeong').value;
   return DATA.filter(d=>{if(curBaal&&d.baal!==curBaal)return false;if(fj&&d.jisa!==fj)return false;if(fjin&&d.jin!==fjin)return false;if(fjeo&&d.jeong!==fjeo)return false;if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;return true;});
 }
+function cmp(a,b){const na=(a==null||a===''),nb=(b==null||b==='');if(na&&nb)return 0;if(na)return 1;if(nb)return -1;if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 function render(){
-  const rows=visible(),tb=document.getElementById('rows');
+  let rows=visible();if(sortCI!=null&&DISP[sortCI]){const ci=DISP[sortCI].idx;rows=rows.slice().sort((a,b)=>cmp(a.row[ci],b.row[ci])*sortDir);}
+  const tb=document.getElementById('rows');
   tb.innerHTML=rows.map(d=>{
     let tds='<td class="cb"></td>';
     DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'">'+disp+'</td>';});
@@ -306,6 +311,13 @@ function render(){
   document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건';
 }
 function jeongBadge(s){if(!s)return '<span class="badge b-기타">-</span>';const cls=s==='정산완료'?'b-완료':(s==='미정산'?'b-미정산':'b-기타');return '<span class="badge '+cls+'">'+esc(s)+'</span>';}
+function renderPreview(){
+  const box=document.getElementById('upPreview');const N=Math.min(DATA.length,12);
+  let h='<div style="font-size:13px;color:#64748b;margin-bottom:8px;">읽어온 목록 미리보기 — 상위 '+N+'건 / 전체 '+DATA.length+'건</div>';
+  h+='<div class="tblwrap" style="max-height:380px;"><table><thead><tr><th>순번</th><th>발주처</th><th>행정구역</th><th>공구명</th><th>측량구분</th><th>탱고거리</th><th>진행상황</th><th>정산상황</th></tr></thead><tbody>';
+  for(let i=0;i<N;i++){const d=DATA[i];h+='<tr><td>'+esc(cellVal(d.row[COL.순번]))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td><td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.method)+'</td><td class="num">'+km(d.tango)+'</td><td>'+esc(d.jin)+'</td><td>'+jeongBadge(d.jeong)+'</td></tr>';}
+  h+='</tbody></table></div>';box.innerHTML=h;box.classList.remove('hide');
+}
 
 let sBaalF='';
 function sVisible(){
@@ -327,6 +339,8 @@ function updateBar(){const sel=DATA.filter(d=>d._sel&&able(d));let tot=0;sel.for
 
 document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();}});
 document.getElementById('search').addEventListener('input',render);
+document.getElementById('head').addEventListener('click',e=>{const th=e.target.closest('th[data-ci]');if(!th)return;const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}buildHead();render();});
+document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
 document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();}});
 document.getElementById('sSearch').addEventListener('input',renderSettle);
