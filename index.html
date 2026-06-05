@@ -9,12 +9,12 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:#f8fafc;color:#1e293b;padding:0 0 1rem;}
-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 1.5rem;display:flex;align-items:center;gap:12px;height:56px;}
-header h1{font-size:18px;font-weight:700;}
+header{background:#fff;border-bottom:3px solid #FFB400;padding:0 1.5rem;display:flex;align-items:center;gap:12px;height:56px;}
+header h1{font-size:18px;font-weight:700;color:#EA002C;}
 header .sub{font-size:13px;color:#64748b;}
 .nav{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 1.5rem;position:sticky;top:0;z-index:100;}
 .nav button{padding:13px 22px;border:none;background:none;font-family:inherit;font-size:15px;font-weight:500;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;}
-.nav button.on{color:#2563eb;border-bottom-color:#2563eb;}
+.nav button.on{color:#EA002C;border-bottom-color:#EA002C;}
 .nav button:hover:not(.on){color:#1e293b;}
 .wrap{max-width:100%;margin:0 auto;padding:1rem 1.25rem;}
 .page{display:none;}.page.on{display:block;}
@@ -24,20 +24,20 @@ header .sub{font-size:13px;color:#64748b;}
 .drop b{display:block;font-size:16px;color:#1e293b;margin-bottom:4px;}
 .seg{display:inline-flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:1rem;}
 .seg button{padding:8px 18px;border:none;background:#fff;font-family:inherit;font-size:14px;cursor:pointer;color:#475569;}
-.seg button.on{background:#2563eb;color:#fff;}
+.seg button.on{background:#EA002C;color:#fff;}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1rem;}
 .stat-c{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;}
 .stat-c .lab{font-size:13px;color:#64748b;margin-bottom:4px;}
 .stat-c .val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
 .stat-c .sub2{font-size:12px;color:#94a3b8;margin-top:2px;}
-.green{color:#059669;}.amber{color:#d97706;}.blue{color:#2563eb;}
+.green{color:#059669;}.amber{color:#d97706;}.blue{color:#EA002C;}
 .btn{padding:9px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;color:#1e293b;}
-.btn-primary{background:#2563eb;color:#fff;border-color:#2563eb;}
+.btn-primary{background:#EA002C;color:#fff;border-color:#EA002C;}
 .btn-success{background:#059669;color:#fff;border-color:#059669;}
 .btn-success:disabled{background:#cbd5e1;border-color:#cbd5e1;cursor:not-allowed;}
 .fbtns{display:flex;gap:6px;flex-wrap:wrap;}
 .fbtn{padding:6px 14px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;color:#475569;}
-.fbtn.on{background:#2563eb;color:#fff;border-color:#2563eb;}
+.fbtn.on{background:#EA002C;color:#fff;border-color:#EA002C;}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
 .controls input[type=text],.controls select{padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;}
 .controls label{font-size:14px;color:#475569;display:flex;align-items:center;gap:6px;cursor:pointer;}
@@ -48,6 +48,7 @@ header .sub{font-size:13px;color:#64748b;}
 .colpanel{width:230px;flex:none;border:1px solid #94a3b8;border-radius:10px;background:#fff;max-height:calc(100vh - 360px);overflow:auto;padding:8px;}
 .colpanel.hide{display:none;}
 .cp-title{font-size:13px;font-weight:500;color:#475569;padding:4px 6px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
+.cp-all{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#EA002C;padding:2px 6px 8px;cursor:pointer;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
 .cp-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 6px;border-radius:6px;}
 .cp-row:hover{background:#f1f5f9;}
 .cp-row label{font-size:13px;color:#1e293b;display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -56,9 +57,9 @@ header .sub{font-size:13px;color:#64748b;}
 .cp-mv button:hover{background:#eff6ff;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
-th{background:#eef2f7;color:#475569;font-weight:500;position:sticky;top:0;z-index:10;}
+th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
 th.cb,td.cb{position:sticky;left:0;z-index:5;width:36px;background:#fff;}
-th.cb{background:#eef2f7;z-index:15;}
+th.cb{background:#fbeaed;z-index:15;}
 td.num{text-align:right;font-variant-numeric:tabular-nums;}
 td.left{text-align:left;}
 .badge{font-size:12px;padding:2px 8px;border-radius:6px;white-space:nowrap;}
@@ -265,9 +266,9 @@ function addManual(){
 }
 
 function buildHead(){let h='<th class="cb"></th>';DISP.forEach(c=>{if(c.vis)h+='<th title="'+esc(c.label)+'">'+esc(c.label)+'</th>';});document.getElementById('head').innerHTML=h;}
-function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
+function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
 function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
-document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;buildHead();render();}});
+document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();}});
 document.getElementById('colPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-mv]');if(!b)return;const i=+b.dataset.mv,j=i+(+b.dataset.d);if(j<0||j>=DISP.length)return;const t=DISP[i];DISP[i]=DISP[j];DISP[j]=t;buildColPanel();buildHead();render();});
 
 function renderCards(){
