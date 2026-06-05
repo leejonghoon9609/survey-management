@@ -72,6 +72,14 @@ header .sub{font-size:13px;color:#64748b;}
 .cf-list label{display:flex;gap:6px;align-items:center;padding:3px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cf-list label:hover{background:#f1f5f9;}
 .cf-btns{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;}
+#mtable tbody td:not(.cb){cursor:pointer;}
+#cellPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;}
+#cellPop.hide{display:none;}
+.cell-card{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:70vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid #94a3b8;}
+.cell-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;}
+.cell-h b{color:#EA002C;font-size:14px;}
+.cell-x{cursor:pointer;color:#64748b;font-size:18px;line-height:1;padding:2px 6px;}
+.cell-b{padding:16px;overflow:auto;font-size:14px;color:#1e293b;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
@@ -202,6 +210,7 @@ td.left{text-align:left;}
 
 </div>
 <div id="colFilterPop" class="hide"></div>
+<div id="cellPop" class="hide"><div class="cell-card"><div class="cell-h"><b id="cellPopT"></b><span class="cell-x" id="cellPopX">✕</span></div><div class="cell-b" id="cellPopB"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -373,6 +382,11 @@ function recalcW(){let t=0;document.querySelectorAll('#mtable colgroup col').for
 document.getElementById('head').addEventListener('mousedown',e=>{const rz=e.target.closest('[data-rz]');if(!rz)return;e.preventDefault();const ci=+rz.dataset.rz;const col=document.querySelector('#mtable colgroup col[data-ci="'+ci+'"]');if(!col)return;const sx=e.clientX,sw=col.getBoundingClientRect().width;document.body.style.userSelect='none';function mv(ev){const w=Math.max(45,sw+(ev.clientX-sx));col.style.width=w+'px';colWidth[DISP[ci].idx]=w;recalcW();}function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';}document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});
 function openColFilter(i,anchor){const srcIdx=DISP[i].idx;cfSrc=srcIdx;const vals=[...new Set(DATA.map(d=>fval(d.row[srcIdx])))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));const cur=colFilter[srcIdx];const pop=document.getElementById('colFilterPop');pop.innerHTML='<div class="cf-head">값 필터 · '+esc(DISP[i].label)+'</div><label class="cf-all"><input type="checkbox" id="cfAll"'+(!cur?' checked':'')+'>(전체)</label><div class="cf-list">'+vals.map(v=>'<label><input type="checkbox" class="cfv" value="'+esc(v)+'"'+((cur?cur.has(v):true)?' checked':'')+'>'+esc(v)+'</label>').join('')+'</div><div class="cf-btns"><button class="btn" id="cfApply" style="padding:6px 14px;background:#EA002C;color:#fff;border-color:#EA002C;">적용</button><button class="btn" id="cfClear" style="padding:6px 14px;">필터 해제</button></div>';const r=anchor.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-272))+'px';pop.style.top=(r.bottom+4)+'px';pop.classList.remove('hide');}
 function closeColFilter(){document.getElementById('colFilterPop').classList.add('hide');}
+function openCellPop(label,txt){document.getElementById('cellPopT').textContent=label||'내용';document.getElementById('cellPopB').textContent=txt;document.getElementById('cellPop').classList.remove('hide');}
+function closeCellPop(){document.getElementById('cellPop').classList.add('hide');}
+document.getElementById('cellPopX').addEventListener('click',closeCellPop);
+document.getElementById('cellPop').addEventListener('click',e=>{if(e.target.id==='cellPop')closeCellPop();});
+document.getElementById('rows').addEventListener('click',e=>{const td=e.target.closest('td');if(!td||td.classList.contains('cb'))return;const txt=td.textContent.trim();if(!txt)return;const visCols=DISP.filter(c=>c.vis);const label=visCols[td.cellIndex-1]?visCols[td.cellIndex-1].label:'';openCellPop(label,txt);});
 (function(){const pop=document.getElementById('colFilterPop');pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});pop.addEventListener('click',e=>{if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}});document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});})();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
