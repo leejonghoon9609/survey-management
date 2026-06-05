@@ -105,7 +105,7 @@ td.left{text-align:left;}
       <p class="note">※ 파일은 브라우저 안에서만 처리됩니다(서버 전송 없음). 발주처(SKT·SKB·원인자)가 있는 모든 사업을, 엑셀의 모든 칸 그대로 불러옵니다.</p>
       <div id="upResult" class="hide" style="margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <span id="upMsg" style="font-size:14px;color:#166534;"></span>
-        <button class="btn btn-primary" onclick="goTab('manage')">사업관리로 이동 →</button>
+        <button class="btn btn-primary" onclick="confirmPicks()">선택한 사업 → 사업관리로</button>
       </div>
       <div id="upPreview" class="hide" style="margin-top:14px;"></div>
     </div>
@@ -244,10 +244,10 @@ function parseMaster(aoa){
   const num=v=>typeof v==='number'?v:(parseFloat(v)||null);
   DATA=[];
   for(let r=hr+1;r<aoa.length;r++){const x=aoa[r]||[];const baal=String(x[COL.발주처]||'').trim();if(!['SKT','SKB','원인자'].includes(baal))continue;const work=String(x[COL.공구명]||'').trim();if(work.length<3)continue;
-    DATA.push({row:x,baal,gubun:String(x[COL.구분]||''),region:String(x[COL.행정]||''),work,method:String(x[COL.측량구분]||'').trim(),tango:num(x[COL.탱고거리]),jisa:String(x[COL.지사]||''),시행:String(x[COL.시행]||''),eng:String(x[COL.eng]||''),tangoType:String(x[COL.사업구분]||''),jin:String(x[COL.진행]||'').trim(),jeong:String(x[COL.정산상황]||'').trim(),amt:num(x[COL.정산금액])});}
+    DATA.push({row:x,baal,gubun:String(x[COL.구분]||''),region:String(x[COL.행정]||''),work,method:String(x[COL.측량구분]||'').trim(),tango:num(x[COL.탱고거리]),jisa:String(x[COL.지사]||''),시행:String(x[COL.시행]||''),eng:String(x[COL.eng]||''),tangoType:String(x[COL.사업구분]||''),jin:String(x[COL.진행]||'').trim(),jeong:String(x[COL.정산상황]||'').trim(),amt:num(x[COL.정산금액]),_pick:true});}
   if(!DATA.length){toast('읽을 데이터가 없습니다',true);return;}
   loaded=true;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();
-  const msg='전체 '+DATA.length+'건 · 측량완료(정산가능) '+DATA.filter(able).length+'건을 읽었습니다. 사업관리로 넘길까요?';
+  const msg='전체 '+DATA.length+'건 · 측량완료(정산가능) '+DATA.filter(able).length+'건을 읽었습니다. 아래에서 가져올 사업을 선택한 뒤 넘기세요.';
   document.getElementById('upMsg').textContent=msg;
   document.getElementById('upResult').classList.remove('hide');
   renderPreview();
@@ -258,7 +258,7 @@ function addManual(){
   if(!loaded){setupDefault();}
   const g=id=>document.getElementById(id).value.trim();
   const num=v=>parseFloat(v)||null;
-  const item={baal:g('iBaal'),gubun:g('iGubun'),시행:g('iSihaeng'),region:g('iRegion'),work:g('iWork'),partner:g('iPartner'),method:g('iMethod'),sil:num(g('iSil')),tango:num(g('iTango')),jisa:g('iJisa'),eng:g('iEng'),tangoType:g('iTangoType'),jin:g('iJin'),jeong:g('iJeong'),amt:null};
+  const item={baal:g('iBaal'),gubun:g('iGubun'),시행:g('iSihaeng'),region:g('iRegion'),work:g('iWork'),partner:g('iPartner'),method:g('iMethod'),sil:num(g('iSil')),tango:num(g('iTango')),jisa:g('iJisa'),eng:g('iEng'),tangoType:g('iTangoType'),jin:g('iJin'),jeong:g('iJeong'),amt:null,_pick:true};
   if(!item.work){toast('공구명을 입력하세요',true);return;}
   const row=[];const set=(c,v)=>{if(c>=0&&c!=null)row[c]=v;};
   set(COL.순번,'직접');set(COL.시행,item.시행);set(COL.발주처,item.baal);set(COL.구분,item.gubun);set(COL.사업구분,item.tangoType);set(COL.협력사,item.partner);set(COL.행정,item.region);set(COL.공구명,item.work);set(COL.실측,item.sil);set(COL.측량구분,item.method);set(COL.eng,item.eng);set(COL.탱고거리,item.tango);set(COL.지사,item.jisa);set(COL.진행,item.jin);set(COL.정산상황,item.jeong);
@@ -312,12 +312,13 @@ function render(){
 }
 function jeongBadge(s){if(!s)return '<span class="badge b-기타">-</span>';const cls=s==='정산완료'?'b-완료':(s==='미정산'?'b-미정산':'b-기타');return '<span class="badge '+cls+'">'+esc(s)+'</span>';}
 function renderPreview(){
-  const box=document.getElementById('upPreview');const N=Math.min(DATA.length,12);
-  let h='<div style="font-size:13px;color:#64748b;margin-bottom:8px;">읽어온 목록 미리보기 — 상위 '+N+'건 / 전체 '+DATA.length+'건</div>';
-  h+='<div class="tblwrap" style="max-height:380px;"><table><thead><tr><th>순번</th><th>발주처</th><th>행정구역</th><th>공구명</th><th>측량구분</th><th>탱고거리</th><th>진행상황</th><th>정산상황</th></tr></thead><tbody>';
-  for(let i=0;i<N;i++){const d=DATA[i];h+='<tr><td>'+esc(cellVal(d.row[COL.순번]))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td><td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.method)+'</td><td class="num">'+km(d.tango)+'</td><td>'+esc(d.jin)+'</td><td>'+jeongBadge(d.jeong)+'</td></tr>';}
+  const box=document.getElementById('upPreview');const picked=DATA.filter(d=>d._pick).length;
+  let h='<div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-wrap:wrap;"><label style="font-size:13px;font-weight:500;color:#EA002C;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="pvAll"'+(picked===DATA.length?' checked':'')+'>전체선택 / 해제</label><span style="font-size:13px;color:#64748b;">선택 <b id="pvCnt">'+picked+'</b> / 전체 '+DATA.length+'건 — 체크한 사업만 넘어갑니다</span></div>';
+  h+='<div class="tblwrap" style="max-height:420px;"><table><thead><tr><th class="cb"></th><th>순번</th><th>발주처</th><th>행정구역</th><th>공구명</th><th>측량구분</th><th>탱고거리</th><th>진행상황</th><th>정산상황</th></tr></thead><tbody>';
+  DATA.forEach((d,i)=>{h+='<tr><td class="cb"><input type="checkbox" data-pk="'+i+'"'+(d._pick?' checked':'')+'></td><td>'+esc(cellVal(d.row[COL.순번]))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td><td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.method)+'</td><td class="num">'+km(d.tango)+'</td><td>'+esc(d.jin)+'</td><td>'+jeongBadge(d.jeong)+'</td></tr>';});
   h+='</tbody></table></div>';box.innerHTML=h;box.classList.remove('hide');
 }
+function confirmPicks(){const sel=DATA.filter(d=>d._pick);if(!sel.length){toast('선택된 사업이 없습니다',true);return;}DATA=sel;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();goTab('manage');toast(sel.length+'건을 사업관리로 가져왔습니다');}
 
 let sBaalF='';
 function sVisible(){
@@ -339,6 +340,7 @@ function updateBar(){const sel=DATA.filter(d=>d._sel&&able(d));let tot=0;sel.for
 
 document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();}});
 document.getElementById('search').addEventListener('input',render);
+document.getElementById('upPreview').addEventListener('change',e=>{if(e.target.id==='pvAll'){DATA.forEach(d=>d._pick=e.target.checked);renderPreview();return;}if(e.target.dataset.pk!==undefined){DATA[+e.target.dataset.pk]._pick=e.target.checked;const c=DATA.filter(d=>d._pick).length;const cn=document.getElementById('pvCnt');if(cn)cn.textContent=c;const a=document.getElementById('pvAll');if(a)a.checked=(c===DATA.length);}});
 document.getElementById('head').addEventListener('click',e=>{const th=e.target.closest('th[data-ci]');if(!th)return;const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}buildHead();render();});
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
