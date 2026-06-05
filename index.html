@@ -345,17 +345,15 @@ function visible(){
   return DATA.filter(d=>{if(curBaal&&d.baal!==curBaal)return false;if(fj&&d.jisa!==fj)return false;if(fjin&&d.jin!==fjin)return false;if(fjeo&&d.jeong!==fjeo)return false;if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;for(const k in colFilter){if(!colFilter[k].has(fval(d.row[+k])))return false;}return true;});
 }
 function cmp(a,b){const na=(a==null||a===''),nb=(b==null||b==='');if(na&&nb)return 0;if(na)return 1;if(nb)return -1;if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
+const M_PAGE=150;let mRows=[],mShown=0;
+function rowHTML(d){if(d._id==null)d._id=++idSeq;let tds='<td class="cb"></td>';DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'"><span class="cv">'+disp+'</span></td>';});return '<tr data-id="'+d._id+'">'+tds+'</tr>';}
 function render(){
   let rows=visible();if(sortCI!=null&&DISP[sortCI]){const ci=DISP[sortCI].idx;rows=rows.slice().sort((a,b)=>cmp(a.row[ci],b.row[ci])*sortDir);}
-  const tb=document.getElementById('rows');
-  tb.innerHTML=rows.map(d=>{
-    if(d._id==null)d._id=++idSeq;
-    let tds='<td class="cb"></td>';
-    DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'"><span class="cv">'+disp+'</span></td>';});
-    return '<tr data-id="'+d._id+'">'+tds+'</tr>';
-  }).join('');
-  document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건';
+  mRows=rows;mShown=Math.min(M_PAGE,rows.length);
+  document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
+  document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건'+(rows.length>mShown?' · 스크롤하면 더 표시':'');
 }
+function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map(rowHTML).join(''));mShown=next;document.getElementById('stat').innerHTML='표시 <b>'+mRows.length+'</b>건 / 전체 '+DATA.length+'건'+(mShown<mRows.length?' · 스크롤하면 더 표시':'');}
 function jeongBadge(s){if(!s)return '<span class="badge b-기타">-</span>';const cls=s==='정산완료'?'b-완료':(s==='미정산'?'b-미정산':'b-기타');return '<span class="badge '+cls+'">'+esc(s)+'</span>';}
 function renderPreview(){
   const box=document.getElementById('upPreview');const picked=DATA.filter(d=>d._pick).length;
@@ -385,7 +383,7 @@ function renderSettle(){
 function updateBar(){const sel=DATA.filter(d=>d._sel&&able(d));let tot=0;sel.forEach(d=>tot+=estAmt(d));document.getElementById('selCnt').textContent=sel.length;document.getElementById('selAmt').textContent=won(tot);document.getElementById('export').disabled=sel.length===0;}
 
 document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();}});
-document.getElementById('search').addEventListener('input',render);
+let searchTmr;document.getElementById('search').addEventListener('input',()=>{clearTimeout(searchTmr);searchTmr=setTimeout(render,250);});
 document.getElementById('upPreview').addEventListener('change',e=>{if(e.target.id==='pvAll'){DATA.forEach(d=>d._pick=e.target.checked);renderPreview();return;}if(e.target.dataset.pk!==undefined){DATA[+e.target.dataset.pk]._pick=e.target.checked;const c=DATA.filter(d=>d._pick).length;const cn=document.getElementById('pvCnt');if(cn)cn.textContent=c;const a=document.getElementById('pvAll');if(a)a.checked=(c===DATA.length);}});
 document.getElementById('head').addEventListener('click',e=>{if(e.target.closest('[data-rz]'))return;const f=e.target.closest('[data-fi]');if(f){e.stopPropagation();openColFilter(+f.dataset.fi,f);return;}const th=e.target.closest('th[data-ci]');if(!th)return;const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}buildHead();render();});
 function recalcW(){let t=0;document.querySelectorAll('#mtable colgroup col').forEach(c=>t+=c.getBoundingClientRect().width);document.getElementById('mtable').style.width=t+'px';}
@@ -412,6 +410,7 @@ document.getElementById('rows').addEventListener('click',e=>{
 });
 (function(){const pop=document.getElementById('colFilterPop');pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});pop.addEventListener('click',e=>{if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}});document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});})();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
+(function(){const mw=document.querySelector('.mgr .tblwrap');if(mw)mw.addEventListener('scroll',()=>{if(mw.scrollTop+mw.clientHeight>=mw.scrollHeight-400)moreRows();});})();
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
 document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();}});
 document.getElementById('sSearch').addEventListener('input',renderSettle);
