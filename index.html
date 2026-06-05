@@ -56,6 +56,16 @@ header .sub{font-size:13px;color:#64748b;}
 .cp-mv{display:flex;gap:2px;flex:none;}
 .cp-mv button{width:22px;height:22px;border:1px solid #e2e8f0;background:#fff;border-radius:5px;cursor:pointer;font-size:12px;color:#64748b;padding:0;line-height:1;}
 .cp-mv button:hover{background:#eff6ff;}
+.thf{color:#94a3b8;font-size:11px;cursor:pointer;padding:0 2px;}
+.thf.fon{color:#EA002C;font-weight:700;}
+#colFilterPop{position:fixed;z-index:300;background:#fff;border:1px solid #94a3b8;border-radius:8px;padding:8px;width:260px;font-size:13px;}
+#colFilterPop.hide{display:none;}
+.cf-head{font-weight:500;color:#EA002C;padding:2px 4px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
+.cf-all{display:flex;gap:6px;align-items:center;padding:4px;font-weight:500;border-bottom:1px solid #f1f5f9;margin-bottom:4px;cursor:pointer;}
+.cf-list{max-height:240px;overflow:auto;}
+.cf-list label{display:flex;gap:6px;align-items:center;padding:3px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cf-list label:hover{background:#f1f5f9;}
+.cf-btns{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
@@ -185,6 +195,7 @@ td.left{text-align:left;}
   </div>
 
 </div>
+<div id="colFilterPop" class="hide"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -200,10 +211,11 @@ function calcCost(exposedKm,probeKm,method,jisa){
 }
 const won=n=>Math.round(n).toLocaleString('ko-KR')+' 원';
 const km=n=>(n==null||n==='')?'—':Number(n).toFixed(3);
-let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1;
+let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1,colFilter={},cfSrc=null;
 function able(d){return (d.method==='실시간'||d.method==='탐사')&&typeof d.tango==='number'&&d.tango>0;}
 function estAmt(d){const ex=d.method==='실시간'?d.tango:0;return calcCost(ex,d.tango,d.method==='실시간'?'realtime':'probe',d.jisa).total;}
 function cellVal(v){if(v==null||v==='')return '';if(typeof v==='number')return Number.isInteger(v)&&Math.abs(v)>=1000?v.toLocaleString('ko-KR'):String(v);return String(v);}
+function fval(v){return (v==null||v==='')?'(빈칸)':String(v);}
 function esc(s){return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function isLeft(label){return /공구|비고|공사명|측량명칭|심사|사업유형|협력/.test(label);}
 
@@ -268,7 +280,7 @@ function addManual(){
   toast('추가했습니다 · 사업관리 탭에서 확인하세요');
 }
 
-function buildHead(){let h='<th class="cb"></th>';DISP.forEach((c,i)=>{if(!c.vis)return;const ar=sortCI===i?(sortDir>0?' ▲':' ▼'):'';h+='<th data-ci="'+i+'" style="cursor:pointer;user-select:none;" title="'+esc(c.label)+' (클릭=정렬)">'+esc(c.label)+ar+'</th>';});document.getElementById('head').innerHTML=h;}
+function buildHead(){let h='<th class="cb"></th>';DISP.forEach((c,i)=>{if(!c.vis)return;const ar=sortCI===i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[c.idx]?' fon':'';h+='<th data-ci="'+i+'" style="cursor:pointer;user-select:none;"><span title="클릭=정렬">'+esc(c.label)+ar+'</span> <span class="thf'+fon+'" data-fi="'+i+'" title="값 필터">▾</span></th>';});document.getElementById('head').innerHTML=h;}
 function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
 function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();}});
@@ -297,7 +309,7 @@ let curBaal='';
 function visible(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   const fj=document.getElementById('fJisa').value,fjin=document.getElementById('fJin').value,fjeo=document.getElementById('fJeong').value;
-  return DATA.filter(d=>{if(curBaal&&d.baal!==curBaal)return false;if(fj&&d.jisa!==fj)return false;if(fjin&&d.jin!==fjin)return false;if(fjeo&&d.jeong!==fjeo)return false;if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;return true;});
+  return DATA.filter(d=>{if(curBaal&&d.baal!==curBaal)return false;if(fj&&d.jisa!==fj)return false;if(fjin&&d.jin!==fjin)return false;if(fjeo&&d.jeong!==fjeo)return false;if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;for(const k in colFilter){if(!colFilter[k].has(fval(d.row[+k])))return false;}return true;});
 }
 function cmp(a,b){const na=(a==null||a===''),nb=(b==null||b==='');if(na&&nb)return 0;if(na)return 1;if(nb)return -1;if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 function render(){
@@ -318,7 +330,7 @@ function renderPreview(){
   DATA.forEach((d,i)=>{h+='<tr><td class="cb"><input type="checkbox" data-pk="'+i+'"'+(d._pick?' checked':'')+'></td><td>'+esc(cellVal(d.row[COL.순번]))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td><td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.method)+'</td><td class="num">'+km(d.tango)+'</td><td>'+esc(d.jin)+'</td><td>'+jeongBadge(d.jeong)+'</td></tr>';});
   h+='</tbody></table></div>';box.innerHTML=h;box.classList.remove('hide');
 }
-function confirmPicks(){const sel=DATA.filter(d=>d._pick);if(!sel.length){toast('선택된 사업이 없습니다',true);return;}DATA=sel;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();goTab('manage');toast(sel.length+'건을 사업관리로 가져왔습니다');}
+function confirmPicks(){const sel=DATA.filter(d=>d._pick);if(!sel.length){toast('선택된 사업이 없습니다',true);return;}DATA=sel;colFilter={};sortCI=null;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();goTab('manage');toast(sel.length+'건을 사업관리로 가져왔습니다');}
 
 let sBaalF='';
 function sVisible(){
@@ -341,7 +353,10 @@ function updateBar(){const sel=DATA.filter(d=>d._sel&&able(d));let tot=0;sel.for
 document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();}});
 document.getElementById('search').addEventListener('input',render);
 document.getElementById('upPreview').addEventListener('change',e=>{if(e.target.id==='pvAll'){DATA.forEach(d=>d._pick=e.target.checked);renderPreview();return;}if(e.target.dataset.pk!==undefined){DATA[+e.target.dataset.pk]._pick=e.target.checked;const c=DATA.filter(d=>d._pick).length;const cn=document.getElementById('pvCnt');if(cn)cn.textContent=c;const a=document.getElementById('pvAll');if(a)a.checked=(c===DATA.length);}});
-document.getElementById('head').addEventListener('click',e=>{const th=e.target.closest('th[data-ci]');if(!th)return;const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}buildHead();render();});
+document.getElementById('head').addEventListener('click',e=>{const f=e.target.closest('[data-fi]');if(f){e.stopPropagation();openColFilter(+f.dataset.fi,f);return;}const th=e.target.closest('th[data-ci]');if(!th)return;const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}buildHead();render();});
+function openColFilter(i,anchor){const srcIdx=DISP[i].idx;cfSrc=srcIdx;const vals=[...new Set(DATA.map(d=>fval(d.row[srcIdx])))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));const cur=colFilter[srcIdx];const pop=document.getElementById('colFilterPop');pop.innerHTML='<div class="cf-head">값 필터 · '+esc(DISP[i].label)+'</div><label class="cf-all"><input type="checkbox" id="cfAll"'+(!cur?' checked':'')+'>(전체)</label><div class="cf-list">'+vals.map(v=>'<label><input type="checkbox" class="cfv" value="'+esc(v)+'"'+((cur?cur.has(v):true)?' checked':'')+'>'+esc(v)+'</label>').join('')+'</div><div class="cf-btns"><button class="btn" id="cfApply" style="padding:6px 14px;background:#EA002C;color:#fff;border-color:#EA002C;">적용</button><button class="btn" id="cfClear" style="padding:6px 14px;">필터 해제</button></div>';const r=anchor.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-272))+'px';pop.style.top=(r.bottom+4)+'px';pop.classList.remove('hide');}
+function closeColFilter(){document.getElementById('colFilterPop').classList.add('hide');}
+(function(){const pop=document.getElementById('colFilterPop');pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});pop.addEventListener('click',e=>{if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}});document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});})();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
 document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();}});
