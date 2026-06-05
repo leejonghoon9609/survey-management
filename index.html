@@ -80,6 +80,15 @@ header .sub{font-size:13px;color:#64748b;}
 .cell-h b{color:#EA002C;font-size:14px;}
 .cell-x{cursor:pointer;color:#64748b;font-size:18px;line-height:1;padding:2px 6px;}
 .cell-b{padding:16px;overflow:auto;font-size:14px;color:#1e293b;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
+tr.rowsel td{background:#fff3cd;}
+.editrow td{background:#fff7e0;padding:0;}
+.editbox{position:sticky;left:0;width:min(980px,90vw);padding:14px 16px;box-sizing:border-box;}
+.eb-h{font-size:14px;font-weight:500;color:#EA002C;margin-bottom:10px;}
+.eb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.ef{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#475569;text-align:left;}
+.ef input{padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#1e293b;}
+.ef input:focus{outline:none;border-color:#EA002C;}
+.eb-btns{display:flex;gap:8px;margin-top:12px;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
@@ -175,7 +184,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note">표를 한 번 클릭한 뒤 ← → (↑↓) 키로 이동할 수 있고, 칸 머리글을 클릭하면 그 칸 기준으로 정렬(▲▼)됩니다. "컬럼 설정"에서 보고 싶은 칸만 체크하고 순서도 바꿀 수 있어요.</p>
+      <p class="note">칸의 <b>글자를 클릭</b>하면 전체 내용 팝업, 칸의 <b>빈 곳(또는 줄 빈 부분)을 클릭</b>하면 그 줄이 펼쳐져 값을 수정·입력할 수 있어요(현재는 이 화면에만 반영). 머리글 글자=정렬(▲▼), ▾=값 필터, 경계선 드래그=너비 조절. 표 클릭 후 ← → ↑↓ 키로 이동.</p>
     </div>
   </div>
 
@@ -226,7 +235,7 @@ function calcCost(exposedKm,probeKm,method,jisa){
 }
 const won=n=>Math.round(n).toLocaleString('ko-KR')+' 원';
 const km=n=>(n==null||n==='')?'—':Number(n).toFixed(3);
-let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1,colFilter={},cfSrc=null,colWidth={};
+let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1,colFilter={},cfSrc=null,colWidth={},idSeq=0;
 function able(d){return (d.method==='실시간'||d.method==='탐사')&&typeof d.tango==='number'&&d.tango>0;}
 function estAmt(d){const ex=d.method==='실시간'?d.tango:0;return calcCost(ex,d.tango,d.method==='실시간'?'realtime':'probe',d.jisa).total;}
 function cellVal(v){if(v==null||v==='')return '';if(typeof v==='number')return Number.isInteger(v)&&Math.abs(v)>=1000?v.toLocaleString('ko-KR'):String(v);return String(v);}
@@ -340,9 +349,10 @@ function render(){
   let rows=visible();if(sortCI!=null&&DISP[sortCI]){const ci=DISP[sortCI].idx;rows=rows.slice().sort((a,b)=>cmp(a.row[ci],b.row[ci])*sortDir);}
   const tb=document.getElementById('rows');
   tb.innerHTML=rows.map(d=>{
+    if(d._id==null)d._id=++idSeq;
     let tds='<td class="cb"></td>';
-    DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'">'+disp+'</td>';});
-    return '<tr>'+tds+'</tr>';
+    DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'"><span class="cv">'+disp+'</span></td>';});
+    return '<tr data-id="'+d._id+'">'+tds+'</tr>';
   }).join('');
   document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건';
 }
@@ -386,7 +396,20 @@ function openCellPop(label,txt){document.getElementById('cellPopT').textContent=
 function closeCellPop(){document.getElementById('cellPop').classList.add('hide');}
 document.getElementById('cellPopX').addEventListener('click',closeCellPop);
 document.getElementById('cellPop').addEventListener('click',e=>{if(e.target.id==='cellPop')closeCellPop();});
-document.getElementById('rows').addEventListener('click',e=>{const td=e.target.closest('td');if(!td||td.classList.contains('cb'))return;const txt=td.textContent.trim();if(!txt)return;const visCols=DISP.filter(c=>c.vis);const label=visCols[td.cellIndex-1]?visCols[td.cellIndex-1].label:'';openCellPop(label,txt);});
+function toNum(v){if(typeof v==='number')return v;const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?null:n;}
+function deriveItem(d){const x=d.row;d.baal=String(x[COL.발주처]||'').trim();d.gubun=String(x[COL.구분]||'');d.region=String(x[COL.행정]||'');d.work=String(x[COL.공구명]||'').trim();d.method=String(x[COL.측량구분]||'').trim();d.tango=toNum(x[COL.탱고거리]);d.jisa=String(x[COL.지사]||'');d.시행=String(x[COL.시행]||'');d.eng=String(x[COL.eng]||'');d.tangoType=String(x[COL.사업구분]||'');d.jin=String(x[COL.진행]||'').trim();d.jeong=String(x[COL.정산상황]||'').trim();d.amt=toNum(x[COL.정산금액]);}
+function editFormHTML(d){const fields=DISP.map(c=>{const v=d.row[c.idx];const val=esc(v==null?'':String(v));return '<label class="ef"><span>'+esc(c.label)+'</span><input data-eidx="'+c.idx+'" value="'+val+'"></label>';}).join('');return '<div class="editbox"><div class="eb-h">사업 수정 · '+esc(d.work||'')+'</div><div class="eb-grid">'+fields+'</div><div class="eb-btns"><button class="btn btn-primary" data-esave="'+d._id+'" style="padding:7px 18px;">저장</button><button class="btn" data-ecancel style="padding:7px 16px;">닫기</button></div></div>';}
+function toggleEditRow(tr){const id=tr.dataset.id;const nx=tr.nextElementSibling;if(nx&&nx.classList.contains('editrow')){nx.remove();tr.classList.remove('rowsel');return;}document.querySelectorAll('#rows .editrow').forEach(r=>r.remove());document.querySelectorAll('#rows tr.rowsel').forEach(r=>r.classList.remove('rowsel'));const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;tr.classList.add('rowsel');const colspan=1+DISP.filter(c=>c.vis).length;const er=document.createElement('tr');er.className='editrow';er.innerHTML='<td colspan="'+colspan+'">'+editFormHTML(d)+'</td>';tr.after(er);}
+document.getElementById('rows').addEventListener('click',e=>{
+  const sv=e.target.closest('[data-esave]');
+  if(sv){const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);if(d&&er){er.querySelectorAll('input[data-eidx]').forEach(inp=>{const idx=+inp.dataset.eidx,val=inp.value;let nv=val;if(val.trim()===''){nv='';}else if(/^[-\d.,]+$/.test(val.trim())){const n=Number(val.replace(/,/g,''));nv=isNaN(n)?val:n;}d.row[idx]=nv;});deriveItem(d);render();renderCards();renderSettle();toast('수정 저장됨 (이 화면에만 반영)');}return;}
+  const cl=e.target.closest('[data-ecancel]');
+  if(cl){const er=cl.closest('.editrow');const p=er&&er.previousElementSibling;if(p)p.classList.remove('rowsel');if(er)er.remove();return;}
+  const tr=e.target.closest('tr');if(!tr||tr.classList.contains('editrow'))return;
+  const cv=e.target.closest('.cv');
+  if(cv&&cv.textContent.trim()!==''){const td=cv.closest('td');const vc=DISP.filter(c=>c.vis);const label=vc[td.cellIndex-1]?vc[td.cellIndex-1].label:'';openCellPop(label,cv.textContent.trim());return;}
+  toggleEditRow(tr);
+});
 (function(){const pop=document.getElementById('colFilterPop');pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});pop.addEventListener('click',e=>{if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}});document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});})();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',render));
