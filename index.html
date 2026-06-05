@@ -309,7 +309,7 @@ function buildHead(){
   const vis=[];DISP.forEach((c,i)=>{if(c.vis)vis.push({c,i});});
   let cg='<col style="width:36px">',total=36;
   vis.forEach(o=>{const w=colWidth[o.c.idx]||defW(o.c.label);total+=w;cg+='<col data-ci="'+o.i+'" style="width:'+w+'px">';});
-  let h='<th class="cb"></th>';
+  let h='<th class="cb"><input type="checkbox" id="mAll" title="전체선택"></th>';
   vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
@@ -346,14 +346,16 @@ function visible(){
 }
 function cmp(a,b){const na=(a==null||a===''),nb=(b==null||b==='');if(na&&nb)return 0;if(na)return 1;if(nb)return -1;if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 const M_PAGE=150;let mRows=[],mShown=0;
-function rowHTML(d){if(d._id==null)d._id=++idSeq;let tds='<td class="cb"></td>';DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'"><span class="cv">'+disp+'</span></td>';});return '<tr data-id="'+d._id+'">'+tds+'</tr>';}
+function rowHTML(d){if(d._id==null)d._id=++idSeq;let tds='<td class="cb"><input type="checkbox" class="msel" data-id="'+d._id+'"'+(d._msel?' checked':'')+'></td>';DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'"><span class="cv">'+disp+'</span></td>';});return '<tr data-id="'+d._id+'">'+tds+'</tr>';}
+function statLine(){const sel=mRows.filter(d=>d._msel).length;document.getElementById('stat').innerHTML='표시 <b>'+mRows.length+'</b>건 / 전체 '+DATA.length+'건'+(mShown<mRows.length?' · 스크롤하면 더 표시':'')+(sel?' · <b style="color:#EA002C">선택 '+sel+'건</b>':'');}
+function updateSelUI(){const a=document.getElementById('mAll');if(a)a.checked=(mRows.length>0&&mRows.every(d=>d._msel));statLine();}
 function render(){
   let rows=visible();if(sortCI!=null&&DISP[sortCI]){const ci=DISP[sortCI].idx;rows=rows.slice().sort((a,b)=>cmp(a.row[ci],b.row[ci])*sortDir);}
   mRows=rows;mShown=Math.min(M_PAGE,rows.length);
   document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
-  document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건'+(rows.length>mShown?' · 스크롤하면 더 표시':'');
+  updateSelUI();
 }
-function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map(rowHTML).join(''));mShown=next;document.getElementById('stat').innerHTML='표시 <b>'+mRows.length+'</b>건 / 전체 '+DATA.length+'건'+(mShown<mRows.length?' · 스크롤하면 더 표시':'');}
+function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map(rowHTML).join(''));mShown=next;updateSelUI();}
 function jeongBadge(s){if(!s)return '<span class="badge b-기타">-</span>';const cls=s==='정산완료'?'b-완료':(s==='미정산'?'b-미정산':'b-기타');return '<span class="badge '+cls+'">'+esc(s)+'</span>';}
 function renderPreview(){
   const box=document.getElementById('upPreview');const picked=DATA.filter(d=>d._pick).length;
@@ -399,6 +401,7 @@ function deriveItem(d){const x=d.row;d.baal=String(x[COL.발주처]||'').trim();
 function editFormHTML(d){const fields=DISP.map(c=>{const v=d.row[c.idx];const val=esc(v==null?'':String(v));return '<label class="ef"><span>'+esc(c.label)+'</span><input data-eidx="'+c.idx+'" value="'+val+'"></label>';}).join('');return '<div class="editbox"><div class="eb-h">사업 수정 · '+esc(d.work||'')+'</div><div class="eb-grid">'+fields+'</div><div class="eb-btns"><button class="btn btn-primary" data-esave="'+d._id+'" style="padding:7px 18px;">저장</button><button class="btn" data-ecancel style="padding:7px 16px;">닫기</button></div></div>';}
 function toggleEditRow(tr){const id=tr.dataset.id;const nx=tr.nextElementSibling;if(nx&&nx.classList.contains('editrow')){nx.remove();tr.classList.remove('rowsel');return;}document.querySelectorAll('#rows .editrow').forEach(r=>r.remove());document.querySelectorAll('#rows tr.rowsel').forEach(r=>r.classList.remove('rowsel'));const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;tr.classList.add('rowsel');const colspan=1+DISP.filter(c=>c.vis).length;const er=document.createElement('tr');er.className='editrow';er.innerHTML='<td colspan="'+colspan+'">'+editFormHTML(d)+'</td>';tr.after(er);}
 document.getElementById('rows').addEventListener('click',e=>{
+  if(e.target.closest('td.cb'))return;
   const sv=e.target.closest('[data-esave]');
   if(sv){const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);if(d&&er){er.querySelectorAll('input[data-eidx]').forEach(inp=>{const idx=+inp.dataset.eidx,val=inp.value;let nv=val;if(val.trim()===''){nv='';}else if(/^[-\d.,]+$/.test(val.trim())){const n=Number(val.replace(/,/g,''));nv=isNaN(n)?val:n;}d.row[idx]=nv;});deriveItem(d);render();renderCards();renderSettle();toast('수정 저장됨 (이 화면에만 반영)');}return;}
   const cl=e.target.closest('[data-ecancel]');
@@ -408,6 +411,8 @@ document.getElementById('rows').addEventListener('click',e=>{
   if(cv&&cv.textContent.trim()!==''){const td=cv.closest('td');const vc=DISP.filter(c=>c.vis);const label=vc[td.cellIndex-1]?vc[td.cellIndex-1].label:'';openCellPop(label,cv.textContent.trim());return;}
   toggleEditRow(tr);
 });
+document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
+document.getElementById('rows').addEventListener('change',e=>{if(e.target.classList.contains('msel')){const d=DATA.find(x=>String(x._id)===e.target.dataset.id);if(d)d._msel=e.target.checked;updateSelUI();}});
 (function(){const pop=document.getElementById('colFilterPop');pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});pop.addEventListener('click',e=>{if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}});document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});})();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 (function(){const mw=document.querySelector('.mgr .tblwrap');if(mw)mw.addEventListener('scroll',()=>{if(mw.scrollTop+mw.clientHeight>=mw.scrollHeight-400)moreRows();});})();
