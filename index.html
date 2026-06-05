@@ -42,9 +42,20 @@ header .sub{font-size:13px;color:#64748b;}
 .controls input[type=text],.controls select{padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;}
 .controls label{font-size:14px;color:#475569;display:flex;align-items:center;gap:6px;cursor:pointer;}
 .stat{font-size:13px;color:#64748b;}.stat b{color:#1e293b;}
-.tblwrap{overflow:auto;max-height:calc(100vh - 360px);min-height:280px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;}
+.tblwrap{overflow:auto;max-height:calc(100vh - 360px);min-height:280px;border:1px solid #64748b;border-radius:10px;background:#fff;}
+.mgr{display:flex;gap:12px;align-items:flex-start;}
+.mgr .tblwrap{flex:1;min-width:0;}
+.colpanel{width:230px;flex:none;border:1px solid #94a3b8;border-radius:10px;background:#fff;max-height:calc(100vh - 360px);overflow:auto;padding:8px;}
+.colpanel.hide{display:none;}
+.cp-title{font-size:13px;font-weight:500;color:#475569;padding:4px 6px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
+.cp-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 6px;border-radius:6px;}
+.cp-row:hover{background:#f1f5f9;}
+.cp-row label{font-size:13px;color:#1e293b;display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cp-mv{display:flex;gap:2px;flex:none;}
+.cp-mv button{width:22px;height:22px;border:1px solid #e2e8f0;background:#fff;border-radius:5px;cursor:pointer;font-size:12px;color:#64748b;padding:0;line-height:1;}
+.cp-mv button:hover{background:#eff6ff;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
-th,td{padding:8px 10px;text-align:center;border:1px solid #e2e8f0;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
+th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
 th{background:#eef2f7;color:#475569;font-weight:500;position:sticky;top:0;z-index:10;}
 th.cb,td.cb{position:sticky;left:0;z-index:5;width:36px;background:#fff;}
 th.cb{background:#eef2f7;z-index:15;}
@@ -130,10 +141,14 @@ td.left{text-align:left;}
         <select id="fJin"><option value="">진행상황 전체</option></select>
         <select id="fJeong"><option value="">정산상황 전체</option></select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
+        <button class="btn" onclick="toggleColPanel()" style="padding:7px 14px;">컬럼 설정</button>
         <span style="flex:1"></span><span class="stat" id="stat"></span>
       </div>
-      <div class="tblwrap"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
-      <p class="note">엑셀의 모든 칸을 그대로 보여줍니다. 표가 넓으면 좌우로 스크롤하세요.</p>
+      <div class="mgr">
+        <div id="colPanel" class="colpanel hide"></div>
+        <div class="tblwrap"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
+      </div>
+      <p class="note">엑셀의 모든 칸을 그대로 보여줍니다. "컬럼 설정"에서 보고 싶은 칸만 체크하고 ↑↓로 순서를 바꿀 수 있어요. 표가 넓으면 좌우로 스크롤하세요.</p>
     </div>
   </div>
 
@@ -204,7 +219,7 @@ function segMode(m){document.getElementById('seg-up').classList.toggle('on',m===
 function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));}
 
 const DEF=['순번','시행시기','발주처','구분','사업구분','공사협력사','행정구역','공구명','실측거리(km)','측량구분','Eng 번호','탱고 업로딩 거리','지사','진행상황','정산상황','정산금액','비고'];
-function setupDefault(){DISP=DEF.map((l,i)=>({idx:i,label:l}));COL={순번:0,시행:1,발주처:2,구분:3,사업구분:4,협력사:5,행정:6,공구명:7,실측:8,측량구분:9,eng:10,탱고거리:11,지사:12,진행:13,정산상황:14,정산금액:15};loaded=true;}
+function setupDefault(){DISP=DEF.map((l,i)=>({idx:i,label:l,vis:true}));COL={순번:0,시행:1,발주처:2,구분:3,사업구분:4,협력사:5,행정:6,공구명:7,실측:8,측량구분:9,eng:10,탱고거리:11,지사:12,진행:13,정산상황:14,정산금액:15};loaded=true;}
 
 const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
 drop.addEventListener('click',()=>fileInput.click());
@@ -222,13 +237,13 @@ function parseMaster(aoa){
   const raw=aoa[hr]||[],H=[];for(let c=0;c<Math.max(raw.length,40);c++)H[c]=String(raw[c]==null?'':raw[c]).trim();
   const ff=p=>{for(let c=0;c<H.length;c++)if(p(H[c]))return c;return -1;};
   COL={순번:ff(h=>h==='순번'),시행:ff(h=>h.includes('시행')),발주처:ff(h=>h.includes('발주처')),구분:ff(h=>h==='구분'),사업구분:ff(h=>h==='사업구분'),협력사:ff(h=>h.includes('협력')),행정:ff(h=>h.includes('행정')),공구명:ff(h=>h.includes('공구')),실측:ff(h=>h.includes('실측')),측량구분:ff(h=>h==='측량구분'),eng:ff(h=>h.toLowerCase().includes('eng')),탱고거리:ff(h=>h.includes('탱고')&&h.includes('거리')),지사:ff(h=>h==='지사'),진행:ff(h=>h.includes('진행')),정산상황:ff(h=>h.includes('정산상황')),정산금액:ff(h=>h.includes('정산금액'))};
-  DISP=[];for(let c=0;c<H.length;c++)if(H[c])DISP.push({idx:c,label:H[c]});
+  DISP=[];for(let c=0;c<H.length;c++)if(H[c])DISP.push({idx:c,label:H[c],vis:true});
   const num=v=>typeof v==='number'?v:(parseFloat(v)||null);
   DATA=[];
   for(let r=hr+1;r<aoa.length;r++){const x=aoa[r]||[];const baal=String(x[COL.발주처]||'').trim();if(!['SKT','SKB','원인자'].includes(baal))continue;const work=String(x[COL.공구명]||'').trim();if(work.length<3)continue;
     DATA.push({row:x,baal,gubun:String(x[COL.구분]||''),region:String(x[COL.행정]||''),work,method:String(x[COL.측량구분]||'').trim(),tango:num(x[COL.탱고거리]),jisa:String(x[COL.지사]||''),시행:String(x[COL.시행]||''),eng:String(x[COL.eng]||''),tangoType:String(x[COL.사업구분]||''),jin:String(x[COL.진행]||'').trim(),jeong:String(x[COL.정산상황]||'').trim(),amt:num(x[COL.정산금액])});}
   if(!DATA.length){toast('읽을 데이터가 없습니다',true);return;}
-  loaded=true;buildHead();buildFilters();renderCards();render();renderSettle();
+  loaded=true;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();
   const msg='전체 '+DATA.length+'건 · 측량완료(정산가능) '+DATA.filter(able).length+'건을 읽었습니다. 사업관리로 넘길까요?';
   document.getElementById('upMsg').textContent=msg;
   document.getElementById('upResult').classList.remove('hide');
@@ -244,12 +259,16 @@ function addManual(){
   const row=[];const set=(c,v)=>{if(c>=0&&c!=null)row[c]=v;};
   set(COL.순번,'직접');set(COL.시행,item.시행);set(COL.발주처,item.baal);set(COL.구분,item.gubun);set(COL.사업구분,item.tangoType);set(COL.협력사,item.partner);set(COL.행정,item.region);set(COL.공구명,item.work);set(COL.실측,item.sil);set(COL.측량구분,item.method);set(COL.eng,item.eng);set(COL.탱고거리,item.tango);set(COL.지사,item.jisa);set(COL.진행,item.jin);set(COL.정산상황,item.jeong);
   item.row=row;DATA.push(item);
-  buildHead();buildFilters();renderCards();render();renderSettle();
+  buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();
   ['iGubun','iRegion','iWork','iPartner','iEng','iSil','iTango','iJin'].forEach(id=>document.getElementById(id).value='');
   toast('추가했습니다 · 사업관리 탭에서 확인하세요');
 }
 
-function buildHead(){let h='<th class="cb"></th>';DISP.forEach(c=>h+='<th title="'+esc(c.label)+'">'+esc(c.label)+'</th>');document.getElementById('head').innerHTML=h;}
+function buildHead(){let h='<th class="cb"></th>';DISP.forEach(c=>{if(c.vis)h+='<th title="'+esc(c.label)+'">'+esc(c.label)+'</th>';});document.getElementById('head').innerHTML=h;}
+function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
+function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
+document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;buildHead();render();}});
+document.getElementById('colPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-mv]');if(!b)return;const i=+b.dataset.mv,j=i+(+b.dataset.d);if(j<0||j>=DISP.length)return;const t=DISP[i];DISP[i]=DISP[j];DISP[j]=t;buildColPanel();buildHead();render();});
 
 function renderCards(){
   const all=DATA.length,ableN=DATA.filter(able).length;
@@ -280,7 +299,7 @@ function render(){
   const rows=visible(),tb=document.getElementById('rows');
   tb.innerHTML=rows.map(d=>{
     let tds='<td class="cb"></td>';
-    DISP.forEach(c=>{const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'">'+disp+'</td>';});
+    DISP.forEach(c=>{if(!c.vis)return;const v=d.row[c.idx];const isNum=typeof v==='number';let disp=cellVal(v);let cls=isNum?'num':(isLeft(c.label)?'left':'');if(c.idx===COL.정산상황)disp=jeongBadge(d.jeong);tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v))+'">'+disp+'</td>';});
     return '<tr>'+tds+'</tr>';
   }).join('');
   document.getElementById('stat').innerHTML='표시 <b>'+rows.length+'</b>건 / 전체 '+DATA.length+'건';
