@@ -117,7 +117,8 @@ td.left{text-align:left;}
 <header><h1>공정관리 현황</h1><span class="sub">지하시설물 통신관로 조사·측량 · 정산 포함</span></header>
 <div class="nav">
   <button class="on" data-t="add">사업추가</button>
-  <button data-t="manage">사업관리</button>
+  <button data-t="manage">리스트관리</button>
+  <button data-t="process">사업 공정관리</button>
   <button data-t="settle">정산리스트</button>
 </div>
 
@@ -138,7 +139,7 @@ td.left{text-align:left;}
       <p class="note">※ 파일은 브라우저 안에서만 처리됩니다(서버 전송 없음). 발주처(SKT·SKB·원인자)가 있는 모든 사업을, 엑셀의 모든 칸 그대로 불러옵니다.</p>
       <div id="upResult" class="hide" style="margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <span id="upMsg" style="font-size:14px;color:#166534;"></span>
-        <button class="btn btn-primary" onclick="confirmPicks()">선택한 사업 → 사업관리로</button>
+        <button class="btn btn-primary" onclick="confirmPicks()">선택한 사업 → 리스트관리로</button>
       </div>
       <div id="upPreview" class="hide" style="margin-top:14px;"></div>
     </div>
@@ -185,6 +186,16 @@ td.left{text-align:left;}
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
       <p class="note">칸의 <b>글자를 클릭</b>하면 전체 내용 팝업, 칸의 <b>빈 곳(또는 줄 빈 부분)을 클릭</b>하면 그 줄이 펼쳐져 값을 수정·입력할 수 있어요(현재는 이 화면에만 반영). 머리글 글자=정렬(▲▼), ▾=값 필터, 경계선 드래그=너비 조절. 표 클릭 후 ← → ↑↓ 키로 이동.</p>
+    </div>
+  </div>
+
+  <!-- 사업 공정관리 -->
+  <div class="page" id="p-process">
+    <div class="card">
+      <div style="text-align:center;padding:52px 16px;color:#64748b;">
+        <div style="font-size:18px;font-weight:600;color:#1e293b;margin-bottom:8px;">사업 공정관리</div>
+        <div style="font-size:14px;line-height:1.6;">여기에 들어갈 내용을 정해주세요.<br>예) 진행상황별 보드(칸반), 주간 보고, 착수·완료 승인 흐름, 공정 일정표 등</div>
+      </div>
     </div>
   </div>
 
@@ -252,10 +263,10 @@ function toast(msg,err){const t=document.getElementById('toast');t.textContent=m
 document.querySelector('.nav').addEventListener('click',e=>{
   if(!e.target.dataset.t)return;
   [...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b===e.target));
-  ['add','manage','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
+  ['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
 });
 function segMode(m){document.getElementById('seg-up').classList.toggle('on',m==='up');document.getElementById('seg-in').classList.toggle('on',m==='in');document.getElementById('mode-up').classList.toggle('hide',m!=='up');document.getElementById('mode-in').classList.toggle('hide',m!=='in');}
-function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));}
+function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));}
 
 const DEF=['순번','시행시기','발주처','구분','사업구분','공사협력사','행정구역','공구명','실측거리(km)','측량구분','Eng 번호','탱고 업로딩 거리','지사','진행상황','정산상황','정산금액','비고'];
 function setupDefault(){DISP=DEF.map((l,i)=>({idx:i,label:l,vis:true}));COL={순번:0,시행:1,발주처:2,구분:3,사업구분:4,협력사:5,행정:6,공구명:7,실측:8,측량구분:9,eng:10,탱고거리:11,지사:12,진행:13,정산상황:14,정산금액:15};loaded=true;}
@@ -301,7 +312,7 @@ function addManual(){
   item.row=row;DATA.push(item);
   buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();
   ['iGubun','iRegion','iWork','iPartner','iEng','iSil','iTango','iJin'].forEach(id=>document.getElementById(id).value='');
-  toast('추가했습니다 · 사업관리 탭에서 확인하세요');
+  toast('추가했습니다 · 리스트관리 탭에서 확인하세요');
 }
 
 function defW(l){if(l.includes('공구')||l.includes('심사정보'))return 280;if(l.includes('비고')||l.includes('공사명'))return 160;if(l.includes('담당')||l.toLowerCase().includes('eng')||l.includes('성과심사')||l.includes('업로딩 유무'))return 140;return 105;}
@@ -364,7 +375,7 @@ function renderPreview(){
   DATA.forEach((d,i)=>{h+='<tr><td class="cb"><input type="checkbox" data-pk="'+i+'"'+(d._pick?' checked':'')+'></td><td>'+esc(cellVal(d.row[COL.순번]))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td><td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.method)+'</td><td class="num">'+km(d.tango)+'</td><td>'+esc(d.jin)+'</td><td>'+jeongBadge(d.jeong)+'</td></tr>';});
   h+='</tbody></table></div>';box.innerHTML=h;box.classList.remove('hide');
 }
-function confirmPicks(){const sel=DATA.filter(d=>d._pick);if(!sel.length){toast('선택된 사업이 없습니다',true);return;}DATA=sel;colFilter={};sortCI=null;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();goTab('manage');toast(sel.length+'건을 사업관리로 가져왔습니다');}
+function confirmPicks(){const sel=DATA.filter(d=>d._pick);if(!sel.length){toast('선택된 사업이 없습니다',true);return;}DATA=sel;colFilter={};sortCI=null;buildHead();buildColPanel();buildFilters();renderCards();render();renderSettle();goTab('manage');toast(sel.length+'건을 리스트관리로 가져왔습니다');}
 
 let sBaalF='';
 function sVisible(){
