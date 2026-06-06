@@ -89,6 +89,27 @@ tr.rowsel td{background:#fff3cd;}
 .ef input{padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#1e293b;}
 .ef input:focus{outline:none;border-color:#EA002C;}
 .eb-btns{display:flex;gap:8px;margin-top:12px;}
+.proc-h{font-size:14px;font-weight:500;color:#EA002C;margin-bottom:12px;}
+.pchip{border:1px solid #cbd5e1;background:#fff;color:#1e293b;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;}
+.pchip b{font-weight:500;color:#94a3b8;margin-left:3px;}
+.pchip.on{border:1.5px solid #EA002C;color:#EA002C;background:#fdecee;}
+.pchip.on b{color:#EA002C;}
+.pchip.sm{font-size:12px;padding:6px 10px;font-weight:400;margin:0 6px 6px 0;}
+.psublbl{width:100%;font-size:11px;color:#94a3b8;margin:12px 0 7px;}
+.pcounts{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-top:8px;}
+.pcl{font-size:11px;color:#64748b;margin-bottom:8px;}
+.pcgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pcbox{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px;cursor:pointer;text-align:center;color:#1e293b;}
+.pcbox.on{border:1.5px solid #EA002C;background:#fdecee;color:#EA002C;}
+.pcbox span{font-size:11px;}
+.pcn{font-size:18px;font-weight:500;}
+.pcn i{font-size:11px;font-weight:400;font-style:normal;}
+.pdh{font-size:13px;font-weight:500;margin-bottom:10px;}
+.pdlist{max-height:520px;overflow:auto;}
+.pdr{display:flex;justify-content:space-between;gap:8px;padding:7px 4px;border-bottom:0.5px solid #e2e8f0;font-size:12px;}
+.pdn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pdm{color:#64748b;flex:none;}
+.proc-empty{color:#94a3b8;font-size:13px;padding:8px 2px;}
 table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;}
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
@@ -191,12 +212,19 @@ td.left{text-align:left;}
 
   <!-- 사업 공정관리 -->
   <div class="page" id="p-process">
-    <div class="card">
-      <div style="text-align:center;padding:52px 16px;color:#64748b;">
-        <div style="font-size:18px;font-weight:600;color:#1e293b;margin-bottom:8px;">사업 공정관리</div>
-        <div style="font-size:14px;line-height:1.6;">여기에 들어갈 내용을 정해주세요.<br>예) 진행상황별 보드(칸반), 주간 보고, 착수·완료 승인 흐름, 공정 일정표 등</div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:start;">
+      <div class="card" id="pLeft">
+        <div class="proc-h">공정별 현황</div>
+        <div id="pStages" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <div id="pSubs" style="display:flex;flex-wrap:wrap;align-items:center;"></div>
+        <div id="pCounts"></div>
+      </div>
+      <div class="card">
+        <div class="proc-h" style="color:#1e293b;">세부 내용 · 세부리스트</div>
+        <div id="pDetail"></div>
       </div>
     </div>
+    <p class="note">단계를 누르면 세부 진행상태가 펼쳐지고, 세부상태를 누르면 발주처별 건수와 오른쪽 세부리스트가 표시됩니다. 건수(SKT·SKB·원인자)를 누르면 그 발주처로 좁혀집니다. (단계 분류 규칙은 진행상황 값 기준이며, 세부 규칙은 조정 가능합니다.)</p>
   </div>
 
   <!-- 정산리스트 -->
@@ -246,7 +274,7 @@ function calcCost(exposedKm,probeKm,method,jisa){
 }
 const won=n=>Math.round(n).toLocaleString('ko-KR')+' 원';
 const km=n=>(n==null||n==='')?'—':Number(n).toFixed(3);
-let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1,colFilter={},cfSrc=null,colWidth={},idSeq=0;
+let DATA=[],DISP=[],COL={},loaded=false,sortCI=null,sortDir=1,colFilter={},cfSrc=null,colWidth={},idSeq=0,pStage='',pSub='',pBaal='';
 function able(d){return (d.method==='실시간'||d.method==='탐사')&&typeof d.tango==='number'&&d.tango>0;}
 function estAmt(d){const ex=d.method==='실시간'?d.tango:0;return calcCost(ex,d.tango,d.method==='실시간'?'realtime':'probe',d.jisa).total;}
 function cellVal(v){if(v==null||v==='')return '';if(typeof v==='number')return Number.isInteger(v)&&Math.abs(v)>=1000?v.toLocaleString('ko-KR'):String(v);return String(v);}
@@ -264,9 +292,29 @@ document.querySelector('.nav').addEventListener('click',e=>{
   if(!e.target.dataset.t)return;
   [...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b===e.target));
   ['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
+  if(e.target.dataset.t==='process')renderProcess();
 });
 function segMode(m){document.getElementById('seg-up').classList.toggle('on',m==='up');document.getElementById('seg-in').classList.toggle('on',m==='in');document.getElementById('mode-up').classList.toggle('hide',m!=='up');document.getElementById('mode-in').classList.toggle('hide',m!=='in');}
-function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));}
+function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();}
+const P_STAGES=[{name:'실시간',kw:['실시간']},{name:'후측량',kw:['후측량']},{name:'탐사측량',kw:['탐사']},{name:'탱고',kw:['탱고','업로딩']},{name:'성과심사',kw:['심사']},{name:'정산',kw:['정산']}];
+function pStageOf(j){j=j||'';for(const s of P_STAGES){if(s.kw.some(k=>j.includes(k)))return s.name;}return '기타';}
+function pBaalKey(b){b=b||'';if(/SKT/i.test(b))return 'SKT';if(/SKB/i.test(b))return 'SKB';if(b.includes('원인자'))return '원인자';return '';}
+function pGroups(){const g={};DATA.forEach(d=>{const st=pStageOf(d.jin);const G=g[st]||(g[st]={__n:0,subs:{}});G.__n++;const sub=(d.jin&&d.jin.trim())?d.jin.trim():'(미입력)';const s=G.subs[sub]||(G.subs[sub]={n:0,SKT:0,SKB:0,'원인자':0,rows:[]});s.n++;const bk=pBaalKey(d.baal);if(bk)s[bk]++;s.rows.push(d);});return g;}
+function renderProcess(){
+  const ps=document.getElementById('pStages');if(!ps)return;
+  if(!DATA.length){ps.innerHTML='<div class="proc-empty">리스트를 먼저 불러오세요 (사업추가 → 선택 → 리스트관리).</div>';document.getElementById('pSubs').innerHTML='';document.getElementById('pCounts').innerHTML='';document.getElementById('pDetail').innerHTML='';return;}
+  const g=pGroups();
+  const order=P_STAGES.map(s=>s.name).concat('기타').filter(n=>g[n]);
+  if(!order.includes(pStage))pStage=order[0];
+  const subs=g[pStage]?Object.keys(g[pStage].subs):[];
+  if(!subs.includes(pSub))pSub=subs[0]||'';
+  ps.innerHTML=order.map(n=>'<button data-pst="'+esc(n)+'" class="pchip'+(n===pStage?' on':'')+'">'+esc(n)+'<b>'+g[n].__n+'</b></button>').join('');
+  document.getElementById('pSubs').innerHTML='<div class="psublbl">'+esc(pStage)+' 세부 진행상태</div>'+subs.map(x=>'<button data-psub="'+esc(x)+'" class="pchip sm'+(x===pSub?' on':'')+'">'+esc(x)+'<b>'+g[pStage].subs[x].n+'</b></button>').join('');
+  renderPCounts(g);renderPDetail(g);
+}
+function renderPCounts(g){g=g||pGroups();const s=g[pStage]&&g[pStage].subs[pSub];const box=document.getElementById('pCounts');if(!s){box.innerHTML='';return;}box.innerHTML='<div class="pcounts"><div class="pcl">'+esc(pSub)+' · 발주처별 건수</div><div class="pcgrid">'+['SKT','SKB','원인자'].map(b=>'<button data-pbaal="'+b+'" class="pcbox'+(b===pBaal?' on':'')+'"><span>'+b+'</span><div class="pcn">'+s[b]+'<i>건</i></div></button>').join('')+'</div></div>';}
+function renderPDetail(g){g=g||pGroups();const s=g[pStage]&&g[pStage].subs[pSub];const right=document.getElementById('pDetail');if(!s){right.innerHTML='<div class="proc-empty">왼쪽에서 세부 진행상태를 선택하세요.</div>';return;}let rows=s.rows;if(pBaal)rows=rows.filter(d=>pBaalKey(d.baal)===pBaal);right.innerHTML='<div class="pdh">'+esc(pStage)+' · '+esc(pSub)+(pBaal?' · '+pBaal:'')+' · '+rows.length+'건</div><div class="pdlist">'+rows.map(d=>'<div class="pdr"><span class="pdn" title="'+esc(d.work)+'">'+esc(d.work||'(공구명 없음)')+'</span><span class="pdm">'+esc(d.region||'')+(d.baal?' · '+esc(d.baal):'')+'</span></div>').join('')+'</div>';}
+document.getElementById('pLeft').addEventListener('click',e=>{const st=e.target.closest('[data-pst]');if(st){pStage=st.dataset.pst;pSub='';pBaal='';renderProcess();return;}const su=e.target.closest('[data-psub]');if(su){pSub=su.dataset.psub;pBaal='';renderProcess();return;}const b=e.target.closest('[data-pbaal]');if(b){pBaal=(pBaal===b.dataset.pbaal)?'':b.dataset.pbaal;const g=pGroups();renderPCounts(g);renderPDetail(g);return;}});
 
 const DEF=['순번','시행시기','발주처','구분','사업구분','공사협력사','행정구역','공구명','실측거리(km)','측량구분','Eng 번호','탱고 업로딩 거리','지사','진행상황','정산상황','정산금액','비고'];
 function setupDefault(){DISP=DEF.map((l,i)=>({idx:i,label:l,vis:true}));COL={순번:0,시행:1,발주처:2,구분:3,사업구분:4,협력사:5,행정:6,공구명:7,실측:8,측량구분:9,eng:10,탱고거리:11,지사:12,진행:13,정산상황:14,정산금액:15};loaded=true;}
