@@ -96,7 +96,7 @@ tr.rowsel td{background:#fff3cd;}
 .pchip.on b{color:#EA002C;}
 .pchip.sm{font-size:12px;padding:6px 10px;font-weight:400;margin:0 6px 6px 0;}
 .psublbl{width:100%;font-size:11px;color:#94a3b8;margin:12px 0 7px;}
-.pcounts{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-top:8px;}
+.pcounts{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-top:8px;max-width:560px;}
 .pcl{font-size:11px;color:#64748b;margin-bottom:8px;}
 .pcgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .pcbox{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px;cursor:pointer;text-align:center;color:#1e293b;}
@@ -304,12 +304,12 @@ function renderProcess(){
   const ps=document.getElementById('pStages');if(!ps)return;
   if(!DATA.length){ps.innerHTML='<div class="proc-empty">리스트를 먼저 불러오세요 (사업추가 → 선택 → 리스트관리).</div>';document.getElementById('pSubs').innerHTML='';document.getElementById('pCounts').innerHTML='';document.getElementById('pDetail').innerHTML='';return;}
   const g=pGroups();
-  const order=P_STAGES.map(s=>s.name).concat('기타').filter(n=>g[n]);
+  const order=P_STAGES.map(s=>s.name).concat(g['기타']?['기타']:[]);
   if(!order.includes(pStage))pStage=order[0];
   const subs=g[pStage]?Object.keys(g[pStage].subs):[];
   if(!subs.includes(pSub))pSub=subs[0]||'';
-  ps.innerHTML=order.map(n=>'<button data-pst="'+esc(n)+'" class="pchip'+(n===pStage?' on':'')+'">'+esc(n)+'<b>'+g[n].__n+'</b></button>').join('');
-  document.getElementById('pSubs').innerHTML='<div class="psublbl">'+esc(pStage)+' 세부 진행상태</div>'+subs.map(x=>'<button data-psub="'+esc(x)+'" class="pchip sm'+(x===pSub?' on':'')+'">'+esc(x)+'<b>'+g[pStage].subs[x].n+'</b></button>').join('');
+  ps.innerHTML=order.map(n=>'<button data-pst="'+esc(n)+'" class="pchip'+(n===pStage?' on':'')+'">'+esc(n)+'<b>'+((g[n]&&g[n].__n)||0)+'</b></button>').join('');
+  document.getElementById('pSubs').innerHTML='<div class="psublbl">'+esc(pStage)+' 세부 진행상태</div>'+(subs.length?subs.map(x=>'<button data-psub="'+esc(x)+'" class="pchip sm'+(x===pSub?' on':'')+'">'+esc(x)+'<b>'+g[pStage].subs[x].n+'</b></button>').join(''):'<span class="proc-empty">해당 단계 사업이 없습니다.</span>');
   renderPCounts(g);renderPDetail(g);
 }
 function renderPCounts(g){g=g||pGroups();const s=g[pStage]&&g[pStage].subs[pSub];const box=document.getElementById('pCounts');if(!s){box.innerHTML='';return;}box.innerHTML='<div class="pcounts"><div class="pcl">'+esc(pSub)+' · 발주처별 건수</div><div class="pcgrid">'+['SKT','SKB','원인자'].map(b=>'<button data-pbaal="'+b+'" class="pcbox'+(b===pBaal?' on':'')+'"><span>'+b+'</span><div class="pcn">'+s[b]+'<i>건</i></div></button>').join('')+'</div></div>';}
