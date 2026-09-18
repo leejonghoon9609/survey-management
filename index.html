@@ -67,7 +67,13 @@ header .spacer{flex:1;}
 .thf{color:#94a3b8;font-size:15px;cursor:pointer;padding:0 2px;flex:none;}
 .thf.fon{color:#EA002C;font-weight:700;}
 #mtable{table-layout:fixed;}
-#mtable thead th{position:relative;padding-right:14px;}
+#mtable thead th{position:relative;padding-right:14px;cursor:grab;}
+#mtable thead th.dragsrc{opacity:.4;}
+#mtable thead th.dragsrc .thtxt{color:#EA002C;}
+.dropline{position:fixed;width:3px;background:#EA002C;z-index:350;pointer-events:none;border-radius:2px;}
+.dragghost{position:fixed;z-index:360;pointer-events:none;background:#EA002C;color:#fff;font-size:12px;font-weight:500;padding:5px 11px;border-radius:7px;opacity:.95;white-space:nowrap;transform:translate(12px,-50%);max-width:260px;overflow:hidden;text-overflow:ellipsis;}
+body.coldrag{cursor:grabbing !important;}
+body.coldrag *{cursor:grabbing !important;}
 .thin{display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;}
 #mtable .thtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;}
 .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
@@ -306,7 +312,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note">줄을 <b>더블클릭</b>하면 그 줄이 펼쳐져 값을 수정할 수 있어요. 칸의 글자를 한 번 클릭하면 전체 내용 팝업. 머리글 글자=정렬(▲▼), ▾=값 필터, 경계선 드래그=너비 조절. 표 클릭 후 ← → ↑↓ 키로 이동. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
+      <p class="note">줄을 <b>더블클릭</b>하면 그 줄이 펼쳐져 값을 수정할 수 있어요. 칸의 글자를 한 번 클릭하면 전체 내용 팝업. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 표 클릭 후 ← → ↑↓ 키로 이동. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
     </div>
   </div>
 
@@ -381,8 +387,9 @@ td.left{text-align:left;}
    BUILD 02: SKT·SKB 측량공정진행현황 양식 지원 (다중 시트, 시트 선택,
              컬럼 자동 통합, 발주처 자동 판정, 정산상황 정규화)
    BUILD 03: 빌드 번호를 탭 줄 오른쪽으로 이동 (스크롤해도 항상 보임)
+   BUILD 04: 표 머리글을 끌어서 컬럼 순서 바꾸기 (드래그 이동)
    ======================================================================== */
-const BUILD_NO='03';
+const BUILD_NO='04';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -958,7 +965,7 @@ function buildHead(){
   let cg='<col style="width:36px">',total=36;
   vis.forEach(o=>{const w=colWidth[o.c.idx]||defW(o.c.label);total+=w;cg+='<col data-ci="'+o.i+'" style="width:'+w+'px">';});
   let h='<th class="cb"><input type="checkbox" id="mAll" title="전체선택"></th>';
-  vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
+  vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬 · 끌면 순서 이동">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
 }
@@ -1183,7 +1190,9 @@ document.getElementById('upPreview').addEventListener('change',e=>{
     const a=document.getElementById('pvAll');if(a)a.checked=(c===DATA.length);markDirty();
   }
 });
+let justDragged=false;
 document.getElementById('head').addEventListener('click',e=>{
+  if(justDragged)return;
   if(e.target.closest('[data-rz]'))return;
   const f=e.target.closest('[data-fi]');if(f){e.stopPropagation();openColFilter(+f.dataset.fi,f);return;}
   const th=e.target.closest('th[data-ci]');if(!th)return;
@@ -1199,6 +1208,77 @@ document.getElementById('head').addEventListener('mousedown',e=>{
   function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';markDirty();}
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
 });
+/* ---- 머리글을 끌어서 컬럼 순서 바꾸기 ---- */
+function moveCol(a,b,before){
+  if(a===b)return;
+  const keep=(sortCI!=null&&DISP[sortCI])?DISP[sortCI]:null;
+  const item=DISP.splice(a,1)[0];
+  let pos=before?b:b+1;
+  if(a<pos)pos--;
+  pos=Math.max(0,Math.min(pos,DISP.length));
+  DISP.splice(pos,0,item);
+  sortCI=keep?DISP.indexOf(keep):null;
+  if(sortCI===-1)sortCI=null;
+  buildColPanel();buildHead();render(true);markDirty();
+}
+(function(){
+  const head=document.getElementById('head');
+  let st=null,dragging=false,line=null,ghost=null,tgt=null;
+  const wrapEl=()=>document.querySelector('.mgr .tblwrap');
+  head.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    if(e.target.closest('[data-rz]')||e.target.closest('[data-fi]'))return;
+    const th=e.target.closest('th[data-ci]');if(!th)return;
+    st={i:+th.dataset.ci,x:e.clientX,y:e.clientY,th:th};
+    document.addEventListener('mousemove',mv);
+    document.addEventListener('mouseup',up);
+  });
+  function mv(e){
+    if(!st)return;
+    if(!dragging){
+      if(Math.abs(e.clientX-st.x)<6)return;
+      e.preventDefault();
+      dragging=true;
+      document.body.classList.add('coldrag');
+      st.th.classList.add('dragsrc');
+      line=document.createElement('div');line.className='dropline';document.body.appendChild(line);
+      ghost=document.createElement('div');ghost.className='dragghost';
+      ghost.textContent=DISP[st.i]?DISP[st.i].label:'';document.body.appendChild(ghost);
+    }
+    ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
+    const w=wrapEl();
+    if(w){const r=w.getBoundingClientRect();
+      if(e.clientX<r.left+70)w.scrollLeft-=20;
+      else if(e.clientX>r.right-70)w.scrollLeft+=20;}
+    const hy=st.th.getBoundingClientRect().top+6;
+    const el=document.elementFromPoint(Math.max(1,Math.min(e.clientX,window.innerWidth-2)),hy);
+    const th=(el&&el.closest)?el.closest('th[data-ci]'):null;
+    if(th&&w){
+      const r=th.getBoundingClientRect(),wr=w.getBoundingClientRect();
+      const before=e.clientX<r.left+r.width/2;
+      tgt={i:+th.dataset.ci,before:before};
+      let x=before?r.left:r.right;
+      x=Math.max(wr.left,Math.min(x,wr.right));
+      line.style.display='block';line.style.left=(x-1)+'px';
+      line.style.top=wr.top+'px';line.style.height=wr.height+'px';
+    }else{tgt=null;if(line)line.style.display='none';}
+  }
+  function up(){
+    document.removeEventListener('mousemove',mv);
+    document.removeEventListener('mouseup',up);
+    if(dragging){
+      st.th.classList.remove('dragsrc');
+      document.body.classList.remove('coldrag');
+      if(line)line.remove();
+      if(ghost)ghost.remove();
+      const from=st.i;
+      if(tgt&&tgt.i!==from){const nm=DISP[from]?DISP[from].label:'';moveCol(from,tgt.i,tgt.before);toast('"'+nm+'" 칸을 옮겼습니다');}
+      justDragged=true;setTimeout(()=>{justDragged=false;},0);
+    }
+    st=null;dragging=false;line=null;ghost=null;tgt=null;
+  }
+})();
+
 function openColFilter(i,anchor){
   const srcIdx=DISP[i].idx;cfSrc=srcIdx;
   const vals=[...new Set(DATA.map(d=>fval(cellVal(d.row[srcIdx],srcIdx)||d.row[srcIdx])))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
