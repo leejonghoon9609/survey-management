@@ -110,9 +110,15 @@ body.coldrag *{cursor:grabbing !important;}
 .cell-x{cursor:pointer;color:#64748b;font-size:18px;line-height:1;padding:2px 6px;}
 .cell-b{padding:16px;overflow:auto;font-size:14px;color:#1e293b;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
 tr.rowsel td{background:#fff3cd;}
-#mtable td.editing{padding:2px 4px;background:#fff7e0;overflow:visible;}
-.cellinp{width:100%;box-sizing:border-box;border:1.5px solid #EA002C;border-radius:5px;padding:4px 6px;font-family:inherit;font-size:13px;color:#1e293b;background:#fff;outline:none;text-align:inherit;}
-.cellinp:focus{box-shadow:0 0 0 3px rgba(234,0,44,.15);}
+#editPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:420;display:flex;align-items:center;justify-content:center;padding:20px;}
+.edit-card{background:#fff;border-radius:12px;max-width:640px;width:100%;border:1px solid #94a3b8;overflow:hidden;}
+.edit-sub{padding:8px 16px 0;font-size:12px;color:#64748b;line-height:1.5;word-break:break-all;}
+.edit-b{padding:12px 16px;}
+.edit-b textarea{width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;line-height:1.6;color:#1e293b;resize:vertical;outline:none;}
+.edit-b textarea:focus{border-color:#EA002C;box-shadow:0 0 0 3px rgba(234,0,44,.12);}
+.edit-f{display:flex;align-items:center;gap:8px;padding:0 16px 14px;flex-wrap:wrap;}
+#mtable tbody td.justedited{animation:cellflash 1.1s ease-out;}
+@keyframes cellflash{0%{background:#fff3cd;}100%{background:transparent;}}
 tr.hasissue td.cb{box-shadow:inset 3px 0 0 #dc2626;}
 .editrow td{background:#fff7e0;padding:0;}
 .editbox{position:sticky;left:0;width:min(980px,90vw);padding:14px 16px;box-sizing:border-box;}
@@ -371,7 +377,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note"><b>칸을 더블클릭하면 그 자리에서 바로 값을 입력</b>할 수 있어요 (Enter=저장 후 아래 칸, Tab=저장 후 옆 칸, Esc=취소). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
+      <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
     </div>
   </div>
 
@@ -435,6 +441,17 @@ td.left{text-align:left;}
 
 </div>
 <div id="colFilterPop" class="hide"></div>
+<div id="editPop" class="hide"><div class="edit-card">
+  <div class="cell-h"><b id="epTitle"></b><span class="cell-x" id="epX">✕</span></div>
+  <div class="edit-sub" id="epSub"></div>
+  <div class="edit-b"><textarea id="epVal" rows="5" spellcheck="false"></textarea></div>
+  <div class="edit-f">
+    <span class="note" id="epHint" style="margin:0;flex:1;"></span>
+    <button class="btn" id="epCancel" style="padding:7px 16px;">취소</button>
+    <button class="btn" id="epNext" style="padding:7px 16px;">저장 후 다음 줄 ↓</button>
+    <button class="btn btn-primary" id="epSave" style="padding:7px 20px;">저장</button>
+  </div>
+</div></div>
 <div id="cellPop" class="hide"><div class="cell-card"><div class="cell-h"><b id="cellPopT"></b><span class="cell-x" id="cellPopX">✕</span></div><div class="cell-b" id="cellPopB"></div></div></div>
 <div class="toast" id="toast"></div>
 
@@ -466,8 +483,10 @@ td.left{text-align:left;}
              + 한 번에 한 줄만 열려 화면이 밀리지 않음
    BUILD 16: 숨김(.hide)이 인라인 display 에 밀려 동작하지 않던 문제 수정
              — 입력 줄 3개와 업로드 결과 상자가 늘 펼쳐져 있던 원인
+   BUILD 17: 더블클릭하면 수정 창이 열림 (칸 안 입력 → 팝업 창으로 교체)
+             + 첫 클릭 팝업이 더블클릭을 가로채던 문제 수정
    ======================================================================== */
-const BUILD_NO='16';
+const BUILD_NO='17';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1228,6 +1247,15 @@ function rowHTML(d){
   });
   return '<tr data-id="'+d._id+'"'+(iss.length?' class="hasissue" title="점검: '+esc(iss.join(', '))+'"':'')+'>'+tds+'</tr>';
 }
+/* 값이 바뀌면 그 줄 전체를 다시 그린다 (소요일수처럼 따라 바뀌는 칸까지 반영) */
+function refreshRow(tr,d){
+  const tmp=document.createElement('tbody');
+  tmp.innerHTML=rowHTML(d);
+  const ntr=tmp.firstElementChild;if(!ntr)return;
+  tr.className=ntr.className;
+  if(ntr.title)tr.title=ntr.title;else tr.removeAttribute('title');
+  tr.innerHTML=ntr.innerHTML;
+}
 function statLine(){const sel=mRows.filter(d=>d._msel).length;document.getElementById('stat').innerHTML='표시 <b>'+mRows.length+'</b>건 / 전체 '+DATA.length+'건'+(mShown<mRows.length?' · 스크롤하면 더 표시':'')+(sel?' · <b style="color:#EA002C">선택 '+sel+'건</b>':'');}
 function updateSelUI(){const a=document.getElementById('mAll');if(a)a.checked=(mRows.length>0&&mRows.every(d=>d._msel));statLine();}
 function render(keep){
@@ -1335,89 +1363,98 @@ document.getElementById('rows').addEventListener('click',e=>{
   const cl=e.target.closest('[data-ecancel]');
   if(cl){const er=cl.closest('.editrow');const p=er&&er.previousElementSibling;if(p)p.classList.remove('rowsel');if(er)er.remove();return;}
   const tr=e.target.closest('tr');if(!tr||tr.classList.contains('editrow'))return;
+  /* 더블클릭이 오면 취소되도록 살짝 늦춘다 (팝업이 두 번째 클릭을 가로채던 문제) */
   const cv=e.target.closest('.cv');
-  if(cv&&cv.textContent.trim()!==''){const td=cv.closest('td');const vc=DISP.filter(c=>c.vis);const label=vc[td.cellIndex-1]?vc[td.cellIndex-1].label:'';openCellPop(label,cv.textContent.trim());return;}
-  toggleEditRow(tr);
+  const td=cv?cv.closest('td'):null;
+  const txt=cv?cv.textContent.trim():'';
+  cancelPendingClick();
+  clickTmr=setTimeout(()=>{
+    clickTmr=null;
+    if(cv&&txt!==''){
+      const vc=DISP.filter(c=>c.vis);
+      const label=(td&&vc[td.cellIndex-1])?vc[td.cellIndex-1].label:'';
+      openCellPop(label,txt);
+      return;
+    }
+    toggleEditRow(tr);
+  },230);
 });
-/* 칸을 더블클릭하면 그 자리에서 바로 값 입력 */
+/* ---- 칸을 더블클릭하면 수정 창이 열린다 ----
+   첫 클릭으로 "전체 내용 팝업"이 먼저 뜨면 두 번째 클릭을 그 팝업이 가로채
+   더블클릭이 표에 닿지 않았다. 그래서 한 번 클릭 동작은 살짝 늦춰 두고,
+   그 사이에 더블클릭이 오면 취소한다. */
+let clickTmr=null;
+function cancelPendingClick(){if(clickTmr){clearTimeout(clickTmr);clickTmr=null;}}
 document.getElementById('rows').addEventListener('dblclick',e=>{
   if(e.target.closest('td.cb'))return;
-  const td=e.target.closest('td');const tr=e.target.closest('tr');
+  cancelPendingClick();
+  const td=e.target.closest('td'),tr=e.target.closest('tr');
   if(!td||!tr||tr.classList.contains('editrow'))return;
   closeCellPop();
-  /* 첫 클릭으로 펼쳐진 줄 수정창은 닫는다 */
   const nx=tr.nextElementSibling;
   if(nx&&nx.classList.contains('editrow')){nx.remove();tr.classList.remove('rowsel');}
-  startCellEdit(td);
+  openEditPop(tr,td);
 });
 function colOfTd(td){const vc=DISP.filter(c=>c.vis);return vc[td.cellIndex-1]||null;}
-function startCellEdit(td){
-  if(!td||td.classList.contains('cb')||td.querySelector('input'))return;
-  const tr=td.closest('tr');if(!tr)return;
+
+let EP=null;   /* {id, idx, label} */
+function openEditPop(tr,td){
   const d=DATA.find(x=>String(x._id)===String(tr.dataset.id));if(!d)return;
   const c=colOfTd(td);if(!c)return;
   if(COL.소요일수>=0&&c.idx===COL.소요일수){toast('소요일수는 요청일과 Tango업로드로 자동 계산돼요',true);return;}
+  EP={id:d._id,idx:c.idx,label:c.label,ci:td.cellIndex};
   const v=d.row[c.idx];
-  const before=td.innerHTML,beforeCls=td.className;
-  const inp=document.createElement('input');
-  inp.type='text';inp.className='cellinp';
-  inp.value=(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
-  inp.setAttribute('aria-label',c.label);
-  td.innerHTML='';td.appendChild(inp);td.classList.add('editing');
-  inp.focus();inp.select();
-  let done=false;
-  function finish(save){
-    if(done)return true;done=true;
-    td.classList.remove('editing');td.className=beforeCls;
-    if(!save){td.innerHTML=before;return false;}
-    let nv=inp.value;
-    if(nv.trim()==='')nv='';
-    else if(!noComma(c.idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(nv.trim())){const n=Number(nv.replace(/,/g,''));nv=isNaN(n)?nv:n;}
-    const old=d.row[c.idx];
-    const changed=String(old==null?'':old)!==String(nv);
-    d.row[c.idx]=nv;deriveItem(d);
-    if(changed){
-      markDup();
-      refreshRow(tr,d);        /* 소요일수처럼 따라 바뀌는 칸까지 다시 그림 */
-      renderCards();renderValidate();renderSettle();buildFilters();markDirty();
-    }else{
-      td.className=cellCls(d,c);
-      td.title=cellVal(d.row[c.idx],c.idx);
-      td.innerHTML=cellInner(d,c);
-    }
-    return changed;
-  }
-  const ci0=td.cellIndex;
-  inp.addEventListener('keydown',ev=>{
-    ev.stopPropagation();
-    if(ev.key==='Enter'){ev.preventDefault();finish(true);nextCell(tr,ci0,1,0);}
-    else if(ev.key==='Escape'){ev.preventDefault();finish(false);}
-    else if(ev.key==='Tab'){ev.preventDefault();finish(true);nextCell(tr,ci0,0,ev.shiftKey?-1:1);}
-  });
-  inp.addEventListener('blur',()=>finish(true));
-  inp.addEventListener('click',ev=>ev.stopPropagation());
-  inp.addEventListener('dblclick',ev=>ev.stopPropagation());
+  document.getElementById('epTitle').textContent=c.label;
+  document.getElementById('epSub').textContent=(d.work||'')+(d.eng?'  ·  '+d.eng:'');
+  const ta=document.getElementById('epVal');
+  ta.value=(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
+  document.getElementById('epHint').textContent='Enter = 저장 · Shift+Enter = 줄바꿈 · Esc = 취소';
+  document.getElementById('editPop').classList.remove('hide');
+  setTimeout(()=>{ta.focus();ta.select();},0);
 }
-function refreshRow(tr,d){
-  const tmp=document.createElement('tbody');
-  tmp.innerHTML=rowHTML(d);
-  const ntr=tmp.firstElementChild;if(!ntr)return;
-  tr.className=ntr.className;
-  if(ntr.title)tr.title=ntr.title;else tr.removeAttribute('title');
-  tr.innerHTML=ntr.innerHTML;
-}
-function nextCell(tr,ci0,dr,dc){
-  if(!tr)return;
-  let ntr=tr,ci=ci0+dc;
-  if(dr){
-    ntr=dr>0?tr.nextElementSibling:tr.previousElementSibling;
-    while(ntr&&ntr.classList.contains('editrow'))ntr=dr>0?ntr.nextElementSibling:ntr.previousElementSibling;
-    if(!ntr&&dr>0){moreRows();ntr=tr.nextElementSibling;}
+function closeEditPop(){document.getElementById('editPop').classList.add('hide');EP=null;}
+function epSave(){
+  if(!EP)return null;
+  const d=DATA.find(x=>String(x._id)===String(EP.id));if(!d){closeEditPop();return null;}
+  let nv=document.getElementById('epVal').value;
+  if(nv.trim()==='')nv='';
+  else if(!noComma(EP.idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(nv.trim())){
+    const n=Number(nv.replace(/,/g,''));nv=isNaN(n)?nv:n;
   }
-  if(!ntr)return;
+  const old=d.row[EP.idx];
+  const changed=String(old==null?'':old)!==String(nv);
+  d.row[EP.idx]=nv;deriveItem(d);
+  const tr=document.querySelector('#rows tr[data-id="'+d._id+'"]');
+  if(tr){
+    refreshRow(tr,d);
+    const td=tr.children[EP.ci];
+    if(td){td.classList.add('justedited');setTimeout(()=>td.classList.remove('justedited'),1200);}
+  }
+  if(changed){markDup();renderCards();renderValidate();renderSettle();buildFilters();markDirty();}
+  return {d:d,tr:tr,changed:changed};
+}
+document.getElementById('epSave').addEventListener('click',()=>{const r=epSave();closeEditPop();if(r&&r.changed)toast('수정 저장됨');});
+document.getElementById('epCancel').addEventListener('click',closeEditPop);
+document.getElementById('epX').addEventListener('click',closeEditPop);
+document.getElementById('editPop').addEventListener('click',e=>{if(e.target.id==='editPop')closeEditPop();});
+document.getElementById('epNext').addEventListener('click',()=>{
+  const r=epSave();if(!r){closeEditPop();return;}
+  const ci=EP?EP.ci:null,tr=r.tr;
+  closeEditPop();
+  if(!tr||ci==null)return;
+  let ntr=tr.nextElementSibling;
+  while(ntr&&ntr.classList.contains('editrow'))ntr=ntr.nextElementSibling;
+  if(!ntr){moreRows();ntr=tr.nextElementSibling;while(ntr&&ntr.classList.contains('editrow'))ntr=ntr.nextElementSibling;}
+  if(!ntr){toast('마지막 줄이에요');return;}
   const ntd=ntr.children[ci];
-  if(ntd&&!ntd.classList.contains('cb')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});startCellEdit(ntd);}
-}
+  if(ntd&&!ntd.classList.contains('cb')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});openEditPop(ntr,ntd);}
+});
+document.getElementById('epVal').addEventListener('keydown',e=>{
+  e.stopPropagation();
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const r=epSave();closeEditPop();if(r&&r.changed)toast('수정 저장됨');}
+  else if(e.key==='Escape'){e.preventDefault();closeEditPop();}
+});
+
 document.getElementById('btnBulk').addEventListener('click',()=>{
   if(barOpen('bulkBar')){toggleBar('bulkBar');return;}
   const n=DATA.filter(d=>d._msel).length;
@@ -1776,6 +1813,7 @@ document.getElementById('cellPop').addEventListener('click',e=>{if(e.target.id==
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   closeCellPop();closeColFilter();
+  if(!document.getElementById('editPop').classList.contains('hide'))closeEditPop();
   if(BARS.some(barOpen)){closeBars();syncToolbar();}
 });
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
