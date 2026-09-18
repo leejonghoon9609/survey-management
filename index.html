@@ -74,7 +74,11 @@ header .spacer{flex:1;}
 .tblwrap:focus{outline:2px solid #FFB400;outline-offset:-2px;}
 .colpanel{width:230px;flex:none;border:1px solid #94a3b8;border-radius:10px;background:#fff;max-height:calc(100vh - 300px);overflow:auto;padding:8px;}
 .colpanel.hide{display:none;}
-.cp-title{font-size:13px;font-weight:500;color:#475569;padding:4px 6px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
+.cp-title{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:#475569;padding:2px 4px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
+.cp-title .t{flex:1;}
+.cp-title button{border:1px solid #e2e8f0;background:#fff;border-radius:6px;padding:3px 8px;font-family:inherit;font-size:11.5px;cursor:pointer;color:#64748b;flex:none;}
+.cp-title button:hover{background:#f1f5f9;}
+.cp-title button.x{color:#dc2626;padding:3px 8px;font-size:13px;line-height:1;}
 .cp-all{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#EA002C;padding:2px 6px 8px;cursor:pointer;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
 .cp-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 6px;border-radius:6px;}
 .cp-row:hover{background:#f1f5f9;}
@@ -130,8 +134,6 @@ tr.rowsel td{background:#fff3cd;}
 .vp-save{display:flex;gap:8px;align-items:center;}
 .vp-save input{flex:1;padding:8px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;}
 .vp-save input:focus{outline:none;border-color:#EA002C;}
-.colpanel.inmodal{width:100%;max-height:none;border:none;padding:0;overflow:visible;}
-.colpanel.inmodal .cp-title{display:none;}
 #editPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:420;display:flex;align-items:center;justify-content:center;padding:20px;}
 .edit-card{background:#fff;border-radius:12px;max-width:640px;width:100%;border:1px solid #94a3b8;overflow:hidden;}
 .edit-sub{padding:8px 16px 0;font-size:12px;color:#64748b;line-height:1.5;word-break:break-all;}
@@ -411,6 +413,7 @@ td.left{text-align:left;}
         <span class="stat" id="bulkCnt"></span>
       </div>
       <div class="mgr">
+        <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
       <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
@@ -488,8 +491,7 @@ td.left{text-align:left;}
       <button class="btn btn-primary" id="vpSave" style="padding:7px 18px;">저장</button>
     </div>
     <p class="note" style="margin-top:6px;">표시할 칸·순서·너비, 발주처·지사·진행상황·정산상황·점검 필터, 검색어, 정렬, 값 필터가 함께 저장됩니다.</p>
-    <div class="vp-sec">표시할 칸 · 순서</div>
-    <div id="colPanel" class="colpanel inmodal"></div>
+    <p class="note" style="margin-top:10px;">칸을 켜고 끄거나 순서를 바꾸는 <b>「표시할 칸 · 순서」</b>는 이 창을 닫으면 표 왼쪽에 그대로 열려 있습니다.</p>
   </div>
 </div></div>
 <div id="editPop" class="hide"><div class="edit-card">
@@ -545,8 +547,10 @@ td.left{text-align:left;}
              + 표가 비면 이유와 "필터 모두 해제" 버튼을 보여줌
    BUILD 22: "기존 목록 교체" 없애고 누적만 남김 (기본값)
              + 중복 제외 · 목록 비우기 버튼
+   BUILD 23: 표시할 칸 목록을 표 왼쪽 자리로 되돌림 (창에는 보기 저장만)
+             + 칸 목록에 닫기 · 보기 설정 버튼
    ======================================================================== */
-const BUILD_NO='22';
+const BUILD_NO='23';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1334,15 +1338,28 @@ function buildHead(){
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
 }
-function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
-function toggleColPanel(){
-  const m=document.getElementById('viewPop');
-  const open=m.classList.contains('hide');
-  if(open){buildColPanel();renderViews();document.getElementById('vpName').value='';m.classList.remove('hide');}
-  else m.classList.add('hide');
-  syncToolbar();
+function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title"><span class="t">표시할 칸 · 순서</span><button data-cpv title="보기 저장·불러오기">보기 설정</button><button class="x" data-cpx title="칸 목록 닫기">✕</button></div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
+/* 「컬럼 설정」 = 표 왼쪽 칸 목록 + 보기 설정 창을 함께 연다.
+   창을 닫아도 칸 목록은 표 옆에 그대로 남는다. */
+function panelOpen(){return !document.getElementById('colPanel').classList.contains('hide');}
+function viewPopOpen(){return !document.getElementById('viewPop').classList.contains('hide');}
+function openViewPop(){
+  renderViews();document.getElementById('vpName').value='';
+  document.getElementById('viewPop').classList.remove('hide');syncToolbar();
 }
 function closeViewPop(){document.getElementById('viewPop').classList.add('hide');syncToolbar();}
+function closeColPanel(){document.getElementById('colPanel').classList.add('hide');syncToolbar();}
+function toggleColPanel(){
+  if(panelOpen()||viewPopOpen()){
+    document.getElementById('colPanel').classList.add('hide');
+    document.getElementById('viewPop').classList.add('hide');
+  }else{
+    buildColPanel();
+    document.getElementById('colPanel').classList.remove('hide');
+    openViewPop();
+  }
+  syncToolbar();
+}
 document.getElementById('vpX').addEventListener('click',closeViewPop);
 document.getElementById('viewPop').addEventListener('click',e=>{if(e.target.id==='viewPop')closeViewPop();});
 
@@ -1424,7 +1441,7 @@ function renderViews(){
 document.getElementById('vpList').addEventListener('click',e=>{
   const arr=loadViews();
   const go=e.target.closest('[data-vgo]');
-  if(go){const v=arr[+go.dataset.vgo];const hit=applyView(v);closeViewPop();
+  if(go){const v=arr[+go.dataset.vgo];const hit=applyView(v);closeViewPop();buildColPanel();
     if(v)toast('"'+v.name+'" 보기를 적용했습니다'+(hit?' · '+mRows.length+'건 표시':''));return;}
   const up=e.target.closest('[data-vup]');
   if(up){const i=+up.dataset.vup;if(!arr[i])return;
@@ -1450,6 +1467,8 @@ document.getElementById('vpSave').addEventListener('click',()=>{
 document.getElementById('vpName').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')document.getElementById('vpSave').click();});
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();markDirty();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();markDirty();}});
 document.getElementById('colPanel').addEventListener('click',e=>{
+  if(e.target.closest('[data-cpx]')){closeColPanel();return;}
+  if(e.target.closest('[data-cpv]')){openViewPop();return;}
   const x=e.target.closest('button[data-cx]');
   if(x){delCol(+x.dataset.cx);return;}
   const b=e.target.closest('button[data-mv]');if(!b)return;
@@ -1830,7 +1849,7 @@ function syncToolbar(){
   const on=(id,v)=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!v);};
   ['fJisa','fJin','fJeong','fIssue','sJisa'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!e.value);});
   const q=document.getElementById('search');if(q)q.classList.toggle('on',!!q.value.trim());
-  on('btnColPanel',!document.getElementById('viewPop').classList.contains('hide'));
+  on('btnColPanel',!document.getElementById('colPanel').classList.contains('hide')||!document.getElementById('viewPop').classList.contains('hide'));
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
   on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
