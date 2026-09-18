@@ -110,6 +110,25 @@ body.coldrag *{cursor:grabbing !important;}
 .cell-x{cursor:pointer;color:#64748b;font-size:18px;line-height:1;padding:2px 6px;}
 .cell-b{padding:16px;overflow:auto;font-size:14px;color:#1e293b;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
 tr.rowsel td{background:#fff3cd;}
+#viewPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:410;display:flex;align-items:center;justify-content:center;padding:20px;}
+.view-card{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:86vh;display:flex;flex-direction:column;border:1px solid #94a3b8;overflow:hidden;}
+.view-b{padding:0 16px 16px;overflow:auto;}
+.vp-sec{font-size:12px;font-weight:500;color:#EA002C;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;}
+.vp-row{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #e2e8f0;border-radius:9px;margin-bottom:6px;background:#fff;}
+.vp-row .nm{flex:1;font-size:13.5px;font-weight:500;color:#1e293b;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vp-row .nm:hover{color:#EA002C;}
+.vp-row .mt{font-size:11px;color:#94a3b8;flex:none;}
+.vp-row button{border:1px solid #e2e8f0;background:#fff;border-radius:6px;padding:4px 9px;font-family:inherit;font-size:12px;cursor:pointer;color:#64748b;flex:none;}
+.vp-row button:hover{background:#f1f5f9;}
+.vp-row .go{background:#EA002C;color:#fff;border-color:#EA002C;font-weight:500;padding:5px 14px;}
+.vp-row .go:hover{background:#c50025;}
+.vp-row .del{color:#dc2626;}
+.vp-empty{font-size:13px;color:#94a3b8;padding:6px 2px;}
+.vp-save{display:flex;gap:8px;align-items:center;}
+.vp-save input{flex:1;padding:8px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;}
+.vp-save input:focus{outline:none;border-color:#EA002C;}
+.colpanel.inmodal{width:100%;max-height:none;border:none;padding:0;overflow:visible;}
+.colpanel.inmodal .cp-title{display:none;}
 #editPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:420;display:flex;align-items:center;justify-content:center;padding:20px;}
 .edit-card{background:#fff;border-radius:12px;max-width:640px;width:100%;border:1px solid #94a3b8;overflow:hidden;}
 .edit-sub{padding:8px 16px 0;font-size:12px;color:#64748b;line-height:1.5;word-break:break-all;}
@@ -334,6 +353,7 @@ td.left{text-align:left;}
           <option value="지사">지사 미입력</option>
           <option value="구분">구분 미입력</option>
           <option value="중복">공사코드 중복</option>
+          <option value="hasdays">소요일수 있는 건만</option>
         </select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
         <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
@@ -381,7 +401,6 @@ td.left{text-align:left;}
         <span class="stat" id="bulkCnt"></span>
       </div>
       <div class="mgr">
-        <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
       <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
@@ -448,6 +467,21 @@ td.left{text-align:left;}
 
 </div>
 <div id="colFilterPop" class="hide"></div>
+<div id="viewPop" class="hide"><div class="view-card">
+  <div class="cell-h"><b>보기 설정</b><span class="cell-x" id="vpX">✕</span></div>
+  <div class="view-b">
+    <div class="vp-sec">저장된 보기</div>
+    <div id="vpList"></div>
+    <div class="vp-sec">지금 화면을 보기로 저장</div>
+    <div class="vp-save">
+      <input type="text" id="vpName" placeholder="예) 측량소요일정 확인" maxlength="30">
+      <button class="btn btn-primary" id="vpSave" style="padding:7px 18px;">저장</button>
+    </div>
+    <p class="note" style="margin-top:6px;">표시할 칸·순서·너비, 발주처·지사·진행상황·정산상황·점검 필터, 검색어, 정렬, 값 필터가 함께 저장됩니다.</p>
+    <div class="vp-sec">표시할 칸 · 순서</div>
+    <div id="colPanel" class="colpanel inmodal"></div>
+  </div>
+</div></div>
 <div id="editPop" class="hide"><div class="edit-card">
   <div class="cell-h"><b id="epTitle"></b><span class="cell-x" id="epX">✕</span></div>
   <div class="edit-sub" id="epSub"></div>
@@ -494,8 +528,10 @@ td.left{text-align:left;}
              + 첫 클릭 팝업이 더블클릭을 가로채던 문제 수정
    BUILD 18: 기존 목록 교체로 목록이 통째로 날아가던 사고 방지
              (건수 표시 · 교체 전 확인 · 직전 목록 되살리기 · 방식 기억)
+   BUILD 19: 보기 저장 — 컬럼 설정을 창으로 바꾸고 화면 세팅을 이름 붙여 보관
+             기본 보기 "측량소요일정 확인" 제공
    ======================================================================== */
-const BUILD_NO='18';
+const BUILD_NO='19';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -613,7 +649,6 @@ function uiObj(){
     colFilter:Object.keys(colFilter).map(k=>[k,[...colFilter[k]]]),
     sBaal:sBaalF, sJisa:v('sJisa'), sQ:v('sSearch'), month:v('month'), renum:ck('renum'),
     upmode:upMode(),
-    panel:!document.getElementById('colPanel').classList.contains('hide')
   };
 }
 function applyUI(u){
@@ -636,7 +671,7 @@ function applyUI(u){
   if(u.month)document.getElementById('month').value=u.month;
   const rn=document.getElementById('renum');if(rn&&u.renum!=null)rn.checked=!!u.renum;
   if(u.upmode){const r=document.querySelector('input[name=upmode][value="'+u.upmode+'"]');if(r)r.checked=true;}
-  if(u.panel){document.getElementById('colPanel').classList.remove('hide');buildColPanel();}
+
   if(curBaal)any=true;
   return any;
 }
@@ -1241,7 +1276,119 @@ function buildHead(){
   document.getElementById('head').innerHTML=h;
 }
 function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
-function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();syncToolbar();}
+function toggleColPanel(){
+  const m=document.getElementById('viewPop');
+  const open=m.classList.contains('hide');
+  if(open){buildColPanel();renderViews();document.getElementById('vpName').value='';m.classList.remove('hide');}
+  else m.classList.add('hide');
+  syncToolbar();
+}
+function closeViewPop(){document.getElementById('viewPop').classList.add('hide');syncToolbar();}
+document.getElementById('vpX').addEventListener('click',closeViewPop);
+document.getElementById('viewPop').addEventListener('click',e=>{if(e.target.id==='viewPop')closeViewPop();});
+
+/* ======================= 보기 저장 =======================
+   지금 화면의 칸 구성·필터·정렬을 이름 붙여 보관했다가 한 번에 되살린다.
+   칸은 위치(번호)가 아니라 이름으로 기억해서, 엑셀을 다시 올려도 그대로 적용된다. */
+const LS_VIEW='gongjeong_views_v1', LS_SEED='gongjeong_viewseed_v1';
+const SEED_VIEWS=[{
+  name:'측량소요일정 확인', at:0, seed:true,
+  cols:['시행시기','발주처(자동)','사업자','지역본부','지사','공사협력사','Eng 번호','공사명','공구명',
+        '측량 심사내역','실측거리 (정산거리)','측량방법','측량구분','요청일','Tango업로드','측량예정일',
+        '소요일수','소요기간','이슈사항'].map(l=>({l:l,v:true})),
+  widths:{},
+  f:{baal:'',jisa:'',jin:'',jeong:'',issue:'hasdays',q:'',sort:'소요일수',sortDir:-1,colFilter:[]}
+}];
+function loadViews(){
+  let arr=[];
+  try{const r=localStorage.getItem(LS_VIEW);if(r)arr=JSON.parse(r)||[];}catch(e){arr=[];}
+  if(!Array.isArray(arr))arr=[];
+  let seeded=false;try{seeded=localStorage.getItem(LS_SEED)==='1';}catch(e){}
+  if(!seeded){
+    SEED_VIEWS.forEach(sv=>{if(!arr.some(v=>v.name===sv.name))arr.push(JSON.parse(JSON.stringify(sv)));});
+    try{localStorage.setItem(LS_SEED,'1');localStorage.setItem(LS_VIEW,JSON.stringify(arr));}catch(e){}
+  }
+  return arr;
+}
+function saveViews(arr){try{localStorage.setItem(LS_VIEW,JSON.stringify(arr));}catch(e){toast('보기를 저장하지 못했습니다',true);}}
+function viewObj(name){
+  const g=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  const widths={};DISP.forEach(c=>{if(colWidth[c.idx])widths[c.label]=colWidth[c.idx];});
+  return {name:name,at:Date.now(),
+    cols:DISP.map(c=>({l:c.label,v:!!c.vis})),
+    widths:widths,
+    f:{baal:curBaal,jisa:g('fJisa'),jin:g('fJin'),jeong:g('fJeong'),issue:g('fIssue'),q:g('search'),
+       sort:(sortCI!=null&&DISP[sortCI])?DISP[sortCI].label:'',sortDir:sortDir,
+       colFilter:Object.keys(colFilter).map(k=>{const c=DISP.find(x=>x.idx===+k);return c?[c.label,[...colFilter[k]]]:null;}).filter(Boolean)}};
+}
+function applyView(v){
+  if(!v){toast('보기를 찾지 못했습니다',true);return;}
+  if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  let hit=0;
+  if(v.cols&&v.cols.length){
+    const left={};DISP.forEach(c=>{left[c.label]=c;});
+    const out=[];
+    v.cols.forEach(w=>{const c=left[w.l];if(c){c.vis=(w.v!==false);out.push(c);delete left[w.l];hit++;}});
+    DISP.forEach(c=>{if(left[c.label]){c.vis=false;out.push(c);}});
+    if(out.length===DISP.length)DISP=out;
+  }
+  colWidth={};
+  if(v.widths)Object.keys(v.widths).forEach(l=>{const c=DISP.find(x=>x.label===l);if(c)colWidth[c.idx]=v.widths[l];});
+  const f=v.f||{};
+  curBaal=f.baal||'';
+  [...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===curBaal));
+  const set=(id,val)=>{const e=document.getElementById(id);if(e)e.value=val||'';};
+  set('fJisa',f.jisa);set('fJin',f.jin);set('fJeong',f.jeong);set('fIssue',f.issue);
+  const q=document.getElementById('search');if(q)q.value=f.q||'';
+  colFilter={};
+  (f.colFilter||[]).forEach(e=>{if(!e||e.length!==2)return;const c=DISP.find(x=>x.label===e[0]);if(c)colFilter[c.idx]=new Set(e[1]);});
+  sortCI=null;sortDir=f.sortDir||1;
+  if(f.sort){const i=DISP.findIndex(x=>x.label===f.sort);if(i>=0)sortCI=i;}
+  buildColPanel();buildHead();render();renderSettle();syncToolbar();markDirty();
+  return hit;
+}
+function renderViews(){
+  const box=document.getElementById('vpList'),arr=loadViews();
+  if(!arr.length){box.innerHTML='<div class="vp-empty">아직 저장한 보기가 없어요. 아래에서 이름을 넣고 저장해 보세요.</div>';return;}
+  box.innerHTML=arr.map((v,i)=>{
+    const all=(v.cols||[]).filter(c=>c.v!==false);
+    const n=DISP.length?all.filter(c=>DISP.some(x=>x.label===c.l)).length:all.length;
+    const t=v.at?new Date(v.at):null,p=x=>String(x).padStart(2,'0');
+    const when=t?(t.getMonth()+1)+'/'+t.getDate()+' '+p(t.getHours())+':'+p(t.getMinutes()):'기본';
+    return '<div class="vp-row"><span class="nm" data-vgo="'+i+'" title="눌러서 적용">'+esc(v.name)+'</span>'+
+      '<span class="mt">'+n+'칸 · '+when+'</span>'+
+      '<button class="go" data-vgo="'+i+'">적용</button>'+
+      '<button data-vup="'+i+'" title="지금 화면으로 덮어쓰기">덮어쓰기</button>'+
+      '<button class="del" data-vdel="'+i+'" title="삭제">✕</button></div>';
+  }).join('');
+}
+document.getElementById('vpList').addEventListener('click',e=>{
+  const arr=loadViews();
+  const go=e.target.closest('[data-vgo]');
+  if(go){const v=arr[+go.dataset.vgo];const hit=applyView(v);closeViewPop();
+    if(v)toast('"'+v.name+'" 보기를 적용했습니다'+(hit?' · '+mRows.length+'건 표시':''));return;}
+  const up=e.target.closest('[data-vup]');
+  if(up){const i=+up.dataset.vup;if(!arr[i])return;
+    if(!confirm('"'+arr[i].name+'" 보기를 지금 화면 설정으로 덮어씁니다.\n\n계속할까요?'))return;
+    const nm=arr[i].name;arr[i]=viewObj(nm);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 덮어썼습니다');return;}
+  const del=e.target.closest('[data-vdel]');
+  if(del){const i=+del.dataset.vdel;if(!arr[i])return;
+    if(!confirm('"'+arr[i].name+'" 보기를 삭제합니다.\n(목록 데이터는 그대로 남습니다)\n\n계속할까요?'))return;
+    const nm=arr[i].name;arr.splice(i,1);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 삭제했습니다');}
+});
+document.getElementById('vpSave').addEventListener('click',()=>{
+  const nm=document.getElementById('vpName').value.replace(/\s+/g,' ').trim();
+  if(!nm){toast('보기 이름을 넣어주세요',true);document.getElementById('vpName').focus();return;}
+  if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  const arr=loadViews();
+  const i=arr.findIndex(v=>v.name===nm);
+  if(i>=0&&!confirm('같은 이름의 보기가 있습니다.\n"'+nm+'" 을(를) 지금 화면 설정으로 덮어쓸까요?'))return;
+  if(i>=0)arr[i]=viewObj(nm);else arr.push(viewObj(nm));
+  saveViews(arr);renderViews();
+  document.getElementById('vpName').value='';
+  toast('"'+nm+'" 보기를 저장했습니다');
+});
+document.getElementById('vpName').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')document.getElementById('vpSave').click();});
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();markDirty();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();markDirty();}});
 document.getElementById('colPanel').addEventListener('click',e=>{
   const x=e.target.closest('button[data-cx]');
@@ -1284,7 +1431,8 @@ function visible(){
     if(fj&&d.jisa!==fj)return false;
     if(fjin&&d.jin!==fjin)return false;
     if(fjeo&&d.jeongKey!==fjeo)return false;
-    if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
+    if(fis==='hasdays'){if(d.days==null)return false;}
+    else if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
     if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;
     for(const k in colFilter){if(!colFilter[k].has(fval(d.row[+k])))return false;}
     return true;
@@ -1586,7 +1734,7 @@ function syncToolbar(){
   const on=(id,v)=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!v);};
   ['fJisa','fJin','fJeong','fIssue','sJisa'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!e.value);});
   const q=document.getElementById('search');if(q)q.classList.toggle('on',!!q.value.trim());
-  on('btnColPanel',!document.getElementById('colPanel').classList.contains('hide'));
+  on('btnColPanel',!document.getElementById('viewPop').classList.contains('hide'));
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
   on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
@@ -1879,6 +2027,7 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   closeCellPop();closeColFilter();
   if(!document.getElementById('editPop').classList.contains('hide'))closeEditPop();
+  if(!document.getElementById('viewPop').classList.contains('hide'))closeViewPop();
   if(BARS.some(barOpen)){closeBars();syncToolbar();}
 });
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
