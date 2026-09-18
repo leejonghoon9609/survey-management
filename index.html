@@ -428,8 +428,10 @@ td.left{text-align:left;}
              (평소 흰 바탕 + 고유색 글씨·테두리, 선택하면 그 색으로 채워짐)
    BUILD 10: 칸을 더블클릭하면 그 자리에서 바로 값 입력 (이슈사항 등)
    BUILD 11: 소요일수 자동 계산 (요청일 → Tango업로드, 일 단위 숫자)
+   BUILD 12: 예전에 저장해 둔 목록을 불러올 때 칸 연결 정보를 다시 맞춤
+             (BUILD 10 이전 저장분에서 소요일수가 비던 문제)
    ======================================================================== */
-const BUILD_NO='11';
+const BUILD_NO='12';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -564,10 +566,16 @@ function loadState(){
     const s=JSON.parse(raw);
     if(!s||!s.rows||!s.rows.length)return false;
     COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
+    const rep=repairCols();
     DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
     markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
     setDot('ok','불러옴 '+(savedAt?hhmm(savedAt):''));
+    if(rep.made||rep.fixed.length){
+      const days=DATA.filter(d=>d.days!=null).length;
+      setTimeout(()=>toast((rep.made?'"'+rep.made+'" 칸을 만들었어요 · ':'')+(days?'소요일수 '+days+'건 계산':'칸 연결을 다시 맞췄어요')),400);
+      markDirty();
+    }
     return true;
   }catch(e){return false;}
 }
@@ -600,6 +608,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       if(DATA.length&&!confirm('지금 목록('+DATA.length+'건)을 백업 내용('+s.rows.length+'건)으로 교체합니다. 계속할까요?'))return;
       COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
+      repairCols();
       DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
       loaded=true;markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
@@ -1043,7 +1052,14 @@ function renderValidate(){
   document.getElementById('vChips').innerHTML=def.map(o=>
     '<button class="vchip'+(o.n===0?' ok':(o.warn?' bad':''))+(f===o.k?' on':'')+'" data-iss="'+o.k+'">'+esc(o.lab)+'<b>'+o.n+'건</b></button>'
   ).join('');
-  document.getElementById('vMapLink').innerHTML=COLREP.length?'<button class="linkish" id="vMapBtn">엑셀 컬럼 인식 결과 보기</button>':'<span class="note">저장된 목록이라 컬럼 인식 결과는 없어요.</span>';
+  let extra='';
+  if(COL.소요일수>=0){
+    const dOk=DATA.filter(d=>d.days!=null).length;
+    extra=' <span class="note" style="margin:0;">· 소요일수(요청일 → Tango업로드) '+dOk+'건 계산 / 날짜가 없거나 글자라 계산 못 한 건 '+(DATA.length-dOk)+'건</span>';
+  }else if(DATA.length){
+    extra=' <span class="note" style="margin:0;">· 소요일수는 요청일·Tango업로드 칸이 있어야 계산돼요.</span>';
+  }
+  document.getElementById('vMapLink').innerHTML=(COLREP.length?'<button class="linkish" id="vMapBtn">엑셀 컬럼 인식 결과 보기</button>':'<span class="note">저장된 목록이라 컬럼 인식 결과는 없어요.</span>')+extra;
   const mb=document.getElementById('vMapBtn');
   if(mb)mb.addEventListener('click',()=>{const r=document.getElementById('vMapRow');r.classList.toggle('on');if(r.classList.contains('on'))r.innerHTML=mapTable(COLREP);});
 }
@@ -1393,6 +1409,32 @@ function syncToolbar(){
   on('btnColPanel',!document.getElementById('colPanel').classList.contains('hide'));
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
+}
+
+/* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
+   예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
+   나중에 생긴 항목 정보가 없어, 라벨을 보고 다시 이어 준다. ---- */
+function repairCols(){
+  if(!DISP.length)return {fixed:[],made:''};
+  const labels=[];DISP.forEach(c=>{labels[c.idx]=c.label;});
+  const m=mapCols(labels).col;
+  const fixed=[];
+  COLSPEC.forEach(sp=>{
+    const cur=COL[sp.k];
+    const valid=(cur!=null&&cur>=0&&DISP.some(c=>c.idx===cur));
+    if(valid)return;
+    if(m[sp.k]!=null&&m[sp.k]>=0){COL[sp.k]=m[sp.k];fixed.push(sp.label);}
+    else if(COL[sp.k]==null)COL[sp.k]=-1;
+  });
+  /* 소요일수 칸이 아예 없으면 Tango업로드 뒤에 만들어 준다 */
+  let made='';
+  if(COL.소요일수<0&&COL.요청일>=0&&COL.탱고업로드>=0){
+    const idx=nextColIdx(),label=uniqLabel('소요일수');
+    const at=DISP.findIndex(c=>c.idx===COL.탱고업로드);
+    DISP.splice(at>=0?at+1:DISP.length,0,{idx:idx,label:label,vis:true});
+    COL.소요일수=idx;made=label;
+  }
+  return {fixed:fixed,made:made};
 }
 
 /* ---- 목록(칸) 추가 · 삭제 ---- */
