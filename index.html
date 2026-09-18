@@ -160,11 +160,21 @@ td.left{text-align:left;}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#cbd5e1;}
 .warn{background:#fffbeb;border:1px solid #fde68a;color:#b45309;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px;line-height:1.7;}
 .warn.bad{background:#fef2f2;border-color:#fecaca;color:#b91c1c;}
+.upbox{margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;border-radius:9px;padding:9px 12px;margin-bottom:10px;}
+.tbar-ex{background:#fff7ed;border:1px solid #fed7aa;}
+.tbar-ex .lb{color:#c2410c;font-weight:500;}
+.tbar-add{background:#eff6ff;border:1px solid #bfdbfe;}
+.tbar-add .lb{color:#1d4ed8;font-weight:500;}
+.tbar-bulk{background:#fff7e0;border:1px solid #fde68a;}
+.tbar-bulk .lb{color:#b45309;}
+.tbar span,.tbar label{font-size:13px;color:#475569;}
+.tbar input[type=text],.tbar select{padding:6px 9px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;}
 .warn b{display:inline-block;margin-bottom:2px;}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
 .field label{display:block;font-size:13px;color:#475569;margin-bottom:5px;}
 .field input,.field select{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;}
-.hide{display:none;}
+.hide{display:none !important;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:11px 22px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:200;}
 .toast.show{opacity:1;}.toast.err{background:#dc2626;}
 .note{font-size:12px;color:#94a3b8;margin-top:8px;line-height:1.6;}
@@ -257,7 +267,7 @@ td.left{text-align:left;}
       <div id="mapBox" class="hide" style="margin-top:14px;"></div>
       <div id="chkBox" class="hide" style="margin-top:12px;"></div>
 
-      <div id="upResult" class="hide" style="margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div id="upResult" class="hide upbox">
         <span id="upMsg" style="font-size:14px;color:#166534;"></span>
         <button class="btn btn-primary" onclick="confirmPicks()">선택한 사업 → 리스트관리로</button>
       </div>
@@ -323,36 +333,36 @@ td.left{text-align:left;}
         <span class="stat" id="saveWhen"></span>
         <span class="stat" id="stat"></span>
       </div>
-      <div id="exBar" class="hide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
-        <span style="font-size:13px;color:#c2410c;font-weight:500;">엑셀 내보내기</span>
-        <span style="font-size:13px;color:#475569;">범위</span>
-        <label style="font-size:13px;"><input type="radio" name="exScope" value="view" checked> 지금 화면 목록(필터·정렬 적용)</label>
-        <label style="font-size:13px;"><input type="radio" name="exScope" value="sel"> 체크한 줄만</label>
-        <label style="font-size:13px;"><input type="radio" name="exScope" value="all"> 전체</label>
+      <div id="exBar" class="hide tbar tbar-ex">
+        <span class="lb">엑셀 내보내기</span>
+        <span>범위</span>
+        <label><input type="radio" name="exScope" value="view" checked> 지금 화면 목록(필터·정렬 적용)</label>
+        <label><input type="radio" name="exScope" value="sel"> 체크한 줄만</label>
+        <label><input type="radio" name="exScope" value="all"> 전체</label>
         <span style="width:1px;height:18px;background:#fed7aa;"></span>
-        <span style="font-size:13px;color:#475569;">칸</span>
-        <label style="font-size:13px;"><input type="radio" name="exCols" value="vis" checked> 화면에 보이는 칸</label>
-        <label style="font-size:13px;"><input type="radio" name="exCols" value="all"> 모든 칸</label>
+        <span>칸</span>
+        <label><input type="radio" name="exCols" value="vis" checked> 화면에 보이는 칸</label>
+        <label><input type="radio" name="exCols" value="all"> 모든 칸</label>
         <span style="flex:1"></span>
         <span class="stat" id="exInfo"></span>
         <button class="btn btn-primary" id="exGo" style="padding:6px 16px;background:#EA580C;border-color:#EA580C;">내보내기</button>
         <button class="btn" id="exClose" style="padding:6px 12px;">닫기</button>
       </div>
-      <div id="colAddBar" class="hide" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
-        <span style="font-size:13px;color:#1d4ed8;font-weight:500;">새 목록(칸) 추가</span>
-        <span style="font-size:13px;color:#475569;">이름</span>
-        <input type="text" id="acName" placeholder="예) 구분, 담당자, 확인메모" style="padding:6px 9px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;width:200px;">
-        <span style="font-size:13px;color:#475569;">넣을 위치</span>
-        <select id="acPos" style="padding:6px 9px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;max-width:300px;"></select>
+      <div id="colAddBar" class="hide tbar tbar-add">
+        <span class="lb">새 목록(칸) 추가</span>
+        <span>이름</span>
+        <input type="text" id="acName" placeholder="예) 구분, 담당자, 확인메모" style="width:200px;">
+        <span>넣을 위치</span>
+        <select id="acPos" style="max-width:300px;"></select>
         <button class="btn btn-primary" id="acAdd" style="padding:6px 16px;">추가</button>
         <button class="btn" id="acClose" style="padding:6px 12px;">닫기</button>
       </div>
-      <div id="bulkBar" class="hide" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff7e0;border:1px solid #fde68a;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
-        <span style="font-size:13px;color:#b45309;">선택한 줄의</span>
-        <select id="bulkCol" style="padding:6px 9px;border:1px solid #e2e8f0;border-radius:7px;font-family:inherit;font-size:13px;"></select>
-        <span style="font-size:13px;color:#b45309;">칸을</span>
-        <input type="text" id="bulkVal" placeholder="채울 값" style="padding:6px 9px;border:1px solid #e2e8f0;border-radius:7px;font-family:inherit;font-size:13px;width:200px;">
-        <span style="font-size:13px;color:#b45309;">(으)로</span>
+      <div id="bulkBar" class="hide tbar tbar-bulk">
+        <span class="lb">선택한 줄의</span>
+        <select id="bulkCol"></select>
+        <span class="lb">칸을</span>
+        <input type="text" id="bulkVal" placeholder="채울 값" style="width:200px;">
+        <span class="lb">(으)로</span>
         <button class="btn btn-primary" id="bulkApply" style="padding:6px 14px;">적용</button>
         <button class="btn" id="bulkClose" style="padding:6px 12px;">닫기</button>
         <span class="stat" id="bulkCnt"></span>
@@ -454,8 +464,10 @@ td.left{text-align:left;}
              (원본 측량공정진행현황 양식을 템플릿으로 사용)
    BUILD 15: 툴바 버튼을 다시 누르면 입력 줄이 닫힘 (켜고 끄기)
              + 한 번에 한 줄만 열려 화면이 밀리지 않음
+   BUILD 16: 숨김(.hide)이 인라인 display 에 밀려 동작하지 않던 문제 수정
+             — 입력 줄 3개와 업로드 결과 상자가 늘 펼쳐져 있던 원인
    ======================================================================== */
-const BUILD_NO='15';
+const BUILD_NO='16';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
