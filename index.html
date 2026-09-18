@@ -88,7 +88,9 @@ header .spacer{flex:1;}
 .cp-mv button:hover{background:#eff6ff;}
 .thf{color:#94a3b8;font-size:15px;cursor:pointer;padding:0 2px;flex:none;}
 .thf.fon{color:#EA002C;font-weight:700;}
-#mtable{table-layout:fixed;}
+/* 표에 정해진 너비를 그대로 쓴다. (min-width:100% 때문에 한 칸을 줄이면
+   남는 자리를 다른 칸이 나눠 가져 넓어지던 문제) */
+#mtable{table-layout:fixed;min-width:0;}
 #mtable thead th{position:relative;padding-right:14px;cursor:grab;}
 #mtable thead th.dragsrc{opacity:.4;}
 #mtable thead th.dragsrc .thtxt{color:#EA002C;}
@@ -144,6 +146,10 @@ tr.rowsel td{background:#fff3cd;}
 #mtable tbody td.justedited{animation:cellflash 1.1s ease-out;}
 @keyframes cellflash{0%{background:#fff3cd;}100%{background:transparent;}}
 tr.hasissue td.cb{box-shadow:inset 3px 0 0 #dc2626;}
+.isswrap{display:inline-flex;align-items:center;vertical-align:middle;margin-right:6px;cursor:pointer;padding:2px;}
+.isswrap input{cursor:pointer;margin:0;width:14px;height:14px;accent-color:#EA002C;}
+td.isscell{text-align:left;}
+tr.hasissue td{background:#fff8f8;}
 .editrow td{background:#fff7e0;padding:0;}
 .editbox{position:sticky;left:0;width:min(980px,90vw);padding:14px 16px;box-sizing:border-box;}
 .eb-h{font-size:14px;font-weight:500;color:#EA002C;margin-bottom:10px;}
@@ -359,7 +365,7 @@ td.left{text-align:left;}
         <select id="fJeong" class="csel" style="--c:#9333EA"><option value="">정산상황 전체</option></select>
         <select id="fIssue" class="csel" style="--c:#BE185D">
           <option value="">점검 전체</option>
-          <option value="any">이슈 있는 건만</option>
+          <option value="checked">이슈 체크한 건만</option>
           <option value="측량구분">측량구분 미분류</option>
           <option value="탱고거리">탱고거리 없음</option>
           <option value="지사">지사 미입력</option>
@@ -370,6 +376,7 @@ td.left{text-align:left;}
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
         <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
         <button class="btn tbtn" id="btnBulk" style="padding:7px 14px;--c:#0369A1">선택 일괄입력</button>
+        <button class="btn tbtn" id="btnIssue" style="padding:7px 14px;--c:#BE185D">선택 이슈 체크</button>
         <button class="btn tbtn" id="btnDel" style="padding:7px 14px;--c:#DC2626">선택 삭제</button>
         <button class="btn tbtn" id="btnAddCol" style="padding:7px 14px;--c:#059669">목록 추가</button>
         <button class="btn tbtn" id="btnExcel" style="padding:7px 14px;--c:#EA580C">엑셀 내보내기</button>
@@ -416,7 +423,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
+      <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. <b>이슈사항 칸 앞 체크바</b>를 켜면 그 줄이 이슈로 집계되고(위 "이슈 체크"), 줄 왼쪽에 빨간 선이 붙습니다.</p>
     </div>
   </div>
 
@@ -549,8 +556,10 @@ td.left{text-align:left;}
              + 중복 제외 · 목록 비우기 버튼
    BUILD 23: 표시할 칸 목록을 표 왼쪽 자리로 되돌림 (창에는 보기 저장만)
              + 칸 목록에 닫기 · 보기 설정 버튼
+   BUILD 24: 이슈사항 칸에 체크바 — 체크한 건만 이슈로 집계
+             + 칸 너비를 줄인 만큼만 줄어들게 (다른 칸이 늘어나던 문제)
    ======================================================================== */
-const BUILD_NO='23';
+const BUILD_NO='24';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -698,7 +707,7 @@ function stateObj(){
     DISP:DISP.map(c=>({idx:c.idx,label:c.label,vis:c.vis})),
     colWidth:colWidth,
     ui:uiObj(),
-    rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel}))};
+    rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk}))};
 }
 function saveState(silent){
   if(!loaded||!DATA.length){setDot('','저장할 목록 없음');return;}
@@ -720,7 +729,7 @@ function loadState(){
     if(!s||!s.rows||!s.rows.length)return false;
     COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
     const rep=repairCols();
-    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
+    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
     markDup();buildColPanel();buildFilters();
     const uiOn=applyUI(s.ui);
@@ -766,7 +775,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
       repairCols();
-      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
+      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
       loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
       buildHead();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
@@ -839,7 +848,8 @@ const COLSPEC=[
   {k:'정산금액',label:'정산금액',        req:0, ex:h=>h==='정산금액',        lo:h=>h.includes('정산예정금액')||(h.includes('정산')&&h.includes('금액'))},
   {k:'요청일', label:'요청일',           req:0, ex:h=>h==='요청일',           lo:h=>h.includes('요청')&&h.includes('일')},
   {k:'탱고업로드',label:'Tango업로드',    req:0, ex:h=>h.toLowerCase()==='tango업로드', lo:h=>h.toLowerCase().includes('tango')&&h.includes('업로')},
-  {k:'소요일수',label:'소요일수',         req:0, ex:h=>h==='소요일수'||h==='소요기간', lo:h=>h.includes('소요')}
+  {k:'소요일수',label:'소요일수',         req:0, ex:h=>h==='소요일수'||h==='소요기간', lo:h=>h.includes('소요')},
+  {k:'이슈',   label:'이슈사항',          req:0, ex:h=>h==='이슈사항',        lo:h=>h.includes('이슈')}
 ];
 const nh=h=>String(h==null?'':h).replace(/\s/g,'');
 function mapCols(H){
@@ -913,7 +923,7 @@ document.getElementById('btnPrev').addEventListener('click',()=>{
   const cur=DATA.length?JSON.stringify({...stateObj(),n:DATA.length}):null;
   COL=p.COL||{};DISP=(p.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=p.colWidth||{};
   repairCols();
-  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
+  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
   loaded=true;markDup();buildColPanel();buildFilters();applyUI(p.ui);
   buildHead();renderCards();renderValidate();render();renderSettle();
   try{if(cur)localStorage.setItem(LS_PREV,cur);else localStorage.removeItem(LS_PREV);}catch(e){}
@@ -1292,14 +1302,14 @@ function issuesOf(d){
   return a;
 }
 function issueCounts(){
-  const c={측량구분:0,탱고거리:0,지사:0,구분:0,중복:0,any:0};
-  DATA.forEach(d=>{const is=issuesOf(d);if(is.length)c.any++;is.forEach(k=>c[k]++);});
+  const c={측량구분:0,탱고거리:0,지사:0,구분:0,중복:0,any:0,체크:0};
+  DATA.forEach(d=>{const is=issuesOf(d);if(is.length)c.any++;is.forEach(k=>c[k]++);if(d._chk)c.체크++;});
   return c;
 }
 function renderValidate(){
   const c=issueCounts(),f=document.getElementById('fIssue').value;
   const def=[
-    {k:'any',   lab:'이슈 있는 건',    n:c.any,   warn:c.any>0},
+    {k:'checked',lab:'이슈 체크',      n:c.체크,  warn:c.체크>0},
     {k:'측량구분',lab:'측량구분 미분류', n:c.측량구분,warn:c.측량구분>0},
     {k:'탱고거리',lab:'탱고거리 없음',   n:c.탱고거리,warn:false},
     {k:'지사',   lab:'지사 미입력',     n:c.지사,   warn:c.지사>0},
@@ -1510,6 +1520,7 @@ function visible(){
     if(fjin&&d.jin!==fjin)return false;
     if(fjeo&&d.jeongKey!==fjeo)return false;
     if(fis==='hasdays'){if(d.days==null)return false;}
+    else if(fis==='checked'){if(!d._chk)return false;}
     else if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
     if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;
     for(const k in colFilter){if(!colFilter[k].has(fval(d.row[+k])))return false;}
@@ -1544,24 +1555,34 @@ function clearAllFilters(){
 const isBlank=v=>(v==null||v==='');
 function cmpVal(a,b){if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 const M_PAGE=150;let mRows=[],mShown=0;
-function cellCls(d,c){const v=d.row[c.idx];return (typeof v==='number')?'num':(isLeft(c.label)?'left':'');}
+const isIssueCol=idx=>(COL.이슈!=null&&COL.이슈>=0&&idx===COL.이슈);
+function cellCls(d,c){
+  if(isIssueCol(c.idx))return 'isscell';
+  const v=d.row[c.idx];return (typeof v==='number')?'num':(isLeft(c.label)?'left':'');
+}
 function methodCls(d){return d.mKey==='실시간'?'m-real':(d.mKey==='탐사'?'m-probe':'');}
 function cellInner(d,c){
   if(c.idx===COL.정산상황)return jeongBadge(d);
   const txt=esc(cellVal(d.row[c.idx],c.idx));
+  if(isIssueCol(c.idx)){
+    return '<label class="isswrap" title="이슈로 표시 (통계에 반영)"><input type="checkbox" class="isschk" data-id="'+d._id+'"'+(d._chk?' checked':'')+'></label>'+
+           '<span class="cv">'+txt+'</span>';
+  }
   const mc=(c.idx===COL.측량구분||c.idx===COL.소요일수)?methodCls(d):'';
   return '<span class="cv'+(mc&&txt!==''?' '+mc:'')+'">'+txt+'</span>';
 }
 function rowHTML(d){
   if(d._id==null)d._id=++idSeq;
   const iss=issuesOf(d);
+  const flag=!!d._chk;
   let tds='<td class="cb"><input type="checkbox" class="msel" data-id="'+d._id+'"'+(d._msel?' checked':'')+'></td>';
   DISP.forEach(c=>{
     if(!c.vis)return;
     const cls=cellCls(d,c);
     tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(d.row[c.idx],c.idx))+'">'+cellInner(d,c)+'</td>';
   });
-  return '<tr data-id="'+d._id+'"'+(iss.length?' class="hasissue" title="점검: '+esc(iss.join(', '))+'"':'')+'>'+tds+'</tr>';
+  const tip=iss.length?' title="점검: '+esc(iss.join(', '))+'"':'';
+  return '<tr data-id="'+d._id+'"'+(flag?' class="hasissue"':'')+tip+'>'+tds+'</tr>';
 }
 /* 값이 바뀌면 그 줄 전체를 다시 그린다 (소요일수처럼 따라 바뀌는 칸까지 반영) */
 function refreshRow(tr,d){
@@ -1666,7 +1687,7 @@ function toggleEditRow(tr){
   tr.after(er);
 }
 document.getElementById('rows').addEventListener('click',e=>{
-  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow'))return;
+  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   const sv=e.target.closest('[data-esave]');
   if(sv){
     const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);
@@ -1713,7 +1734,7 @@ document.getElementById('rows').addEventListener('click',e=>{
 let clickTmr=null;
 function cancelPendingClick(){if(clickTmr){clearTimeout(clickTmr);clickTmr=null;}}
 document.getElementById('rows').addEventListener('dblclick',e=>{
-  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow'))return;
+  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   cancelPendingClick();
   const td=e.target.closest('td'),tr=e.target.closest('tr');
   if(!td||!tr||tr.classList.contains('editrow'))return;
@@ -1805,6 +1826,14 @@ document.getElementById('bulkApply').addEventListener('click',()=>{
   closeBars();syncToolbar();
   toast(sel.length+'건을 수정했습니다');
 });
+document.getElementById('btnIssue').addEventListener('click',()=>{
+  const sel=DATA.filter(d=>d._msel);
+  if(!sel.length){toast('먼저 줄을 체크하세요',true);return;}
+  const allOn=sel.every(d=>d._chk);
+  sel.forEach(d=>d._chk=!allOn);
+  renderValidate();render(true);renderSettle();markDirty();
+  toast(sel.length+'건 이슈 '+(allOn?'해제':'체크')+' · 지금 이슈 '+DATA.filter(d=>d._chk).length+'건');
+});
 document.getElementById('btnDel').addEventListener('click',()=>{
   const sel=DATA.filter(d=>d._msel);
   if(!sel.length){toast('삭제할 줄을 먼저 체크하세요',true);return;}
@@ -1835,7 +1864,14 @@ document.getElementById('head').addEventListener('click',e=>{
   const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}
   buildHead();render();markDirty();
 });
-function recalcW(){let t=0;document.querySelectorAll('#mtable colgroup col').forEach(c=>t+=c.getBoundingClientRect().width);document.getElementById('mtable').style.width=t+'px';}
+/* 표 너비는 정해 둔 칸 너비의 합으로 계산한다.
+   (실제 그려진 폭을 재면 브라우저가 남는 자리를 나눠 준 값이 섞여
+    한 칸을 줄여도 전체 폭이 그대로여서 다른 칸이 넓어졌다) */
+function recalcW(){
+  let t=36;
+  DISP.forEach(c=>{if(c.vis)t+=(colWidth[c.idx]||defW(c.label));});
+  document.getElementById('mtable').style.width=t+'px';
+}
 document.getElementById('head').addEventListener('mousedown',e=>{
   const rz=e.target.closest('[data-rz]');if(!rz)return;e.preventDefault();
   const ci=+rz.dataset.rz;const col=document.querySelector('#mtable colgroup col[data-ci="'+ci+'"]');if(!col)return;
@@ -1917,8 +1953,9 @@ function exRows(scope){
 function exInfoText(){
   const scope=(document.querySelector('input[name=exScope]:checked')||{}).value||'view';
   const cm=(document.querySelector('input[name=exCols]:checked')||{}).value||'vis';
-  const n=exRows(scope).length,k=DISP.filter(c=>cm==='all'||c.vis).length;
-  document.getElementById('exInfo').innerHTML='<b>'+n+'</b>건 · <b>'+k+'</b>칸';
+  const sel=exRows(scope),n=sel.length,k=DISP.filter(c=>cm==='all'||c.vis).length;
+  const ck=sel.filter(d=>d._chk).length;
+  document.getElementById('exInfo').innerHTML='<b>'+n+'</b>건 · <b>'+(k+1)+'</b>칸'+(ck?' · 이슈 체크 <b>'+ck+'</b>건':'');
 }
 document.getElementById('btnExcel').addEventListener('click',()=>{
   if(barOpen('exBar')){toggleBar('exBar');return;}
@@ -1935,13 +1972,13 @@ document.getElementById('exGo').addEventListener('click',()=>{
   const cols=DISP.filter(c=>cm==='all'||c.vis);
   if(!cols.length){toast('내보낼 칸이 없습니다',true);return;}
 
-  const aoa=[cols.map(c=>c.label)];
-  rows.forEach(d=>aoa.push(cols.map(c=>exValue(d,c))));
+  const aoa=[cols.map(c=>c.label).concat(['이슈체크'])];
+  rows.forEach(d=>aoa.push(cols.map(c=>exValue(d,c)).concat([d._chk?'O':''])));
   const ws=XLSX.utils.aoa_to_sheet(aoa);
 
-  ws['!cols']=cols.map(c=>({wch:exW(c.label,rows,c)}));
+  ws['!cols']=cols.map(c=>({wch:exW(c.label,rows,c)})).concat([{wch:9}]);
   ws['!rows']=[{hpt:27}];
-  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:cols.length-1}})};
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:cols.length}})};
   cols.forEach((c,ci)=>{
     const z=exZ(c.label),isD=exIsDate(c.label);
     if(!z&&!isD)return;
@@ -2146,7 +2183,17 @@ document.addEventListener('keydown',e=>{
   if(BARS.some(barOpen)){closeBars();syncToolbar();}
 });
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
-document.getElementById('rows').addEventListener('change',e=>{if(e.target.classList.contains('msel')){const d=DATA.find(x=>String(x._id)===e.target.dataset.id);if(d)d._msel=e.target.checked;updateSelUI();}});
+document.getElementById('rows').addEventListener('change',e=>{
+  if(e.target.classList.contains('msel')){const d=DATA.find(x=>String(x._id)===e.target.dataset.id);if(d)d._msel=e.target.checked;updateSelUI();return;}
+  if(e.target.classList.contains('isschk')){
+    const d=DATA.find(x=>String(x._id)===e.target.dataset.id);
+    if(d){
+      d._chk=e.target.checked;
+      const tr=e.target.closest('tr');if(tr)tr.classList.toggle('hasissue',d._chk);
+      renderValidate();markDirty();
+    }
+  }
+});
 (function(){
   const pop=document.getElementById('colFilterPop');
   pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});
