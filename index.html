@@ -317,10 +317,26 @@ td.left{text-align:left;}
         <button class="btn tbtn" id="btnBulk" style="padding:7px 14px;--c:#0369A1">선택 일괄입력</button>
         <button class="btn tbtn" id="btnDel" style="padding:7px 14px;--c:#DC2626">선택 삭제</button>
         <button class="btn tbtn" id="btnAddCol" style="padding:7px 14px;--c:#059669">목록 추가</button>
+        <button class="btn tbtn" id="btnExcel" style="padding:7px 14px;--c:#EA580C">엑셀 내보내기</button>
         <span style="flex:1"></span>
         <button class="btn btn-primary savebtn" id="btnSaveList">저장</button>
         <span class="stat" id="saveWhen"></span>
         <span class="stat" id="stat"></span>
+      </div>
+      <div id="exBar" class="hide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
+        <span style="font-size:13px;color:#c2410c;font-weight:500;">엑셀 내보내기</span>
+        <span style="font-size:13px;color:#475569;">범위</span>
+        <label style="font-size:13px;"><input type="radio" name="exScope" value="view" checked> 지금 화면 목록(필터·정렬 적용)</label>
+        <label style="font-size:13px;"><input type="radio" name="exScope" value="sel"> 체크한 줄만</label>
+        <label style="font-size:13px;"><input type="radio" name="exScope" value="all"> 전체</label>
+        <span style="width:1px;height:18px;background:#fed7aa;"></span>
+        <span style="font-size:13px;color:#475569;">칸</span>
+        <label style="font-size:13px;"><input type="radio" name="exCols" value="vis" checked> 화면에 보이는 칸</label>
+        <label style="font-size:13px;"><input type="radio" name="exCols" value="all"> 모든 칸</label>
+        <span style="flex:1"></span>
+        <span class="stat" id="exInfo"></span>
+        <button class="btn btn-primary" id="exGo" style="padding:6px 16px;background:#EA580C;border-color:#EA580C;">내보내기</button>
+        <button class="btn" id="exClose" style="padding:6px 12px;">닫기</button>
       </div>
       <div id="colAddBar" class="hide" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
         <span style="font-size:13px;color:#1d4ed8;font-weight:500;">새 목록(칸) 추가</span>
@@ -434,8 +450,10 @@ td.left{text-align:left;}
              (BUILD 10 이전 저장분에서 소요일수가 비던 문제)
    BUILD 13: 측량방법·소요일수 글자색 (탐사=파랑 / 실시간=빨강)
              + 필터·정렬·검색어까지 저장해 마지막 화면 그대로 복원
+   BUILD 14: 지금 걸린 필터 그대로 엑셀 내보내기
+             (원본 측량공정진행현황 양식을 템플릿으로 사용)
    ======================================================================== */
-const BUILD_NO='13';
+const BUILD_NO='14';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1455,7 +1473,107 @@ function syncToolbar(){
   on('btnColPanel',!document.getElementById('colPanel').classList.contains('hide'));
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
+  on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
 }
+
+/* ======================= 엑셀 내보내기 =======================
+   원본 "측량공정진행현황" 양식을 템플릿으로 삼아 칸 너비·숫자 서식·
+   머리글 높이·자동필터를 그대로 재현한다.
+   (칸 구성과 줄은 지금 화면에 걸린 필터·정렬을 따른다) */
+const TPL_W={
+  '시행시기':9,'지역본부':9.2,'담당Manager':17.8,'사업유형':19.8,'공사협력사':12,
+  '행정구역':9,'공사명':88.1,'측량 심사내역':8.2,'굴착 작업일정':17.8,'측량방법':6.8,
+  '비고':9,'사업자':5.4,'요청일':10.9,'Eng 번호':18,'측량작업자 이름/연락처':23.4,
+  '측량예정일':12.5,'실측거리 (정산거리)':13.2,'Tango업로드':16.5,'이슈사항':37,
+  '성과심사신청':17.8,'성과심사 사업명':24.9,'측량비 정산예정금액(원)':15.9,
+  '성과심사비 정산예정금액':15.4,'측량 정산완료':18.5,'성과심사 결과서 확인':16.4,
+  '비고 2':9,'발주처(자동)':11,'구분':10,'소요일수':8.5,'소요기간':8.5,
+  '공구명':60,'순번':6,'정산상황':12,'진행상황':14,'지사':11,'측량구분':9
+};
+function contentW(label,rows,c){
+  let m=String(label).length;
+  const n=Math.min(rows.length,300);
+  for(let i=0;i<n;i++){const v=rows[i].row[c.idx];const L=String(v==null?'':v).length;if(L>m)m=L;}
+  return Math.max(6,Math.min(60,Math.round(m*12.5)/10));
+}
+/* 템플릿 폭을 기본으로 쓰되, 실제 내용이 뚜렷하게 길면 넓힌다.
+   (예: SKB는 "사업자" 칸에 도급사 이름이 들어가 원본 폭 5.4로는 잘림) */
+function exW(label,rows,c){
+  const auto=contentW(label,rows,c),tpl=TPL_W[label];
+  if(tpl==null)return Math.max(8,auto);
+  return auto>tpl+2?Math.min(auto,Math.max(tpl,40)):tpl;
+}
+function exZ(label){
+  if(/거리|심사내역/.test(label))return '0.000';
+  if(/금액|심사비/.test(label))return '#,##0';
+  if(/소요/.test(label))return '0';
+  return '';
+}
+const exIsDate=label=>/요청일|업로드|예정일|작업일정|일자|날짜/.test(label);
+/* 엑셀 날짜 일련번호 (1899-12-30 기준). Date 객체를 넘기지 않아 환경을 타지 않음 */
+function excelSerial(dt){return Math.round((Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())-Date.UTC(1899,11,30))/86400000);}
+function exValue(d,c){
+  const v=d.row[c.idx];
+  if(v==null||v==='')return '';
+  if(isDateObj(v))return fmtDate(v);
+  return v;
+}
+function exRows(scope){
+  if(scope==='sel')return DATA.filter(d=>d._msel);
+  if(scope==='all')return DATA.slice();
+  return mRows.slice();                       /* 지금 화면 목록 = 필터·정렬 적용 */
+}
+function exInfoText(){
+  const scope=(document.querySelector('input[name=exScope]:checked')||{}).value||'view';
+  const cm=(document.querySelector('input[name=exCols]:checked')||{}).value||'vis';
+  const n=exRows(scope).length,k=DISP.filter(c=>cm==='all'||c.vis).length;
+  document.getElementById('exInfo').innerHTML='<b>'+n+'</b>건 · <b>'+k+'</b>칸';
+}
+document.getElementById('btnExcel').addEventListener('click',()=>{
+  if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  document.getElementById('exBar').classList.remove('hide');exInfoText();syncToolbar();
+});
+document.getElementById('exClose').addEventListener('click',()=>{document.getElementById('exBar').classList.add('hide');syncToolbar();});
+document.getElementById('exBar').addEventListener('change',exInfoText);
+document.getElementById('exGo').addEventListener('click',()=>{
+  const scope=document.querySelector('input[name=exScope]:checked').value;
+  const cm=document.querySelector('input[name=exCols]:checked').value;
+  const rows=exRows(scope);
+  if(!rows.length){toast('내보낼 줄이 없습니다',true);return;}
+  const cols=DISP.filter(c=>cm==='all'||c.vis);
+  if(!cols.length){toast('내보낼 칸이 없습니다',true);return;}
+
+  const aoa=[cols.map(c=>c.label)];
+  rows.forEach(d=>aoa.push(cols.map(c=>exValue(d,c))));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+
+  ws['!cols']=cols.map(c=>({wch:exW(c.label,rows,c)}));
+  ws['!rows']=[{hpt:27}];
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:cols.length-1}})};
+  cols.forEach((c,ci)=>{
+    const z=exZ(c.label),isD=exIsDate(c.label);
+    if(!z&&!isD)return;
+    for(let r=1;r<=rows.length;r++){
+      const a=XLSX.utils.encode_cell({r:r,c:ci}),cell=ws[a];if(!cell)continue;
+      if(isD){
+        const dt=parseDate(cell.v);
+        if(dt){cell.t='n';cell.v=excelSerial(dt);cell.z='yyyy-mm-dd';delete cell.w;}
+        continue;                                  /* 날짜가 아닌 글자는 그대로 둔다 */
+      }
+      if(z&&cell.t==='n')cell.z=z;
+    }
+  });
+
+  const wbk=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbk,ws,'측량공정진행현황');
+  const baals=[...new Set(rows.map(d=>d.baal).filter(Boolean))];
+  const tag=baals.length===1?baals[0]:(baals.length?'전체':'목록');
+  const t=new Date(),p=n=>String(n).padStart(2,'0');
+  const fname='측량공정진행현황_'+tag+'_'+t.getFullYear()+p(t.getMonth()+1)+p(t.getDate())+'_'+rows.length+'건.xlsx';
+  XLSX.writeFile(wbk,fname);
+  document.getElementById('exBar').classList.add('hide');syncToolbar();
+  toast(rows.length+'건 · '+cols.length+'칸을 내보냈습니다');
+});
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
    예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
