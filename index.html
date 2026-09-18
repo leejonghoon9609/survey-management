@@ -49,8 +49,18 @@ header .spacer{flex:1;}
 @keyframes savepulse{0%,100%{box-shadow:0 0 0 0 rgba(234,0,44,.45);}50%{box-shadow:0 0 0 6px rgba(234,0,44,0);}}
 #saveWhen{white-space:nowrap;}
 .fbtns{display:flex;gap:6px;flex-wrap:wrap;}
-.fbtn{padding:6px 14px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;color:#475569;}
-.fbtn.on{background:#EA002C;color:#fff;border-color:#EA002C;}
+.fbtn{--c:#64748b;padding:6px 15px;border-radius:20px;border:1.5px solid var(--c);background:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--c);transition:background .12s,color .12s;}
+.fbtn:hover:not(.on){background:#f8fafc;}
+.fbtn.on{background:var(--c);color:#fff;border-color:var(--c);}
+/* 툴바 · 항목별 고유색 */
+.tbtn{--c:#475569;border:1.5px solid var(--c) !important;background:#fff;color:var(--c) !important;font-weight:500;transition:background .12s,color .12s;}
+.tbtn:hover:not(.on){background:#f8fafc;}
+.tbtn.on{background:var(--c);color:#fff !important;}
+.controls select.csel{border:1.5px solid var(--c);color:var(--c);font-weight:500;background:#fff;transition:background .12s,color .12s;}
+.controls select.csel.on{background:var(--c);color:#fff;}
+.controls select.csel option{background:#fff;color:#1e293b;font-weight:400;}
+.controls input#search{border:1.5px solid #cbd5e1;transition:border-color .12s;}
+.controls input#search.on{border-color:#0f766e;color:#0f766e;font-weight:500;}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
 .controls input[type=text],.controls select{padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;}
 .controls label{font-size:14px;color:#475569;display:flex;align-items:center;gap:6px;cursor:pointer;}
@@ -282,13 +292,13 @@ td.left{text-align:left;}
     <div class="card">
       <div class="controls">
         <div class="fbtns" id="fBaal">
-          <button class="fbtn on" data-b="">전체</button><button class="fbtn" data-b="SKT">SKT</button>
-          <button class="fbtn" data-b="SKB">SKB</button><button class="fbtn" data-b="원인자">원인자</button>
+          <button class="fbtn on" data-b="" style="--c:#64748b">전체</button><button class="fbtn" data-b="SKT" style="--c:#EA002C">SKT</button>
+          <button class="fbtn" data-b="SKB" style="--c:#2563EB">SKB</button><button class="fbtn" data-b="원인자" style="--c:#B45309">원인자</button>
         </div>
-        <select id="fJisa"><option value="">지사 전체</option></select>
-        <select id="fJin"><option value="">진행상황 전체</option></select>
-        <select id="fJeong"><option value="">정산상황 전체</option></select>
-        <select id="fIssue">
+        <select id="fJisa" class="csel" style="--c:#0D9488"><option value="">지사 전체</option></select>
+        <select id="fJin" class="csel" style="--c:#4F46E5"><option value="">진행상황 전체</option></select>
+        <select id="fJeong" class="csel" style="--c:#9333EA"><option value="">정산상황 전체</option></select>
+        <select id="fIssue" class="csel" style="--c:#BE185D">
           <option value="">점검 전체</option>
           <option value="any">이슈 있는 건만</option>
           <option value="측량구분">측량구분 미분류</option>
@@ -298,10 +308,10 @@ td.left{text-align:left;}
           <option value="중복">공사코드 중복</option>
         </select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
-        <button class="btn" onclick="toggleColPanel()" style="padding:7px 14px;">컬럼 설정</button>
-        <button class="btn" id="btnBulk" style="padding:7px 14px;">선택 일괄입력</button>
-        <button class="btn" id="btnDel" style="padding:7px 14px;">선택 삭제</button>
-        <button class="btn" id="btnAddCol" style="padding:7px 14px;">목록 추가</button>
+        <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
+        <button class="btn tbtn" id="btnBulk" style="padding:7px 14px;--c:#0369A1">선택 일괄입력</button>
+        <button class="btn tbtn" id="btnDel" style="padding:7px 14px;--c:#DC2626">선택 삭제</button>
+        <button class="btn tbtn" id="btnAddCol" style="padding:7px 14px;--c:#059669">목록 추가</button>
         <span style="flex:1"></span>
         <button class="btn btn-primary savebtn" id="btnSaveList">저장</button>
         <span class="stat" id="saveWhen"></span>
@@ -365,10 +375,10 @@ td.left{text-align:left;}
     <div class="card">
       <div class="controls">
         <div class="fbtns" id="sBaal">
-          <button class="fbtn on" data-b="">전체</button><button class="fbtn" data-b="SKT">SKT</button>
-          <button class="fbtn" data-b="SKB">SKB</button><button class="fbtn" data-b="원인자">원인자</button>
+          <button class="fbtn on" data-b="" style="--c:#64748b">전체</button><button class="fbtn" data-b="SKT" style="--c:#EA002C">SKT</button>
+          <button class="fbtn" data-b="SKB" style="--c:#2563EB">SKB</button><button class="fbtn" data-b="원인자" style="--c:#B45309">원인자</button>
         </div>
-        <select id="sJisa"><option value="">지사 전체</option></select>
+        <select id="sJisa" class="csel" style="--c:#0D9488"><option value="">지사 전체</option></select>
         <input type="text" id="sSearch" placeholder="공구명·공사코드 검색">
         <span style="flex:1"></span><span class="stat" id="sStat"></span>
       </div>
@@ -411,8 +421,10 @@ td.left{text-align:left;}
    BUILD 07: 저장 버튼이 흰색이라 글자처럼 보이던 것을 빨간 버튼으로 변경
              + 저장 시각을 버튼 옆에 표시
    BUILD 08: 목록(칸) 추가 — 넣을 위치와 이름을 정해 새 칸 만들기 / 칸 삭제
+   BUILD 09: 리스트관리 툴바 버튼·필터에 항목별 고유색
+             (평소 흰 바탕 + 고유색 글씨·테두리, 선택하면 그 색으로 채워짐)
    ======================================================================== */
-const BUILD_NO='08';
+const BUILD_NO='09';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1004,7 +1016,7 @@ function buildHead(){
   document.getElementById('head').innerHTML=h;
 }
 function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
-function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
+function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();syncToolbar();}
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();markDirty();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();markDirty();}});
 document.getElementById('colPanel').addEventListener('click',e=>{
   const x=e.target.closest('button[data-cx]');
@@ -1085,7 +1097,7 @@ function render(keep){
   }
   mRows=rows;mShown=Math.min(Math.max(M_PAGE,prev),rows.length);
   document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
-  updateSelUI();
+  updateSelUI();syncToolbar();
   if(keep&&wrap)wrap.scrollTop=st;
 }
 function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map(rowHTML).join(''));mShown=next;updateSelUI();}
@@ -1191,9 +1203,9 @@ document.getElementById('btnBulk').addEventListener('click',()=>{
   document.getElementById('bulkCol').innerHTML=DISP.map(c=>'<option value="'+c.idx+'">'+esc(c.label)+'</option>').join('');
   const g=DISP.find(c=>c.idx===COL.구분);if(g)document.getElementById('bulkCol').value=g.idx;
   document.getElementById('bulkCnt').innerHTML='선택 <b>'+n+'</b>건';
-  bar.classList.remove('hide');document.getElementById('bulkVal').focus();
+  bar.classList.remove('hide');syncToolbar();document.getElementById('bulkVal').focus();
 });
-document.getElementById('bulkClose').addEventListener('click',()=>document.getElementById('bulkBar').classList.add('hide'));
+document.getElementById('bulkClose').addEventListener('click',()=>{document.getElementById('bulkBar').classList.add('hide');syncToolbar();});
 document.getElementById('bulkApply').addEventListener('click',()=>{
   const idx=+document.getElementById('bulkCol').value,val=document.getElementById('bulkVal').value;
   const sel=DATA.filter(d=>d._msel);
@@ -1203,7 +1215,7 @@ document.getElementById('bulkApply').addEventListener('click',()=>{
   else if(!noComma(idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(val.trim())){const n=Number(val.replace(/,/g,''));nv=isNaN(n)?val:n;}
   sel.forEach(d=>{d.row[idx]=nv;deriveItem(d);});
   markDup();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
-  document.getElementById('bulkBar').classList.add('hide');
+  document.getElementById('bulkBar').classList.add('hide');syncToolbar();
   toast(sel.length+'건을 수정했습니다');
 });
 document.getElementById('btnDel').addEventListener('click',()=>{
@@ -1244,6 +1256,16 @@ document.getElementById('head').addEventListener('mousedown',e=>{
   function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';markDirty();}
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
 });
+/* ---- 툴바 활성 상태(고유색 채우기) 동기화 ---- */
+function syncToolbar(){
+  const on=(id,v)=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!v);};
+  ['fJisa','fJin','fJeong','fIssue','sJisa'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',!!e.value);});
+  const q=document.getElementById('search');if(q)q.classList.toggle('on',!!q.value.trim());
+  on('btnColPanel',!document.getElementById('colPanel').classList.contains('hide'));
+  on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
+  on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
+}
+
 /* ---- 목록(칸) 추가 · 삭제 ---- */
 function nextColIdx(){let m=-1;DISP.forEach(c=>{if(typeof c.idx==='number'&&c.idx>m)m=c.idx;});return m+1;}
 function uniqLabel(l){
@@ -1272,10 +1294,10 @@ document.getElementById('btnAddCol').addEventListener('click',()=>{
   if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
   fillPosSelect();
   const bar=document.getElementById('colAddBar');
-  bar.classList.remove('hide');
+  bar.classList.remove('hide');syncToolbar();
   const n=document.getElementById('acName');n.value='';n.focus();
 });
-document.getElementById('acClose').addEventListener('click',()=>document.getElementById('colAddBar').classList.add('hide'));
+document.getElementById('acClose').addEventListener('click',()=>{document.getElementById('colAddBar').classList.add('hide');syncToolbar();});
 document.getElementById('acName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('acAdd').click();});
 document.getElementById('acAdd').addEventListener('click',()=>{
   const raw=document.getElementById('acName').value.replace(/\s+/g,' ').trim();
@@ -1286,7 +1308,7 @@ document.getElementById('acAdd').addEventListener('click',()=>{
   if(sortCI!=null&&sortCI>=pos)sortCI++;
   const linked=linkNewCol(idx,label);
   document.getElementById('colAddBar').classList.add('hide');
-  buildColPanel();buildHead();buildFilters();renderValidate();render(true);renderSettle();markDirty();
+  buildColPanel();buildHead();buildFilters();renderValidate();render(true);renderSettle();markDirty();syncToolbar();
   toast('"'+label+'" 칸을 추가했습니다'+(linked?' · '+linked+'(으)로 연결됨':''));
 });
 function delCol(i){
@@ -1452,6 +1474,7 @@ function renderSettle(){
     '<td class="num">'+won(estAmt(d))+'</td></tr>';}).join('');
   const excluded=DATA.length-DATA.filter(able).length;
   document.getElementById('sStat').innerHTML='정산가능 <b>'+rows.length+'</b>건'+(excluded?' · 제외 '+excluded+'건':'');
+  syncToolbar();
   updateBar();
 }
 function updateBar(){
@@ -1476,7 +1499,7 @@ function warnBox(sel){
 }
 document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();}});
 document.getElementById('sSearch').addEventListener('input',renderSettle);
-document.getElementById('sJisa').addEventListener('change',renderSettle);
+document.getElementById('sJisa').addEventListener('change',()=>{renderSettle();syncToolbar();});
 document.getElementById('sRows').addEventListener('change',e=>{if(e.target.dataset.i!==undefined){DATA[+e.target.dataset.i]._sel=e.target.checked;updateBar();markDirty();}});
 document.getElementById('sAll').addEventListener('change',e=>{sVisible().forEach(d=>d._sel=e.target.checked);renderSettle();markDirty();});
 
@@ -1510,6 +1533,7 @@ document.getElementById('export').addEventListener('click',()=>{
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
+syncToolbar();
 document.getElementById('mapBox').innerHTML='';
 </script>
 </body>
