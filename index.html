@@ -452,8 +452,10 @@ td.left{text-align:left;}
              + 필터·정렬·검색어까지 저장해 마지막 화면 그대로 복원
    BUILD 14: 지금 걸린 필터 그대로 엑셀 내보내기
              (원본 측량공정진행현황 양식을 템플릿으로 사용)
+   BUILD 15: 툴바 버튼을 다시 누르면 입력 줄이 닫힘 (켜고 끄기)
+             + 한 번에 한 줄만 열려 화면이 밀리지 않음
    ======================================================================== */
-const BUILD_NO='14';
+const BUILD_NO='15';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1405,15 +1407,15 @@ function nextCell(tr,ci0,dr,dc){
   if(ntd&&!ntd.classList.contains('cb')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});startCellEdit(ntd);}
 }
 document.getElementById('btnBulk').addEventListener('click',()=>{
-  const bar=document.getElementById('bulkBar');
+  if(barOpen('bulkBar')){toggleBar('bulkBar');return;}
   const n=DATA.filter(d=>d._msel).length;
   if(!n){toast('먼저 수정할 줄을 체크하세요',true);return;}
   document.getElementById('bulkCol').innerHTML=DISP.map(c=>'<option value="'+c.idx+'">'+esc(c.label)+'</option>').join('');
   const g=DISP.find(c=>c.idx===COL.구분);if(g)document.getElementById('bulkCol').value=g.idx;
   document.getElementById('bulkCnt').innerHTML='선택 <b>'+n+'</b>건';
-  bar.classList.remove('hide');syncToolbar();document.getElementById('bulkVal').focus();
+  toggleBar('bulkBar');document.getElementById('bulkVal').focus();
 });
-document.getElementById('bulkClose').addEventListener('click',()=>{document.getElementById('bulkBar').classList.add('hide');syncToolbar();});
+document.getElementById('bulkClose').addEventListener('click',()=>toggleBar('bulkBar'));
 document.getElementById('bulkApply').addEventListener('click',()=>{
   const idx=+document.getElementById('bulkCol').value,val=document.getElementById('bulkVal').value;
   if(COL.소요일수>=0&&idx===COL.소요일수){toast('소요일수는 자동 계산되는 칸이라 직접 넣을 수 없어요',true);return;}
@@ -1424,7 +1426,7 @@ document.getElementById('bulkApply').addEventListener('click',()=>{
   else if(!noComma(idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(val.trim())){const n=Number(val.replace(/,/g,''));nv=isNaN(n)?val:n;}
   sel.forEach(d=>{d.row[idx]=nv;deriveItem(d);});
   markDup();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
-  document.getElementById('bulkBar').classList.add('hide');syncToolbar();
+  closeBars();syncToolbar();
   toast(sel.length+'건을 수정했습니다');
 });
 document.getElementById('btnDel').addEventListener('click',()=>{
@@ -1474,6 +1476,18 @@ function syncToolbar(){
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
   on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
+}
+
+/* ---- 툴바 입력 줄 켜고 끄기 : 같은 버튼을 다시 누르면 닫힌다 ---- */
+const BARS=['bulkBar','colAddBar','exBar'];
+function closeBars(except){
+  BARS.forEach(id=>{if(id!==except){const e=document.getElementById(id);if(e)e.classList.add('hide');}});
+}
+function barOpen(id){const e=document.getElementById(id);return !!e&&!e.classList.contains('hide');}
+/* 열려 있으면 닫고 false, 닫혀 있으면 (다른 줄은 닫고) 열고 true */
+function toggleBar(id){
+  if(barOpen(id)){document.getElementById(id).classList.add('hide');syncToolbar();return false;}
+  closeBars(id);document.getElementById(id).classList.remove('hide');syncToolbar();return true;
 }
 
 /* ======================= 엑셀 내보내기 =======================
@@ -1530,10 +1544,11 @@ function exInfoText(){
   document.getElementById('exInfo').innerHTML='<b>'+n+'</b>건 · <b>'+k+'</b>칸';
 }
 document.getElementById('btnExcel').addEventListener('click',()=>{
+  if(barOpen('exBar')){toggleBar('exBar');return;}
   if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
-  document.getElementById('exBar').classList.remove('hide');exInfoText();syncToolbar();
+  toggleBar('exBar');exInfoText();
 });
-document.getElementById('exClose').addEventListener('click',()=>{document.getElementById('exBar').classList.add('hide');syncToolbar();});
+document.getElementById('exClose').addEventListener('click',()=>toggleBar('exBar'));
 document.getElementById('exBar').addEventListener('change',exInfoText);
 document.getElementById('exGo').addEventListener('click',()=>{
   const scope=document.querySelector('input[name=exScope]:checked').value;
@@ -1571,7 +1586,7 @@ document.getElementById('exGo').addEventListener('click',()=>{
   const t=new Date(),p=n=>String(n).padStart(2,'0');
   const fname='측량공정진행현황_'+tag+'_'+t.getFullYear()+p(t.getMonth()+1)+p(t.getDate())+'_'+rows.length+'건.xlsx';
   XLSX.writeFile(wbk,fname);
-  document.getElementById('exBar').classList.add('hide');syncToolbar();
+  closeBars();syncToolbar();
   toast(rows.length+'건 · '+cols.length+'칸을 내보냈습니다');
 });
 
@@ -1626,13 +1641,13 @@ function fillPosSelect(){
   sel.value=String(DISP.length);   /* 기본 = 맨 뒤 */
 }
 document.getElementById('btnAddCol').addEventListener('click',()=>{
+  if(barOpen('colAddBar')){toggleBar('colAddBar');return;}
   if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
   fillPosSelect();
-  const bar=document.getElementById('colAddBar');
-  bar.classList.remove('hide');syncToolbar();
+  toggleBar('colAddBar');
   const n=document.getElementById('acName');n.value='';n.focus();
 });
-document.getElementById('acClose').addEventListener('click',()=>{document.getElementById('colAddBar').classList.add('hide');syncToolbar();});
+document.getElementById('acClose').addEventListener('click',()=>toggleBar('colAddBar'));
 document.getElementById('acName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('acAdd').click();});
 document.getElementById('acAdd').addEventListener('click',()=>{
   const raw=document.getElementById('acName').value.replace(/\s+/g,' ').trim();
@@ -1642,7 +1657,7 @@ document.getElementById('acAdd').addEventListener('click',()=>{
   DISP.splice(pos,0,{idx:idx,label:label,vis:true});
   if(sortCI!=null&&sortCI>=pos)sortCI++;
   const linked=linkNewCol(idx,label);
-  document.getElementById('colAddBar').classList.add('hide');
+  closeBars();
   buildColPanel();buildHead();buildFilters();renderValidate();render(true);renderSettle();markDirty();syncToolbar();
   toast('"'+label+'" 칸을 추가했습니다'+(linked?' · '+linked+'(으)로 연결됨':''));
 });
@@ -1746,7 +1761,11 @@ function openCellPop(label,txt){document.getElementById('cellPopT').textContent=
 function closeCellPop(){document.getElementById('cellPop').classList.add('hide');}
 document.getElementById('cellPopX').addEventListener('click',closeCellPop);
 document.getElementById('cellPop').addEventListener('click',e=>{if(e.target.id==='cellPop')closeCellPop();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCellPop();closeColFilter();}});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  closeCellPop();closeColFilter();
+  if(BARS.some(barOpen)){closeBars();syncToolbar();}
+});
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
 document.getElementById('rows').addEventListener('change',e=>{if(e.target.classList.contains('msel')){const d=DATA.find(x=>String(x._id)===e.target.dataset.id);if(d)d._msel=e.target.checked;updateSelUI();}});
 (function(){
