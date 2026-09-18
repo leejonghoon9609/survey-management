@@ -152,6 +152,8 @@ th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-inde
 th.cb,td.cb{position:sticky;left:0;z-index:5;width:36px;background:#fff;}
 th.cb{background:#fbeaed;z-index:15;}
 td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.m-real{color:#EA002C;font-weight:600;}
+.m-probe{color:#2563EB;font-weight:600;}
 td.left{text-align:left;}
 .badge{font-size:12px;padding:2px 8px;border-radius:6px;white-space:nowrap;}
 .b-완료{background:#dcfce7;color:#059669;}.b-미정산{background:#fef3c7;color:#b45309;}.b-기타{background:#f1f5f9;color:#64748b;}
@@ -430,8 +432,10 @@ td.left{text-align:left;}
    BUILD 11: 소요일수 자동 계산 (요청일 → Tango업로드, 일 단위 숫자)
    BUILD 12: 예전에 저장해 둔 목록을 불러올 때 칸 연결 정보를 다시 맞춤
              (BUILD 10 이전 저장분에서 소요일수가 비던 문제)
+   BUILD 13: 측량방법·소요일수 글자색 (탐사=파랑 / 실시간=빨강)
+             + 필터·정렬·검색어까지 저장해 마지막 화면 그대로 복원
    ======================================================================== */
-const BUILD_NO='12';
+const BUILD_NO='13';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -540,11 +544,46 @@ function setDot(cls,msg){
   }
   if(wn)wn.textContent=cls==='ok'?(t+' 저장됨'):(cls==='wait'?'저장 전':'');
 }
+function uiObj(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  const ck=id=>{const e=document.getElementById(id);return e?!!e.checked:null;};
+  return {
+    baal:curBaal, jisa:v('fJisa'), jin:v('fJin'), jeong:v('fJeong'), issue:v('fIssue'), q:v('search'),
+    sortCI:(sortCI==null?null:sortCI), sortDir:sortDir,
+    colFilter:Object.keys(colFilter).map(k=>[k,[...colFilter[k]]]),
+    sBaal:sBaalF, sJisa:v('sJisa'), sQ:v('sSearch'), month:v('month'), renum:ck('renum'),
+    panel:!document.getElementById('colPanel').classList.contains('hide')
+  };
+}
+function applyUI(u){
+  if(!u)return false;
+  let any=false;
+  curBaal=u.baal||'';
+  [...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===curBaal));
+  const set=(id,val)=>{const e=document.getElementById(id);if(!e)return;e.value=val||'';if(val&&e.value===val)any=true;};
+  set('fJisa',u.jisa);set('fJin',u.jin);set('fJeong',u.jeong);set('fIssue',u.issue);
+  const q=document.getElementById('search');if(q){q.value=u.q||'';if(q.value)any=true;}
+  sortCI=(u.sortCI==null?null:u.sortCI);sortDir=u.sortDir||1;
+  if(sortCI!=null&&!DISP[sortCI])sortCI=null;
+  if(sortCI!=null)any=true;
+  colFilter={};
+  (u.colFilter||[]).forEach(e=>{if(e&&e.length===2){colFilter[+e[0]]=new Set(e[1]);any=true;}});
+  sBaalF=u.sBaal||'';
+  [...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===sBaalF));
+  set('sJisa',u.sJisa);
+  const sq=document.getElementById('sSearch');if(sq)sq.value=u.sQ||'';
+  if(u.month)document.getElementById('month').value=u.month;
+  const rn=document.getElementById('renum');if(rn&&u.renum!=null)rn.checked=!!u.renum;
+  if(u.panel){document.getElementById('colPanel').classList.remove('hide');buildColPanel();}
+  if(curBaal)any=true;
+  return any;
+}
 function stateObj(){
   return {b:BUILD_NO,at:Date.now(),
     COL:COL,
     DISP:DISP.map(c=>({idx:c.idx,label:c.label,vis:c.vis})),
     colWidth:colWidth,
+    ui:uiObj(),
     rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel}))};
 }
 function saveState(silent){
@@ -569,8 +608,11 @@ function loadState(){
     const rep=repairCols();
     DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
-    markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
+    markDup();buildColPanel();buildFilters();
+    const uiOn=applyUI(s.ui);
+    buildHead();renderCards();renderValidate();render();renderSettle();
     setDot('ok','불러옴 '+(savedAt?hhmm(savedAt):''));
+    if(uiOn)setTimeout(()=>toast('마지막 화면 설정(필터·정렬·검색어)까지 불러왔어요'),150);
     if(rep.made||rep.fixed.length){
       const days=DATA.filter(d=>d.days!=null).length;
       setTimeout(()=>toast((rep.made?'"'+rep.made+'" 칸을 만들었어요 · ':'')+(days?'소요일수 '+days+'건 계산':'칸 연결을 다시 맞췄어요')),400);
@@ -610,7 +652,8 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
       repairCols();
       DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
-      loaded=true;markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();renderRates();
+      loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
+      buildHead();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
     }catch(err){toast('백업 파일을 읽지 못했습니다',true);}
   };
@@ -1135,9 +1178,12 @@ const isBlank=v=>(v==null||v==='');
 function cmpVal(a,b){if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 const M_PAGE=150;let mRows=[],mShown=0;
 function cellCls(d,c){const v=d.row[c.idx];return (typeof v==='number')?'num':(isLeft(c.label)?'left':'');}
+function methodCls(d){return d.mKey==='실시간'?'m-real':(d.mKey==='탐사'?'m-probe':'');}
 function cellInner(d,c){
   if(c.idx===COL.정산상황)return jeongBadge(d);
-  return '<span class="cv">'+esc(cellVal(d.row[c.idx],c.idx))+'</span>';
+  const txt=esc(cellVal(d.row[c.idx],c.idx));
+  const mc=(c.idx===COL.측량구분||c.idx===COL.소요일수)?methodCls(d):'';
+  return '<span class="cv'+(mc&&txt!==''?' '+mc:'')+'">'+txt+'</span>';
 }
 function rowHTML(d){
   if(d._id==null)d._id=++idSeq;
@@ -1373,8 +1419,8 @@ document.getElementById('btnDel').addEventListener('click',()=>{
 });
 
 /* ======================= 헤더 정렬/필터/리사이즈 ======================= */
-document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();}});
-let searchTmr;document.getElementById('search').addEventListener('input',()=>{clearTimeout(searchTmr);searchTmr=setTimeout(render,250);});
+document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();markDirty();}});
+let searchTmr;document.getElementById('search').addEventListener('input',()=>{clearTimeout(searchTmr);searchTmr=setTimeout(()=>{render();markDirty();},250);});
 document.getElementById('upPreview').addEventListener('change',e=>{
   if(e.target.id==='pvAll'){DATA.forEach(d=>d._pick=e.target.checked);renderPreview();markDirty();return;}
   if(e.target.dataset.pk!==undefined){
@@ -1390,7 +1436,7 @@ document.getElementById('head').addEventListener('click',e=>{
   const f=e.target.closest('[data-fi]');if(f){e.stopPropagation();openColFilter(+f.dataset.fi,f);return;}
   const th=e.target.closest('th[data-ci]');if(!th)return;
   const i=+th.dataset.ci;if(sortCI===i)sortDir=-sortDir;else{sortCI=i;sortDir=1;}
-  buildHead();render();
+  buildHead();render();markDirty();
 });
 function recalcW(){let t=0;document.querySelectorAll('#mtable colgroup col').forEach(c=>t+=c.getBoundingClientRect().width);document.getElementById('mtable').style.width=t+'px';}
 document.getElementById('head').addEventListener('mousedown',e=>{
@@ -1589,15 +1635,15 @@ document.getElementById('rows').addEventListener('change',e=>{if(e.target.classL
   const pop=document.getElementById('colFilterPop');
   pop.addEventListener('change',e=>{if(e.target.id==='cfAll'){pop.querySelectorAll('.cfv').forEach(c=>c.checked=e.target.checked);}else if(e.target.classList.contains('cfv')){const a=pop.querySelector('#cfAll');if(a)a.checked=[...pop.querySelectorAll('.cfv')].every(c=>c.checked);}});
   pop.addEventListener('click',e=>{
-    if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();}
-    else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();}
+    if(e.target.id==='cfApply'){const all=[...pop.querySelectorAll('.cfv')],checked=all.filter(c=>c.checked).map(c=>c.value);if(checked.length===all.length)delete colFilter[cfSrc];else colFilter[cfSrc]=new Set(checked);closeColFilter();buildHead();render();markDirty();}
+    else if(e.target.id==='cfClear'){delete colFilter[cfSrc];closeColFilter();buildHead();render();markDirty();}
   });
   document.addEventListener('click',e=>{if(pop.classList.contains('hide'))return;if(pop.contains(e.target))return;if(e.target.closest('[data-fi]'))return;closeColFilter();});
 })();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 (function(){const mw=document.querySelector('.mgr .tblwrap');if(mw)mw.addEventListener('scroll',()=>{if(mw.scrollTop+mw.clientHeight>=mw.scrollHeight-400)moreRows();});})();
-['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',()=>render()));
-document.getElementById('fIssue').addEventListener('change',()=>{renderValidate();render();});
+['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{render();markDirty();}));
+document.getElementById('fIssue').addEventListener('change',()=>{renderValidate();render();markDirty();});
 
 /* ======================= 요율 설정 ======================= */
 function renderRates(){
@@ -1639,7 +1685,7 @@ function renderSettle(){
   tb.innerHTML=rows.map(d=>{const i=DATA.indexOf(d);return '<tr>'+
     '<td class="cb"><input type="checkbox" data-i="'+i+'"'+(d._sel?' checked':'')+'></td>'+
     '<td>'+esc(cellVal(d.row[COL.순번],COL.순번))+'</td><td>'+esc(d.baal)+'</td><td>'+esc(d.region)+'</td>'+
-    '<td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td>'+esc(d.mKey)+(d.method&&d.method!==d.mKey?' <span style="color:#94a3b8">('+esc(d.method)+')</span>':'')+'</td>'+
+    '<td class="left" title="'+esc(d.work)+'">'+esc(d.work)+'</td><td><span class="'+methodCls(d)+'">'+esc(d.mKey)+'</span>'+(d.method&&d.method!==d.mKey?' <span style="color:#94a3b8">('+esc(d.method)+')</span>':'')+'</td>'+
     '<td class="num"><b>'+km(d.tango)+'</b></td><td>'+(d.jisa?esc(d.jisa):'<span style="color:#dc2626">미입력</span>')+'</td>'+
     '<td class="num">'+(safeRate(d.jisa)*100).toFixed(2)+'%</td>'+
     '<td class="num">'+won(estAmt(d))+'</td></tr>';}).join('');
@@ -1668,9 +1714,11 @@ function warnBox(sel){
   if(!lines.length){box.innerHTML='';return;}
   box.innerHTML='<div class="warn"><b>내보내기 전 확인 (내보내기는 됩니다)</b><br>'+lines.map(t=>'· '+esc(t)).join('<br>')+'</div>';
 }
-document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();}});
-document.getElementById('sSearch').addEventListener('input',renderSettle);
-document.getElementById('sJisa').addEventListener('change',()=>{renderSettle();syncToolbar();});
+document.getElementById('sBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){sBaalF=e.target.dataset.b;[...document.querySelectorAll('#sBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderSettle();markDirty();}});
+document.getElementById('sSearch').addEventListener('input',()=>{renderSettle();markDirty();});
+document.getElementById('sJisa').addEventListener('change',()=>{renderSettle();syncToolbar();markDirty();});
+document.getElementById('month').addEventListener('change',markDirty);
+document.getElementById('renum').addEventListener('change',markDirty);
 document.getElementById('sRows').addEventListener('change',e=>{if(e.target.dataset.i!==undefined){DATA[+e.target.dataset.i]._sel=e.target.checked;updateBar();markDirty();}});
 document.getElementById('sAll').addEventListener('change',e=>{sVisible().forEach(d=>d._sel=e.target.checked);renderSettle();markDirty();});
 
