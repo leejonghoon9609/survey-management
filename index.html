@@ -12,7 +12,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f8fafc;color:#1e293b;padd
 header{background:#fff;border-bottom:3px solid #FFB400;padding:0 1.5rem;display:flex;align-items:center;gap:12px;height:56px;}
 header h1{font-size:18px;font-weight:700;color:#EA002C;}
 header .sub{font-size:13px;color:#64748b;}
-.navbuild{margin-left:auto;flex:none;align-self:center;font-size:12px;font-weight:500;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:4px 11px;letter-spacing:.02em;}
+.navbuild{margin-left:auto;flex:none;align-self:center;font-size:12px;font-weight:700;color:#fff;background:#EA002C;border:1px solid #EA002C;border-radius:6px;padding:4px 12px;letter-spacing:.03em;}
 header .spacer{flex:1;}
 .savebar{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b;}
 .savebar .dotsave{width:7px;height:7px;border-radius:50%;background:#cbd5e1;flex:none;}
@@ -388,8 +388,9 @@ td.left{text-align:left;}
              컬럼 자동 통합, 발주처 자동 판정, 정산상황 정규화)
    BUILD 03: 빌드 번호를 탭 줄 오른쪽으로 이동 (스크롤해도 항상 보임)
    BUILD 04: 표 머리글을 끌어서 컬럼 순서 바꾸기 (드래그 이동)
+   BUILD 05: 빌드 번호 빨간색 표시
    ======================================================================== */
-const BUILD_NO='04';
+const BUILD_NO='05';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
