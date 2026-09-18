@@ -427,8 +427,9 @@ td.left{text-align:left;}
    BUILD 09: 리스트관리 툴바 버튼·필터에 항목별 고유색
              (평소 흰 바탕 + 고유색 글씨·테두리, 선택하면 그 색으로 채워짐)
    BUILD 10: 칸을 더블클릭하면 그 자리에서 바로 값 입력 (이슈사항 등)
+   BUILD 11: 소요일수 자동 계산 (요청일 → Tango업로드, 일 단위 숫자)
    ======================================================================== */
-const BUILD_NO='10';
+const BUILD_NO='11';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -480,17 +481,41 @@ function estAmt(d){return calcCost(d.tango,d.mKey,d.jisa).total;}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fval(v){return (v==null||v==='')?'(빈칸)':String(v);}
 function isLeft(label){return /공구|비고|공사명|측량명칭|심사|사업유형|협력/.test(label);}
-function noComma(idx){return idx===COL.순번||idx===COL.eng;}
+function noComma(idx){return idx===COL.순번||idx===COL.eng||idx===COL.소요일수;}
 function cellVal(v,idx){
   if(v==null||v==='')return '';
-  if(v instanceof Date)return fmtDate(v);
+  if(isDateObj(v))return fmtDate(v);
   if(typeof v==='number'){
     if(idx!=null&&noComma(idx))return String(v);
     return Number.isInteger(v)&&Math.abs(v)>=1000?v.toLocaleString('ko-KR'):String(v);
   }
   return String(v);
 }
+function isDateObj(v){return !!v&&(v instanceof Date||Object.prototype.toString.call(v)==='[object Date]')&&!isNaN(v.getTime());}
 function fmtDate(d){const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+/* 날짜로 읽히면 Date, 아니면 null ("23년 이월", "업로딩 대기" 같은 글자는 null) */
+function parseDate(v){
+  if(isDateObj(v))return v;
+  if(typeof v==='number'){
+    if(v>20000&&v<80000){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000);return isNaN(d)?null:new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());}
+    return null;
+  }
+  let s=String(v==null?'':v).trim();if(!s)return null;
+  const iso=s.match(/^(\d{4})-(\d{2})-(\d{2})T/);          /* 2024-06-25T00:00:00.000Z */
+  if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);
+  let m=s.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})$/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{2})[-.\/](\d{1,2})[-.\/](\d{1,2})$/);
+  if(m)return new Date(2000+ +m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일?$/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  return null;
+}
+function daysBetween(a,b){
+  const d1=parseDate(a),d2=parseDate(b);
+  if(!d1||!d2)return null;
+  return Math.round((d2.getTime()-d1.getTime())/86400000);
+}
 
 const monthSel=document.getElementById('month');
 for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';monthSel.appendChild(o);}
@@ -644,7 +669,10 @@ const COLSPEC=[
   {k:'지사',   label:'지사',           req:1, ex:h=>h==='지사'||h==='지역본부', lo:h=>h.includes('지사')||h.includes('지역본부')},
   {k:'진행',   label:'진행상황',        req:0, ex:h=>h==='진행상황'||h==='측량예정일', lo:h=>h.includes('진행')||h.includes('측량예정')},
   {k:'정산상황',label:'정산상황',        req:0, ex:h=>h==='정산상황'||h==='측량정산완료', lo:h=>(h.includes('정산')&&(h.includes('상황')||h.includes('완료')))},
-  {k:'정산금액',label:'정산금액',        req:0, ex:h=>h==='정산금액',        lo:h=>h.includes('정산예정금액')||(h.includes('정산')&&h.includes('금액'))}
+  {k:'정산금액',label:'정산금액',        req:0, ex:h=>h==='정산금액',        lo:h=>h.includes('정산예정금액')||(h.includes('정산')&&h.includes('금액'))},
+  {k:'요청일', label:'요청일',           req:0, ex:h=>h==='요청일',           lo:h=>h.includes('요청')&&h.includes('일')},
+  {k:'탱고업로드',label:'Tango업로드',    req:0, ex:h=>h.toLowerCase()==='tango업로드', lo:h=>h.toLowerCase().includes('tango')&&h.includes('업로')},
+  {k:'소요일수',label:'소요일수',         req:0, ex:h=>h==='소요일수'||h==='소요기간', lo:h=>h.includes('소요')}
 ];
 const nh=h=>String(h==null?'':h).replace(/\s/g,'');
 function mapCols(H){
@@ -711,7 +739,7 @@ function readFile(file){
   reader.onerror=()=>toast('파일을 읽지 못했습니다',true);
   reader.readAsArrayBuffer(file);
 }
-function cleanCell(v){return (v instanceof Date)?fmtDate(v):v;}
+function cleanCell(v){return isDateObj(v)?fmtDate(v):v;}
 
 function scanSheet(name,aoa){
   const det=detectHeader(aoa);
@@ -859,10 +887,18 @@ function importSelected(){
   /* 정산내역서 양식의 '구분'이 원본에 없으면 채울 수 있게 빈 칸을 만들어 둔다 */
   let madeGubun=false;
   if(mapCols(labels).col.구분<0){ensure('구분');madeGubun=true;}
+  /* 소요일수(요청일 → Tango업로드) 칸이 없으면 만들어 둔다 */
+  let madeDays=false;
+  const mTmp=mapCols(labels).col;
+  if(mTmp.소요일수<0&&mTmp.요청일>=0&&mTmp.탱고업로드>=0){ensure('소요일수');madeDays=true;}
   const mapped=mapCols(labels);
 
   DISP=labels.map((l,i)=>({idx:i,label:l||('칸'+(i+1)),vis:!!l}));
   COL=mapped.col;COLREP=mapped.rep;
+  if(COL.소요일수>=0&&COL.탱고업로드>=0){
+    const from=DISP.findIndex(c=>c.idx===COL.소요일수),to=DISP.findIndex(c=>c.idx===COL.탱고업로드);
+    if(from>=0&&to>=0&&from!==to+1){const it=DISP.splice(from,1)[0];DISP.splice(to<from?to+1:to,0,it);}
+  }
   if(autoIdx!=null){
     COL.발주처=autoIdx;
     const e=COLREP.find(x=>x.k==='발주처');
@@ -874,7 +910,7 @@ function importSelected(){
 
   const noBaal=DATA.filter(d=>!d.baal).length;
   document.getElementById('upMsg').textContent=(append?'누적 ':'')+'전체 '+DATA.length+'건 · 정산가능 '+DATA.filter(able).length+'건 ('+bySheet.join(', ')+')';
-  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun);
+  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun,madeDays);
   renderCheckBox();
   document.getElementById('upResult').classList.remove('hide');
   renderPreview();
@@ -894,7 +930,7 @@ function parseMaster(aoa){
 }
 
 /* 헤더 인식 결과 */
-function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun){
+function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays){
   const box=document.getElementById('mapBox');
   const no=rep.filter(x=>x.st==='no'),noReq=no.filter(x=>x.req),lo=rep.filter(x=>x.st==='lo');
   let h='';
@@ -903,6 +939,11 @@ function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun){
   else h+='<div class="warn" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;"><b>필수 컬럼 모두 인식됨</b> (발주처·공구명·측량구분·탱고거리·지사)</div>';
   if(lo.length)h+='<div class="warn"><b>비슷한 이름으로 맞춘 컬럼 '+lo.length+'개</b><br>'+lo.map(x=>'· '+esc(x.label)+' ← 엑셀 머리글 「'+esc(x.h)+'」').join('<br>')+'<br>맞는지 확인해 주세요.</div>';
   if(madeGubun)h+='<div class="warn">이 양식에는 <b>구분</b> 칸이 없어서 빈 칸으로 만들어 뒀어요. 정산내역서의 "구분"에 값이 필요하면 리스트관리에서 채워주세요 (선택 후 <b>선택 일괄입력</b>이 편합니다).</div>';
+  if(madeDays||COL.소요일수>=0){
+    const ok=DATA.filter(d=>d.days!=null).length,no=DATA.length-ok;
+    const neg=DATA.filter(d=>d.days!=null&&d.days<0).length;
+    h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;"><b>소요일수</b> (요청일 → Tango업로드) '+ok+'건 계산'+(no?' · 날짜가 없거나 글자라 계산 못 한 건 '+no+'건':'')+(neg?' · <span style="color:#b91c1c">업로드가 요청일보다 빠른 건 '+neg+'건</span>':'')+'</div>';
+  }
   if(append)h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;">기존 목록에 누적했습니다. 새로 들어온 칸은 뒤에 추가됐어요.</div>';
   h+='<div style="margin-top:8px;"><button class="linkish" onclick="document.getElementById(\'mapDetail\').classList.toggle(\'on\')">인식 결과 전체 보기</button></div>';
   h+='<div class="maprow" id="mapDetail">'+mapTable(rep)+'</div>';
@@ -964,6 +1005,11 @@ function deriveItem(d){
   d.jeong=String(x[COL.정산상황]||'').trim();
   d.jeongKey=normJeong(d.jeong);
   d.amt=toNum(x[COL.정산금액]);
+  /* 소요일수 = 요청일 → Tango업로드 (일). 둘 중 하나라도 날짜가 아니면 빈칸 */
+  d.req=(COL.요청일!=null&&COL.요청일>=0)?x[COL.요청일]:null;
+  d.tup=(COL.탱고업로드!=null&&COL.탱고업로드>=0)?x[COL.탱고업로드]:null;
+  d.days=daysBetween(d.req,d.tup);
+  if(COL.소요일수!=null&&COL.소요일수>=0)x[COL.소요일수]=(d.days==null?'':d.days);
 }
 function markDup(){
   const cnt={};
@@ -1149,8 +1195,9 @@ function restoreUpload(){
 function editFormHTML(d){
   const keyIdx=new Set([COL.측량구분,COL.탱고거리,COL.지사,COL.구분].filter(i=>i!=null&&i>=0));
   const fields=DISP.map(c=>{
-    const v=d.row[c.idx];const val=esc(v==null?'':(v instanceof Date?fmtDate(v):String(v)));
-    return '<label class="ef'+(keyIdx.has(c.idx)?' key':'')+'"><span>'+esc(c.label)+'</span><input data-eidx="'+c.idx+'" value="'+val+'"></label>';
+    const v=d.row[c.idx];const val=esc(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
+    const auto=(COL.소요일수>=0&&c.idx===COL.소요일수);
+    return '<label class="ef'+(keyIdx.has(c.idx)?' key':'')+'"><span>'+esc(c.label)+(auto?' (자동)':'')+'</span><input data-eidx="'+c.idx+'" value="'+val+'"'+(auto?' readonly style="background:#f1f5f9;color:#64748b;"':'')+'></label>';
   }).join('');
   const iss=issuesOf(d);
   return '<div class="editbox"><div class="eb-h">사업 수정 · '+esc(d.work||'')+'</div>'+
@@ -1176,6 +1223,7 @@ document.getElementById('rows').addEventListener('click',e=>{
     const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);
     if(d&&er){
       er.querySelectorAll('input[data-eidx]').forEach(inp=>{
+        if(inp.readOnly)return;
         const idx=+inp.dataset.eidx,val=inp.value;let nv=val;
         if(val.trim()===''){nv='';}
         else if(noComma(idx)){nv=val;}                                   /* 순번·공사코드는 문자 그대로 */
@@ -1214,11 +1262,12 @@ function startCellEdit(td){
   const tr=td.closest('tr');if(!tr)return;
   const d=DATA.find(x=>String(x._id)===String(tr.dataset.id));if(!d)return;
   const c=colOfTd(td);if(!c)return;
+  if(COL.소요일수>=0&&c.idx===COL.소요일수){toast('소요일수는 요청일과 Tango업로드로 자동 계산돼요',true);return;}
   const v=d.row[c.idx];
   const before=td.innerHTML,beforeCls=td.className;
   const inp=document.createElement('input');
   inp.type='text';inp.className='cellinp';
-  inp.value=(v==null?'':(v instanceof Date?fmtDate(v):String(v)));
+  inp.value=(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
   inp.setAttribute('aria-label',c.label);
   td.innerHTML='';td.appendChild(inp);td.classList.add('editing');
   inp.focus();inp.select();
@@ -1233,31 +1282,39 @@ function startCellEdit(td){
     const old=d.row[c.idx];
     const changed=String(old==null?'':old)!==String(nv);
     d.row[c.idx]=nv;deriveItem(d);
-    td.className=cellCls(d,c);
-    td.title=cellVal(d.row[c.idx],c.idx);
-    td.innerHTML=cellInner(d,c);
     if(changed){
       markDup();
-      const iss=issuesOf(d);
-      tr.classList.toggle('hasissue',iss.length>0);
-      if(iss.length)tr.title='점검: '+iss.join(', ');else tr.removeAttribute('title');
+      refreshRow(tr,d);        /* 소요일수처럼 따라 바뀌는 칸까지 다시 그림 */
       renderCards();renderValidate();renderSettle();buildFilters();markDirty();
+    }else{
+      td.className=cellCls(d,c);
+      td.title=cellVal(d.row[c.idx],c.idx);
+      td.innerHTML=cellInner(d,c);
     }
     return changed;
   }
+  const ci0=td.cellIndex;
   inp.addEventListener('keydown',ev=>{
     ev.stopPropagation();
-    if(ev.key==='Enter'){ev.preventDefault();finish(true);nextCell(td,1,0);}
+    if(ev.key==='Enter'){ev.preventDefault();finish(true);nextCell(tr,ci0,1,0);}
     else if(ev.key==='Escape'){ev.preventDefault();finish(false);}
-    else if(ev.key==='Tab'){ev.preventDefault();finish(true);nextCell(td,0,ev.shiftKey?-1:1);}
+    else if(ev.key==='Tab'){ev.preventDefault();finish(true);nextCell(tr,ci0,0,ev.shiftKey?-1:1);}
   });
   inp.addEventListener('blur',()=>finish(true));
   inp.addEventListener('click',ev=>ev.stopPropagation());
   inp.addEventListener('dblclick',ev=>ev.stopPropagation());
 }
-function nextCell(td,dr,dc){
-  const tr=td.closest('tr');if(!tr)return;
-  let ntr=tr,ci=td.cellIndex+dc;
+function refreshRow(tr,d){
+  const tmp=document.createElement('tbody');
+  tmp.innerHTML=rowHTML(d);
+  const ntr=tmp.firstElementChild;if(!ntr)return;
+  tr.className=ntr.className;
+  if(ntr.title)tr.title=ntr.title;else tr.removeAttribute('title');
+  tr.innerHTML=ntr.innerHTML;
+}
+function nextCell(tr,ci0,dr,dc){
+  if(!tr)return;
+  let ntr=tr,ci=ci0+dc;
   if(dr){
     ntr=dr>0?tr.nextElementSibling:tr.previousElementSibling;
     while(ntr&&ntr.classList.contains('editrow'))ntr=dr>0?ntr.nextElementSibling:ntr.previousElementSibling;
@@ -1279,6 +1336,7 @@ document.getElementById('btnBulk').addEventListener('click',()=>{
 document.getElementById('bulkClose').addEventListener('click',()=>{document.getElementById('bulkBar').classList.add('hide');syncToolbar();});
 document.getElementById('bulkApply').addEventListener('click',()=>{
   const idx=+document.getElementById('bulkCol').value,val=document.getElementById('bulkVal').value;
+  if(COL.소요일수>=0&&idx===COL.소요일수){toast('소요일수는 자동 계산되는 칸이라 직접 넣을 수 없어요',true);return;}
   const sel=DATA.filter(d=>d._msel);
   if(!sel.length){toast('선택된 줄이 없습니다',true);return;}
   let nv=val;
