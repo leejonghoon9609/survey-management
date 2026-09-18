@@ -166,6 +166,11 @@ td.left{text-align:left;}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#cbd5e1;}
 .warn{background:#fffbeb;border:1px solid #fde68a;color:#b45309;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px;line-height:1.7;}
 .warn.bad{background:#fef2f2;border-color:#fecaca;color:#b91c1c;}
+.upmode{padding:5px 12px;border:1.5px solid #e2e8f0;border-radius:8px;}
+.upmode.danger{border-color:#fecaca;background:#fef2f2;}
+.upmode.danger span{color:#b91c1c;font-weight:500;}
+.upmode.safe{border-color:#bbf7d0;background:#f0fdf4;}
+.upmode.safe span{color:#166534;font-weight:500;}
 .upbox{margin-top:14px;padding:14px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .tbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;border-radius:9px;padding:9px 12px;margin-bottom:10px;}
 .tbar-ex{background:#fff7ed;border:1px solid #fed7aa;}
@@ -258,10 +263,12 @@ td.left{text-align:left;}
     </div>
     <div class="card" id="mode-up">
       <div class="controls" style="margin-bottom:10px;">
-        <span style="font-size:13px;color:#475569;">불러오는 방식</span>
-        <label><input type="radio" name="upmode" value="replace" checked>기존 목록 교체</label>
-        <label><input type="radio" name="upmode" value="append">기존 목록에 추가</label>
+        <span style="font-size:13px;color:#475569;font-weight:500;">불러오는 방식</span>
+        <label class="upmode"><input type="radio" name="upmode" value="replace" checked><span id="upmodeRep">기존 목록 교체</span></label>
+        <label class="upmode"><input type="radio" name="upmode" value="append"><span id="upmodeApp">기존 목록에 추가</span></label>
+        <button class="btn tbtn hide" id="btnPrev" style="padding:6px 14px;--c:#0369A1;">직전 목록 되살리기</button>
       </div>
+      <div id="upmodeNote"></div>
       <div class="drop" id="drop">
         <b>공정 리스트 엑셀을 올려주세요</b>
         .xls / .xlsx 파일을 끌어다 놓거나 클릭해서 선택
@@ -485,8 +492,10 @@ td.left{text-align:left;}
              — 입력 줄 3개와 업로드 결과 상자가 늘 펼쳐져 있던 원인
    BUILD 17: 더블클릭하면 수정 창이 열림 (칸 안 입력 → 팝업 창으로 교체)
              + 첫 클릭 팝업이 더블클릭을 가로채던 문제 수정
+   BUILD 18: 기존 목록 교체로 목록이 통째로 날아가던 사고 방지
+             (건수 표시 · 교체 전 확인 · 직전 목록 되살리기 · 방식 기억)
    ======================================================================== */
-const BUILD_NO='17';
+const BUILD_NO='18';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -603,6 +612,7 @@ function uiObj(){
     sortCI:(sortCI==null?null:sortCI), sortDir:sortDir,
     colFilter:Object.keys(colFilter).map(k=>[k,[...colFilter[k]]]),
     sBaal:sBaalF, sJisa:v('sJisa'), sQ:v('sSearch'), month:v('month'), renum:ck('renum'),
+    upmode:upMode(),
     panel:!document.getElementById('colPanel').classList.contains('hide')
   };
 }
@@ -625,6 +635,7 @@ function applyUI(u){
   const sq=document.getElementById('sSearch');if(sq)sq.value=u.sQ||'';
   if(u.month)document.getElementById('month').value=u.month;
   const rn=document.getElementById('renum');if(rn&&u.renum!=null)rn.checked=!!u.renum;
+  if(u.upmode){const r=document.querySelector('input[name=upmode][value="'+u.upmode+'"]');if(r)r.checked=true;}
   if(u.panel){document.getElementById('colPanel').classList.remove('hide');buildColPanel();}
   if(curBaal)any=true;
   return any;
@@ -663,6 +674,7 @@ function loadState(){
     const uiOn=applyUI(s.ui);
     buildHead();renderCards();renderValidate();render();renderSettle();
     setDot('ok','불러옴 '+(savedAt?hhmm(savedAt):''));
+    updateUpMode();
     if(uiOn)setTimeout(()=>toast('마지막 화면 설정(필터·정렬·검색어)까지 불러왔어요'),150);
     if(rep.made||rep.fixed.length){
       const days=DATA.filter(d=>d.days!=null).length;
@@ -824,6 +836,55 @@ drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
 drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])readFile(e.target.files[0]);e.target.value='';});
 function upMode(){return document.querySelector('input[name=upmode]:checked').value;}
+const LS_PREV='gongjeong_prev_v1';
+/* 교체하기 직전 목록을 따로 보관해 두었다가 되살릴 수 있게 한다 */
+function stashPrev(){
+  if(!DATA.length)return;
+  try{localStorage.setItem(LS_PREV,JSON.stringify({...stateObj(),n:DATA.length}));}catch(e){}
+  showPrevBtn();
+}
+function prevInfo(){
+  try{const r=localStorage.getItem(LS_PREV);if(!r)return null;const o=JSON.parse(r);
+    if(!o||!o.rows||!o.rows.length)return null;return o;}catch(e){return null;}
+}
+function showPrevBtn(){
+  const b=document.getElementById('btnPrev'),p=prevInfo();
+  if(!b)return;
+  if(!p){b.classList.add('hide');return;}
+  const t=p.at?new Date(p.at):null;
+  b.textContent='직전 목록 되살리기 ('+(p.n||p.rows.length)+'건'+(t?' · '+hhmm(t):'')+')';
+  b.classList.remove('hide');
+}
+document.getElementById('btnPrev').addEventListener('click',()=>{
+  const p=prevInfo();if(!p){toast('되살릴 목록이 없습니다',true);return;}
+  if(DATA.length&&!confirm('지금 목록 '+DATA.length+'건을 버리고,\n직전 목록 '+(p.n||p.rows.length)+'건으로 되돌립니다.\n\n계속할까요?'))return;
+  const cur=DATA.length?JSON.stringify({...stateObj(),n:DATA.length}):null;
+  COL=p.COL||{};DISP=(p.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=p.colWidth||{};
+  repairCols();
+  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m};deriveItem(d);return d;});
+  loaded=true;markDup();buildColPanel();buildFilters();applyUI(p.ui);
+  buildHead();renderCards();renderValidate();render();renderSettle();
+  try{if(cur)localStorage.setItem(LS_PREV,cur);else localStorage.removeItem(LS_PREV);}catch(e){}
+  showPrevBtn();updateUpMode();markDirty();goTab('manage');
+  toast(DATA.length+'건으로 되돌렸습니다');
+});
+/* 불러오는 방식 표시 : 지금 목록이 몇 건인지, 무엇이 없어지는지 */
+function updateUpMode(){
+  const n=DATA.length,m=upMode();
+  const rep=document.getElementById('upmodeRep'),app=document.getElementById('upmodeApp');
+  if(!rep)return;
+  rep.textContent=n?('기존 목록 교체 (지금 '+n+'건 지움)'):'기존 목록 교체';
+  app.textContent=n?('기존 목록에 추가 (지금 '+n+'건 + 새 파일)'):'기존 목록에 추가';
+  rep.parentElement.classList.toggle('danger',n>0&&m==='replace');
+  rep.parentElement.classList.toggle('safe',false);
+  app.parentElement.classList.toggle('safe',n>0&&m==='append');
+  const note=document.getElementById('upmodeNote');
+  if(!n){note.innerHTML='';return;}
+  note.innerHTML=(m==='replace')
+    ? '<div class="warn bad" style="margin:0 0 10px;"><b>지금 목록 '+n+'건이 모두 지워지고</b> 새 파일로 바뀝니다. SKT·SKB를 함께 보시려면 <b>"기존 목록에 추가"</b>를 선택하세요.</div>'
+    : '<div class="warn" style="margin:0 0 10px;background:#f0fdf4;border-color:#bbf7d0;color:#166534;">지금 목록 '+n+'건은 그대로 두고 새 파일을 <b>뒤에 붙입니다.</b> 공사코드+공사명이 같은 건은 한 번만 들어갑니다.</div>';
+}
+[...document.querySelectorAll('input[name=upmode]')].forEach(r=>r.addEventListener('change',()=>{updateUpMode();markDirty();}));
 
 let PENDING=null;   /* 업로드한 파일의 시트 스캔 결과 */
 
@@ -944,6 +1005,10 @@ function importSelected(){
   if(!sel.length){toast('불러올 시트를 하나 이상 선택하세요',true);return;}
   const fileBaal=(document.getElementById('upBaal')||{}).value||'';
   const append=(upMode()==='append'&&DATA.length>0);
+  if(!append&&DATA.length){
+    if(!confirm('지금 목록 '+DATA.length+'건이 모두 지워지고 새 파일로 바뀝니다.\n\nSKT·SKB를 함께 보시려면 "닫기"를 누르고\n불러오는 방식을 "기존 목록에 추가"로 바꿔주세요.\n\n그래도 교체할까요?\n(교체해도 "직전 목록 되살리기"로 되돌릴 수 있어요)'))return;
+    stashPrev();
+  }
 
   let labels=[],rows=[],meta=[];
   if(append){const m=masterFromExisting();labels=m.labels.slice();rows=m.rows;meta=m.meta;}
@@ -1018,7 +1083,7 @@ function importSelected(){
   document.getElementById('upResult').classList.remove('hide');
   renderPreview();
   buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
-  markDirty();
+  updateUpMode();markDirty();
   toast('불러오기 완료 · '+added+'건 추가'+(skipped?' / 중복 '+skipped+'건 제외':''));
 }
 
@@ -1939,7 +2004,7 @@ document.getElementById('export').addEventListener('click',()=>{
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
-syncToolbar();
+updateUpMode();showPrevBtn();syncToolbar();
 document.getElementById('mapBox').innerHTML='';
 </script>
 </body>
