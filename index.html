@@ -110,6 +110,9 @@ body.coldrag *{cursor:grabbing !important;}
 .cell-x{cursor:pointer;color:#64748b;font-size:18px;line-height:1;padding:2px 6px;}
 .cell-b{padding:16px;overflow:auto;font-size:14px;color:#1e293b;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
 tr.rowsel td{background:#fff3cd;}
+#mtable td.editing{padding:2px 4px;background:#fff7e0;overflow:visible;}
+.cellinp{width:100%;box-sizing:border-box;border:1.5px solid #EA002C;border-radius:5px;padding:4px 6px;font-family:inherit;font-size:13px;color:#1e293b;background:#fff;outline:none;text-align:inherit;}
+.cellinp:focus{box-shadow:0 0 0 3px rgba(234,0,44,.15);}
 tr.hasissue td.cb{box-shadow:inset 3px 0 0 #dc2626;}
 .editrow td{background:#fff7e0;padding:0;}
 .editbox{position:sticky;left:0;width:min(980px,90vw);padding:14px 16px;box-sizing:border-box;}
@@ -340,7 +343,7 @@ td.left{text-align:left;}
         <div id="colPanel" class="colpanel hide"></div>
         <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div>
       </div>
-      <p class="note">줄을 <b>더블클릭</b>하면 그 줄이 펼쳐져 값을 수정할 수 있어요. 칸의 글자를 한 번 클릭하면 전체 내용 팝업. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 표 클릭 후 ← → ↑↓ 키로 이동. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
+      <p class="note"><b>칸을 더블클릭하면 그 자리에서 바로 값을 입력</b>할 수 있어요 (Enter=저장 후 아래 칸, Tab=저장 후 옆 칸, Esc=취소). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. 왼쪽에 빨간 선이 있는 줄은 점검 이슈가 있는 건이에요.</p>
     </div>
   </div>
 
@@ -423,8 +426,9 @@ td.left{text-align:left;}
    BUILD 08: 목록(칸) 추가 — 넣을 위치와 이름을 정해 새 칸 만들기 / 칸 삭제
    BUILD 09: 리스트관리 툴바 버튼·필터에 항목별 고유색
              (평소 흰 바탕 + 고유색 글씨·테두리, 선택하면 그 색으로 채워짐)
+   BUILD 10: 칸을 더블클릭하면 그 자리에서 바로 값 입력 (이슈사항 등)
    ======================================================================== */
-const BUILD_NO='09';
+const BUILD_NO='10';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1068,16 +1072,19 @@ function visible(){
 const isBlank=v=>(v==null||v==='');
 function cmpVal(a,b){if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 const M_PAGE=150;let mRows=[],mShown=0;
+function cellCls(d,c){const v=d.row[c.idx];return (typeof v==='number')?'num':(isLeft(c.label)?'left':'');}
+function cellInner(d,c){
+  if(c.idx===COL.정산상황)return jeongBadge(d);
+  return '<span class="cv">'+esc(cellVal(d.row[c.idx],c.idx))+'</span>';
+}
 function rowHTML(d){
   if(d._id==null)d._id=++idSeq;
   const iss=issuesOf(d);
   let tds='<td class="cb"><input type="checkbox" class="msel" data-id="'+d._id+'"'+(d._msel?' checked':'')+'></td>';
   DISP.forEach(c=>{
     if(!c.vis)return;
-    const v=d.row[c.idx];const isNum=typeof v==='number';
-    let disp=esc(cellVal(v,c.idx));let cls=isNum?'num':(isLeft(c.label)?'left':'');
-    if(c.idx===COL.정산상황)disp=jeongBadge(d);
-    tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(v,c.idx))+'"><span class="cv">'+disp+'</span></td>';
+    const cls=cellCls(d,c);
+    tds+='<td'+(cls?' class="'+cls+'"':'')+' title="'+esc(cellVal(d.row[c.idx],c.idx))+'">'+cellInner(d,c)+'</td>';
   });
   return '<tr data-id="'+d._id+'"'+(iss.length?' class="hasissue" title="점검: '+esc(iss.join(', '))+'"':'')+'>'+tds+'</tr>';
 }
@@ -1190,12 +1197,76 @@ document.getElementById('rows').addEventListener('click',e=>{
   if(cv&&cv.textContent.trim()!==''){const td=cv.closest('td');const vc=DISP.filter(c=>c.vis);const label=vc[td.cellIndex-1]?vc[td.cellIndex-1].label:'';openCellPop(label,cv.textContent.trim());return;}
   toggleEditRow(tr);
 });
-/* 값이 있는 칸도 더블클릭이면 편집 (기존: 빈 칸만 편집 가능했음) */
+/* 칸을 더블클릭하면 그 자리에서 바로 값 입력 */
 document.getElementById('rows').addEventListener('dblclick',e=>{
   if(e.target.closest('td.cb'))return;
-  const tr=e.target.closest('tr');if(!tr||tr.classList.contains('editrow'))return;
-  closeCellPop();toggleEditRow(tr);
+  const td=e.target.closest('td');const tr=e.target.closest('tr');
+  if(!td||!tr||tr.classList.contains('editrow'))return;
+  closeCellPop();
+  /* 첫 클릭으로 펼쳐진 줄 수정창은 닫는다 */
+  const nx=tr.nextElementSibling;
+  if(nx&&nx.classList.contains('editrow')){nx.remove();tr.classList.remove('rowsel');}
+  startCellEdit(td);
 });
+function colOfTd(td){const vc=DISP.filter(c=>c.vis);return vc[td.cellIndex-1]||null;}
+function startCellEdit(td){
+  if(!td||td.classList.contains('cb')||td.querySelector('input'))return;
+  const tr=td.closest('tr');if(!tr)return;
+  const d=DATA.find(x=>String(x._id)===String(tr.dataset.id));if(!d)return;
+  const c=colOfTd(td);if(!c)return;
+  const v=d.row[c.idx];
+  const before=td.innerHTML,beforeCls=td.className;
+  const inp=document.createElement('input');
+  inp.type='text';inp.className='cellinp';
+  inp.value=(v==null?'':(v instanceof Date?fmtDate(v):String(v)));
+  inp.setAttribute('aria-label',c.label);
+  td.innerHTML='';td.appendChild(inp);td.classList.add('editing');
+  inp.focus();inp.select();
+  let done=false;
+  function finish(save){
+    if(done)return true;done=true;
+    td.classList.remove('editing');td.className=beforeCls;
+    if(!save){td.innerHTML=before;return false;}
+    let nv=inp.value;
+    if(nv.trim()==='')nv='';
+    else if(!noComma(c.idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(nv.trim())){const n=Number(nv.replace(/,/g,''));nv=isNaN(n)?nv:n;}
+    const old=d.row[c.idx];
+    const changed=String(old==null?'':old)!==String(nv);
+    d.row[c.idx]=nv;deriveItem(d);
+    td.className=cellCls(d,c);
+    td.title=cellVal(d.row[c.idx],c.idx);
+    td.innerHTML=cellInner(d,c);
+    if(changed){
+      markDup();
+      const iss=issuesOf(d);
+      tr.classList.toggle('hasissue',iss.length>0);
+      if(iss.length)tr.title='점검: '+iss.join(', ');else tr.removeAttribute('title');
+      renderCards();renderValidate();renderSettle();buildFilters();markDirty();
+    }
+    return changed;
+  }
+  inp.addEventListener('keydown',ev=>{
+    ev.stopPropagation();
+    if(ev.key==='Enter'){ev.preventDefault();finish(true);nextCell(td,1,0);}
+    else if(ev.key==='Escape'){ev.preventDefault();finish(false);}
+    else if(ev.key==='Tab'){ev.preventDefault();finish(true);nextCell(td,0,ev.shiftKey?-1:1);}
+  });
+  inp.addEventListener('blur',()=>finish(true));
+  inp.addEventListener('click',ev=>ev.stopPropagation());
+  inp.addEventListener('dblclick',ev=>ev.stopPropagation());
+}
+function nextCell(td,dr,dc){
+  const tr=td.closest('tr');if(!tr)return;
+  let ntr=tr,ci=td.cellIndex+dc;
+  if(dr){
+    ntr=dr>0?tr.nextElementSibling:tr.previousElementSibling;
+    while(ntr&&ntr.classList.contains('editrow'))ntr=dr>0?ntr.nextElementSibling:ntr.previousElementSibling;
+    if(!ntr&&dr>0){moreRows();ntr=tr.nextElementSibling;}
+  }
+  if(!ntr)return;
+  const ntd=ntr.children[ci];
+  if(ntd&&!ntd.classList.contains('cb')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});startCellEdit(ntd);}
+}
 document.getElementById('btnBulk').addEventListener('click',()=>{
   const bar=document.getElementById('bulkBar');
   const n=DATA.filter(d=>d._msel).length;
