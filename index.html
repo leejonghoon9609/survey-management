@@ -301,10 +301,20 @@ td.left{text-align:left;}
         <button class="btn" onclick="toggleColPanel()" style="padding:7px 14px;">컬럼 설정</button>
         <button class="btn" id="btnBulk" style="padding:7px 14px;">선택 일괄입력</button>
         <button class="btn" id="btnDel" style="padding:7px 14px;">선택 삭제</button>
+        <button class="btn" id="btnAddCol" style="padding:7px 14px;">목록 추가</button>
         <span style="flex:1"></span>
         <button class="btn btn-primary savebtn" id="btnSaveList">저장</button>
         <span class="stat" id="saveWhen"></span>
         <span class="stat" id="stat"></span>
+      </div>
+      <div id="colAddBar" class="hide" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
+        <span style="font-size:13px;color:#1d4ed8;font-weight:500;">새 목록(칸) 추가</span>
+        <span style="font-size:13px;color:#475569;">이름</span>
+        <input type="text" id="acName" placeholder="예) 구분, 담당자, 확인메모" style="padding:6px 9px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;width:200px;">
+        <span style="font-size:13px;color:#475569;">넣을 위치</span>
+        <select id="acPos" style="padding:6px 9px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;max-width:300px;"></select>
+        <button class="btn btn-primary" id="acAdd" style="padding:6px 16px;">추가</button>
+        <button class="btn" id="acClose" style="padding:6px 12px;">닫기</button>
       </div>
       <div id="bulkBar" class="hide" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff7e0;border:1px solid #fde68a;border-radius:9px;padding:9px 12px;margin-bottom:10px;">
         <span style="font-size:13px;color:#b45309;">선택한 줄의</span>
@@ -400,8 +410,9 @@ td.left{text-align:left;}
    BUILD 06: 리스트관리 툴바에 저장 버튼 추가 (미저장이면 빨갛게 표시)
    BUILD 07: 저장 버튼이 흰색이라 글자처럼 보이던 것을 빨간 버튼으로 변경
              + 저장 시각을 버튼 옆에 표시
+   BUILD 08: 목록(칸) 추가 — 넣을 위치와 이름을 정해 새 칸 만들기 / 칸 삭제
    ======================================================================== */
-const BUILD_NO='07';
+const BUILD_NO='08';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -992,10 +1003,12 @@ function buildHead(){
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
 }
-function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button></span></div>').join('');}
+function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title">표시할 칸 · 순서</div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
 function toggleColPanel(){const p=document.getElementById('colPanel');p.classList.toggle('hide');if(!p.classList.contains('hide'))buildColPanel();}
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();markDirty();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();markDirty();}});
 document.getElementById('colPanel').addEventListener('click',e=>{
+  const x=e.target.closest('button[data-cx]');
+  if(x){delCol(+x.dataset.cx);return;}
   const b=e.target.closest('button[data-mv]');if(!b)return;
   const i=+b.dataset.mv,j=i+(+b.dataset.d);if(j<0||j>=DISP.length)return;
   const t=DISP[i];DISP[i]=DISP[j];DISP[j]=t;
@@ -1231,6 +1244,66 @@ document.getElementById('head').addEventListener('mousedown',e=>{
   function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';markDirty();}
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
 });
+/* ---- 목록(칸) 추가 · 삭제 ---- */
+function nextColIdx(){let m=-1;DISP.forEach(c=>{if(typeof c.idx==='number'&&c.idx>m)m=c.idx;});return m+1;}
+function uniqLabel(l){
+  const has=x=>DISP.some(c=>c.label===x);
+  if(!has(l))return l;
+  for(let n=2;n<99;n++){if(!has(l+' '+n))return l+' '+n;}
+  return l+' '+Date.now();
+}
+/* 새 칸이 아직 못 찾은 항목의 이름이면 그 자리에 연결 (예: "구분") */
+function linkNewCol(idx,label){
+  const N=nh(label);
+  for(const sp of COLSPEC){
+    if(COL[sp.k]!=null&&COL[sp.k]>=0)continue;
+    if(sp.ex(N)||sp.lo(N)){COL[sp.k]=idx;return sp.label;}
+  }
+  return '';
+}
+function fillPosSelect(){
+  const sel=document.getElementById('acPos');
+  let h='<option value="0">맨 앞</option>';
+  DISP.forEach((c,i)=>{h+='<option value="'+(i+1)+'">「'+esc(c.label)+'」 뒤</option>';});
+  sel.innerHTML=h;
+  sel.value=String(DISP.length);   /* 기본 = 맨 뒤 */
+}
+document.getElementById('btnAddCol').addEventListener('click',()=>{
+  if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  fillPosSelect();
+  const bar=document.getElementById('colAddBar');
+  bar.classList.remove('hide');
+  const n=document.getElementById('acName');n.value='';n.focus();
+});
+document.getElementById('acClose').addEventListener('click',()=>document.getElementById('colAddBar').classList.add('hide'));
+document.getElementById('acName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('acAdd').click();});
+document.getElementById('acAdd').addEventListener('click',()=>{
+  const raw=document.getElementById('acName').value.replace(/\s+/g,' ').trim();
+  if(!raw){toast('칸 이름을 입력하세요',true);document.getElementById('acName').focus();return;}
+  const pos=Math.max(0,Math.min(+document.getElementById('acPos').value||0,DISP.length));
+  const label=uniqLabel(raw),idx=nextColIdx();
+  DISP.splice(pos,0,{idx:idx,label:label,vis:true});
+  if(sortCI!=null&&sortCI>=pos)sortCI++;
+  const linked=linkNewCol(idx,label);
+  document.getElementById('colAddBar').classList.add('hide');
+  buildColPanel();buildHead();buildFilters();renderValidate();render(true);renderSettle();markDirty();
+  toast('"'+label+'" 칸을 추가했습니다'+(linked?' · '+linked+'(으)로 연결됨':''));
+});
+function delCol(i){
+  const c=DISP[i];if(!c)return;
+  const used=DATA.filter(d=>{const v=d.row[c.idx];return v!=null&&v!=='';}).length;
+  const msg='"'+c.label+'" 칸을 목록에서 삭제합니다.'+(used?('\n\n이 칸에 값이 있는 줄이 '+used+'건 있습니다. 그 값도 함께 지워집니다.'):'\n\n이 칸은 비어 있습니다.')+'\n\n계속할까요?';
+  if(!confirm(msg))return;
+  DISP.splice(i,1);
+  DATA.forEach(d=>{delete d.row[c.idx];});
+  delete colWidth[c.idx];delete colFilter[c.idx];
+  Object.keys(COL).forEach(k=>{if(COL[k]===c.idx)COL[k]=-1;});
+  if(sortCI!=null){if(sortCI===i)sortCI=null;else if(sortCI>i)sortCI--;}
+  DATA.forEach(deriveItem);markDup();
+  buildColPanel();buildHead();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
+  toast('"'+c.label+'" 칸을 삭제했습니다');
+}
+
 /* ---- 머리글을 끌어서 컬럼 순서 바꾸기 ---- */
 function moveCol(a,b,before){
   if(a===b)return;
