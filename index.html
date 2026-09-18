@@ -199,6 +199,10 @@ th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:no
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
 th.cb,td.cb{position:sticky;left:0;z-index:5;width:36px;background:#fff;}
 th.cb{background:#fbeaed;z-index:15;}
+th.rn,td.rn{position:sticky;left:36px;z-index:5;width:46px;background:#fff;text-align:center;font-variant-numeric:tabular-nums;color:#94a3b8;font-size:12px;cursor:default;}
+th.rn{background:#fbeaed;z-index:15;color:#9f1239;}
+tr.hasissue td.rn{background:#fff8f8;}
+tr.rowsel td.rn{background:#fff3cd;}
 td.num{text-align:right;font-variant-numeric:tabular-nums;}
 .m-real{color:#EA002C;font-weight:600;}
 .m-probe{color:#2563EB;font-weight:600;}
@@ -580,8 +584,10 @@ td.left{text-align:left;}
    BUILD 25: 이슈사항 수정 창에 사유 선택바 (왼쪽) + 세부사항(오른쪽)
              저장 형식 "사유_세부사항", 저장하면 이슈 체크 자동 반영
    BUILD 26: 사유별 고유색 + "실시간 진행중" 추가, 표에도 색 배지로 표시
+   BUILD 27: 리스트관리 표 체크바 뒤에 순번 칸 (필터 걸린 상태의 번호·수량 확인)
    ======================================================================== */
-const BUILD_NO='26';
+const BUILD_NO='27';
+const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1363,9 +1369,9 @@ document.getElementById('vChips').addEventListener('click',e=>{
 function defW(l){if(l.includes('공구')||l.includes('심사정보'))return 280;if(l.includes('비고')||l.includes('공사명'))return 160;if(l.includes('담당')||l.toLowerCase().includes('eng')||l.includes('성과심사')||l.includes('업로딩 유무'))return 140;return 105;}
 function buildHead(){
   const vis=[];DISP.forEach((c,i)=>{if(c.vis)vis.push({c,i});});
-  let cg='<col style="width:36px">',total=36;
+  let cg='<col style="width:36px"><col style="width:46px">',total=36+46;
   vis.forEach(o=>{const w=colWidth[o.c.idx]||defW(o.c.label);total+=w;cg+='<col data-ci="'+o.i+'" style="width:'+w+'px">';});
-  let h='<th class="cb"><input type="checkbox" id="mAll" title="전체선택"></th>';
+  let h='<th class="cb"><input type="checkbox" id="mAll" title="전체선택"></th><th class="rn" title="지금 화면 기준 순번">#</th>';
   vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬 · 끌면 순서 이동">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
@@ -1595,11 +1601,12 @@ function cellInner(d,c){
   const mc=(c.idx===COL.측량구분||c.idx===COL.소요일수)?methodCls(d):'';
   return '<span class="cv'+(mc&&txt!==''?' '+mc:'')+'">'+txt+'</span>';
 }
-function rowHTML(d){
+function rowHTML(d,n){
   if(d._id==null)d._id=++idSeq;
   const iss=issuesOf(d);
   const flag=!!d._chk;
-  let tds='<td class="cb"><input type="checkbox" class="msel" data-id="'+d._id+'"'+(d._msel?' checked':'')+'></td>';
+  let tds='<td class="cb"><input type="checkbox" class="msel" data-id="'+d._id+'"'+(d._msel?' checked':'')+'></td>'+
+          '<td class="rn">'+(n==null?'':(n+1))+'</td>';
   DISP.forEach(c=>{
     if(!c.vis)return;
     const cls=cellCls(d,c);
@@ -1611,7 +1618,8 @@ function rowHTML(d){
 /* 값이 바뀌면 그 줄 전체를 다시 그린다 (소요일수처럼 따라 바뀌는 칸까지 반영) */
 function refreshRow(tr,d){
   const tmp=document.createElement('tbody');
-  tmp.innerHTML=rowHTML(d);
+  const n=mRows.indexOf(d);
+  tmp.innerHTML=rowHTML(d,n>=0?n:null);
   const ntr=tmp.firstElementChild;if(!ntr)return;
   tr.className=ntr.className;
   if(ntr.title)tr.title=ntr.title;else tr.removeAttribute('title');
@@ -1634,7 +1642,7 @@ function render(keep){
   }
   mRows=rows;mShown=Math.min(Math.max(M_PAGE,prev),rows.length);
   if(!mRows.length){
-    const span=1+DISP.filter(c=>c.vis).length;
+    const span=LEAD+DISP.filter(c=>c.vis).length;
     let h;
     if(!DATA.length)h='<b>목록이 비어 있어요.</b><br>사업추가 탭에서 엑셀을 올려주세요.';
     else if(anyFilterOn())h='<b>지금 걸린 필터에 맞는 줄이 없어요.</b><br>전체 '+DATA.length+'건은 그대로 있습니다.<br><button class="btn btn-primary" id="clrF" style="padding:8px 20px;">필터 모두 해제</button>';
@@ -1642,12 +1650,12 @@ function render(keep){
     document.getElementById('rows').innerHTML='<tr class="emptyrow"><td colspan="'+Math.max(1,span)+'">'+h+'</td></tr>';
     const cb=document.getElementById('clrF');if(cb)cb.addEventListener('click',clearAllFilters);
   }else{
-    document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
+    document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map((d,i)=>rowHTML(d,i)).join('');
   }
   updateSelUI();syncToolbar();
   if(keep&&wrap)wrap.scrollTop=st;
 }
-function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map(rowHTML).join(''));mShown=next;updateSelUI();}
+function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map((d,i)=>rowHTML(d,mShown+i)).join(''));mShown=next;updateSelUI();}
 function jeongBadge(d){
   const k=(typeof d==='object'&&d)?d.jeongKey:normJeong(d);
   const raw=(typeof d==='object'&&d)?d.jeong:String(d||'');
@@ -1705,13 +1713,13 @@ function toggleEditRow(tr){
   document.querySelectorAll('#rows tr.rowsel').forEach(r=>r.classList.remove('rowsel'));
   const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;
   tr.classList.add('rowsel');
-  const colspan=1+DISP.filter(c=>c.vis).length;
+  const colspan=LEAD+DISP.filter(c=>c.vis).length;
   const er=document.createElement('tr');er.className='editrow';
   er.innerHTML='<td colspan="'+colspan+'">'+editFormHTML(d)+'</td>';
   tr.after(er);
 }
 document.getElementById('rows').addEventListener('click',e=>{
-  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
+  if(e.target.closest('td.cb')||e.target.closest('td.rn')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   const sv=e.target.closest('[data-esave]');
   if(sv){
     const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);
@@ -1744,7 +1752,7 @@ document.getElementById('rows').addEventListener('click',e=>{
     clickTmr=null;
     if(cv&&txt!==''){
       const vc=DISP.filter(c=>c.vis);
-      const label=(td&&vc[td.cellIndex-1])?vc[td.cellIndex-1].label:'';
+      const label=(td&&vc[td.cellIndex-LEAD])?vc[td.cellIndex-LEAD].label:'';
       openCellPop(label,txt);
       return;
     }
@@ -1758,7 +1766,7 @@ document.getElementById('rows').addEventListener('click',e=>{
 let clickTmr=null;
 function cancelPendingClick(){if(clickTmr){clearTimeout(clickTmr);clickTmr=null;}}
 document.getElementById('rows').addEventListener('dblclick',e=>{
-  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
+  if(e.target.closest('td.cb')||e.target.closest('td.rn')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   cancelPendingClick();
   const td=e.target.closest('td'),tr=e.target.closest('tr');
   if(!td||!tr||tr.classList.contains('editrow'))return;
@@ -1767,7 +1775,7 @@ document.getElementById('rows').addEventListener('dblclick',e=>{
   if(nx&&nx.classList.contains('editrow')){nx.remove();tr.classList.remove('rowsel');}
   openEditPop(tr,td);
 });
-function colOfTd(td){const vc=DISP.filter(c=>c.vis);return vc[td.cellIndex-1]||null;}
+function colOfTd(td){const vc=DISP.filter(c=>c.vis);return vc[td.cellIndex-LEAD]||null;}
 
 /* 이슈사항에 자주 쓰는 사유 — 선택바로 고르고 세부사항은 오른쪽에 적는다.
    저장 형식: 사유_세부사항 (세부사항이 없으면 사유만) */
@@ -1880,7 +1888,7 @@ document.getElementById('epNext').addEventListener('click',()=>{
   if(!ntr){moreRows();ntr=tr.nextElementSibling;while(ntr&&ntr.classList.contains('editrow'))ntr=ntr.nextElementSibling;}
   if(!ntr){toast('마지막 줄이에요');return;}
   const ntd=ntr.children[ci];
-  if(ntd&&!ntd.classList.contains('cb')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});openEditPop(ntr,ntd);}
+  if(ntd&&!ntd.classList.contains('cb')&&!ntd.classList.contains('rn')){ntd.scrollIntoView({block:'nearest',inline:'nearest'});openEditPop(ntr,ntd);}
 });
 document.getElementById('epVal').addEventListener('keydown',e=>{
   e.stopPropagation();
@@ -1953,7 +1961,7 @@ document.getElementById('head').addEventListener('click',e=>{
    (실제 그려진 폭을 재면 브라우저가 남는 자리를 나눠 준 값이 섞여
     한 칸을 줄여도 전체 폭이 그대로여서 다른 칸이 넓어졌다) */
 function recalcW(){
-  let t=36;
+  let t=36+46;
   DISP.forEach(c=>{if(c.vis)t+=(colWidth[c.idx]||defW(c.label));});
   document.getElementById('mtable').style.width=t+'px';
 }
