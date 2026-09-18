@@ -187,6 +187,9 @@ td.left{text-align:left;}
 .b-완료{background:#dcfce7;color:#059669;}.b-미정산{background:#fef3c7;color:#b45309;}.b-기타{background:#f1f5f9;color:#64748b;}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#cbd5e1;}
 .warn{background:#fffbeb;border:1px solid #fde68a;color:#b45309;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px;line-height:1.7;}
+#rows tr.emptyrow td{padding:30px 16px;text-align:center;background:#fff;color:#64748b;font-size:14px;line-height:1.8;cursor:default;}
+#rows tr.emptyrow b{color:#1e293b;}
+#rows tr.emptyrow .btn{margin-top:10px;}
 .warn.bad{background:#fef2f2;border-color:#fecaca;color:#b91c1c;}
 .upmode{padding:5px 12px;border:1.5px solid #e2e8f0;border-radius:8px;}
 .upmode.danger{border-color:#fecaca;background:#fef2f2;}
@@ -536,8 +539,10 @@ td.left{text-align:left;}
    BUILD 19: 보기 저장 — 컬럼 설정을 창으로 바꾸고 화면 세팅을 이름 붙여 보관
              기본 보기 "측량소요일정 확인" 제공
    BUILD 20: 위쪽 요약·점검 영역을 한 줄로 합쳐 높이 축소 (표가 위로 올라옴)
+   BUILD 21: 삭제 후 표가 비어 보이던 문제 — 남아 있는 값 필터 자동 정리
+             + 표가 비면 이유와 "필터 모두 해제" 버튼을 보여줌
    ======================================================================== */
-const BUILD_NO='20';
+const BUILD_NO='21';
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
 /* ---- 단가 (2026년 선로내역서 rev1 기준. 단가 개정 시 여기만 수정) ---- */
@@ -1444,6 +1449,31 @@ function visible(){
     return true;
   });
 }
+/* 목록에서 사라진 값에 걸린 값 필터를 정리한다.
+   (걸어둔 값이 전부 지워졌는데 필터만 남아 표가 비어 보이던 문제) */
+function pruneFilters(){
+  let changed=false;
+  Object.keys(colFilter).forEach(k=>{
+    const idx=+k;
+    const live=new Set(DATA.map(d=>fval(cellVal(d.row[idx],idx)||d.row[idx])));
+    const keep=[...colFilter[k]].filter(v=>live.has(v));
+    if(keep.length===0){delete colFilter[k];changed=true;}
+    else if(keep.length!==colFilter[k].size){colFilter[k]=new Set(keep);changed=true;}
+  });
+  return changed;
+}
+function anyFilterOn(){
+  const g=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  return !!(curBaal||g('fJisa')||g('fJin')||g('fJeong')||g('fIssue')||g('search').trim()||Object.keys(colFilter).length);
+}
+function clearAllFilters(){
+  curBaal='';
+  [...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===''));
+  ['fJisa','fJin','fJeong','fIssue','search'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  colFilter={};
+  buildHead();render();markDirty();
+  toast('필터를 모두 해제했습니다');
+}
 const isBlank=v=>(v==null||v==='');
 function cmpVal(a,b){if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'ko');}
 const M_PAGE=150;let mRows=[],mShown=0;
@@ -1477,6 +1507,7 @@ function refreshRow(tr,d){
 }
 function statLine(){const sel=mRows.filter(d=>d._msel).length;document.getElementById('stat').innerHTML='표시 <b>'+mRows.length+'</b>건 / 전체 '+DATA.length+'건'+(mShown<mRows.length?' · 스크롤하면 더 표시':'')+(sel?' · <b style="color:#EA002C">선택 '+sel+'건</b>':'');}
 function updateSelUI(){const a=document.getElementById('mAll');if(a)a.checked=(mRows.length>0&&mRows.every(d=>d._msel));statLine();}
+function afterDataChange(){pruneFilters();markDup();buildFilters();renderCards();renderValidate();render();renderSettle();markDirty();}
 function render(keep){
   const wrap=document.querySelector('.mgr .tblwrap');
   const st=keep&&wrap?wrap.scrollTop:0,prev=keep?mShown:0;
@@ -1490,7 +1521,17 @@ function render(keep){
     });
   }
   mRows=rows;mShown=Math.min(Math.max(M_PAGE,prev),rows.length);
-  document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
+  if(!mRows.length){
+    const span=1+DISP.filter(c=>c.vis).length;
+    let h;
+    if(!DATA.length)h='<b>목록이 비어 있어요.</b><br>사업추가 탭에서 엑셀을 올려주세요.';
+    else if(anyFilterOn())h='<b>지금 걸린 필터에 맞는 줄이 없어요.</b><br>전체 '+DATA.length+'건은 그대로 있습니다.<br><button class="btn btn-primary" id="clrF" style="padding:8px 20px;">필터 모두 해제</button>';
+    else h='<b>표시할 줄이 없습니다.</b>';
+    document.getElementById('rows').innerHTML='<tr class="emptyrow"><td colspan="'+Math.max(1,span)+'">'+h+'</td></tr>';
+    const cb=document.getElementById('clrF');if(cb)cb.addEventListener('click',clearAllFilters);
+  }else{
+    document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map(rowHTML).join('');
+  }
   updateSelUI();syncToolbar();
   if(keep&&wrap)wrap.scrollTop=st;
 }
@@ -1558,7 +1599,7 @@ function toggleEditRow(tr){
   tr.after(er);
 }
 document.getElementById('rows').addEventListener('click',e=>{
-  if(e.target.closest('td.cb'))return;
+  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow'))return;
   const sv=e.target.closest('[data-esave]');
   if(sv){
     const er=sv.closest('.editrow');const d=DATA.find(x=>String(x._id)===sv.dataset.esave);
@@ -1605,7 +1646,7 @@ document.getElementById('rows').addEventListener('click',e=>{
 let clickTmr=null;
 function cancelPendingClick(){if(clickTmr){clearTimeout(clickTmr);clickTmr=null;}}
 document.getElementById('rows').addEventListener('dblclick',e=>{
-  if(e.target.closest('td.cb'))return;
+  if(e.target.closest('td.cb')||e.target.closest('tr.emptyrow'))return;
   cancelPendingClick();
   const td=e.target.closest('td'),tr=e.target.closest('tr');
   if(!td||!tr||tr.classList.contains('editrow'))return;
@@ -1693,7 +1734,7 @@ document.getElementById('bulkApply').addEventListener('click',()=>{
   if(val.trim()==='')nv='';
   else if(!noComma(idx)&&/^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(val.trim())){const n=Number(val.replace(/,/g,''));nv=isNaN(n)?val:n;}
   sel.forEach(d=>{d.row[idx]=nv;deriveItem(d);});
-  markDup();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
+  pruneFilters();markDup();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
   closeBars();syncToolbar();
   toast(sel.length+'건을 수정했습니다');
 });
@@ -1701,9 +1742,10 @@ document.getElementById('btnDel').addEventListener('click',()=>{
   const sel=DATA.filter(d=>d._msel);
   if(!sel.length){toast('삭제할 줄을 먼저 체크하세요',true);return;}
   if(!confirm(sel.length+'건을 목록에서 삭제합니다. 되돌릴 수 없어요.\n\n계속할까요?'))return;
-  DATA=DATA.filter(d=>!d._msel);markDup();
-  buildFilters();renderCards();renderValidate();render();renderSettle();markDirty();
-  toast(sel.length+'건 삭제했습니다');
+  DATA=DATA.filter(d=>!d._msel);
+  const pruned=pruneFilters();
+  afterDataChange();
+  toast(sel.length+'건 삭제 · 남은 목록 '+DATA.length+'건'+(pruned?' (맞는 값이 없어진 값 필터는 해제했어요)':''));
 });
 
 /* ======================= 헤더 정렬/필터/리사이즈 ======================= */
@@ -1939,7 +1981,7 @@ function delCol(i){
   delete colWidth[c.idx];delete colFilter[c.idx];
   Object.keys(COL).forEach(k=>{if(COL[k]===c.idx)COL[k]=-1;});
   if(sortCI!=null){if(sortCI===i)sortCI=null;else if(sortCI>i)sortCI--;}
-  DATA.forEach(deriveItem);markDup();
+  DATA.forEach(deriveItem);pruneFilters();markDup();
   buildColPanel();buildHead();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
   toast('"'+c.label+'" 칸을 삭제했습니다');
 }
