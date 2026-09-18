@@ -122,7 +122,6 @@ tr.rowsel td{background:#fff3cd;}
 #mtable tfoot td{position:sticky;bottom:0;z-index:12;background:#fbeaed;border-top:1.5px solid #9f1239;color:#9f1239;font-weight:700;font-variant-numeric:tabular-nums;padding:7px 10px;white-space:nowrap;}
 #mtable tfoot td.cb,#mtable tfoot td.rn{z-index:16;background:#fbeaed;}
 #mtable tfoot td.lab{text-align:center;font-size:12px;}
-#mtable tfoot .avg{display:block;font-size:11px;font-weight:400;color:#b45309;margin-top:1px;}
 #mtable tfoot .unit{font-size:11px;font-weight:400;color:#c08;margin-left:2px;}
 #viewPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:410;display:flex;align-items:center;justify-content:center;padding:20px;}
 .view-card{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:86vh;display:flex;flex-direction:column;border:1px solid #94a3b8;overflow:hidden;}
@@ -617,8 +616,9 @@ td.left{text-align:left;}
    BUILD 28: 비 온 날 등록 + 「강우일수」 자동 계산 (요청일~Tango업로드 구간)
    BUILD 29: 표 맨 아래 합계 줄 (측량거리·소요일수 등 숫자 칸 자동 합산)
              + 이슈 사유에 「폭염 작업중지」 추가
+   BUILD 30: 합계 줄에서 노란 평균 글씨 제거 (소요일수·강우일수 모두 합계만)
    ======================================================================== */
-const BUILD_NO='29';
+const BUILD_NO='30';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1728,8 +1728,8 @@ function buildFoot(){
       if(isDistCol(c.label))txt=sum.toFixed(3)+'<span class="unit">km</span>';
       else if(isMoneyCol(c.label))txt=Math.round(sum).toLocaleString('ko-KR');
       else if(c.idx===COL.소요일수||c.idx===COL.강우일수){
-        txt=Math.round(sum).toLocaleString('ko-KR')+'<span class="avg">평균 '+(sum/n).toFixed(1)+'일</span>';
-        tip=n+'건 합산 · 평균 '+(sum/n).toFixed(1)+'일';
+        txt=Math.round(sum).toLocaleString('ko-KR');
+        tip=n+'건 합산 · 평균 '+(sum/n).toFixed(1)+'일';   /* 평균은 마우스를 올렸을 때만 */
       }
       else txt=(Math.abs(sum-Math.round(sum))<1e-9)?Math.round(sum).toLocaleString('ko-KR'):sum.toFixed(3);
     }
