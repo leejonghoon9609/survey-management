@@ -319,7 +319,9 @@ td.left{text-align:left;}
     <div class="card" id="mode-up">
       <div class="controls" style="margin-bottom:10px;">
         <span style="font-size:13px;color:#475569;font-weight:500;">불러오는 방식</span>
-        <span class="upmode safe" id="upmodeApp">기존 목록에 추가</span>
+        <label class="upmode" id="umMerge"><input type="radio" name="upmode" value="merge" checked><span>갱신 + 추가</span></label>
+        <label class="upmode" id="umAdd"><input type="radio" name="upmode" value="add"><span>추가만</span></label>
+        <span class="stat" id="upmodeApp"></span>
         <button class="btn tbtn hide" id="btnPrev" style="padding:6px 14px;--c:#0369A1;">직전 목록 되살리기</button>
         <button class="btn tbtn" id="btnWipe" style="padding:6px 14px;--c:#B91C1C;">목록 비우기</button>
         <span style="flex:1"></span>
@@ -392,6 +394,7 @@ td.left{text-align:left;}
           <option value="구분">구분 미입력</option>
           <option value="중복">공사코드 중복</option>
           <option value="hasdays">소요일수 있는 건만</option>
+          <option value="gone">이번 파일에 없던 건</option>
         </select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
         <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
@@ -594,8 +597,10 @@ td.left{text-align:left;}
              + 이슈 사유에 「폭염 작업중지」 추가
    BUILD 30: 합계 줄에서 노란 평균 글씨 제거
    BUILD 31: 강우일수·비 온 날 기능 전체 제거 (BUILD 28 되돌림)
+   BUILD 32: 같은 건 갱신 + 없어진 건 표시 (재업로드 동기화)
+             + 원인자 리스트 양식 대응, 발주처 일괄 지정
    ======================================================================== */
-const BUILD_NO='31';
+const BUILD_NO='32';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -744,7 +749,7 @@ function stateObj(){
     DISP:DISP.map(c=>({idx:c.idx,label:c.label,vis:c.vis})),
     colWidth:colWidth,
     ui:uiObj(),
-    rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk}))};
+    rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone}))};
 }
 function saveState(silent){
   if(!loaded||!DATA.length){setDot('','저장할 목록 없음');return;}
@@ -766,7 +771,7 @@ function loadState(){
     if(!s||!s.rows||!s.rows.length)return false;
     COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
     const rep=repairCols();
-    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
+    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
     markDup();buildColPanel();buildFilters();
     const uiOn=applyUI(s.ui);
@@ -812,7 +817,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
       repairCols();
-      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
+      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g};deriveItem(d);return d;});
       loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
       buildHead();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
@@ -868,7 +873,7 @@ const COLSPEC=[
      lo:h=>h.includes('탱고')||(h.includes('정산')&&h.includes('거리'))},
   {k:'실측',   label:'측량거리(km)',   req:0,
      ex:h=>h.includes('실측')&&h.includes('거리')&&!h.includes('정산'),
-     lo:h=>h.includes('심사내역')||(h.includes('측량')&&h.includes('거리'))},
+     lo:h=>h.includes('심사내역')||h.includes('도면거리')||(h.includes('측량')&&h.includes('거리'))},
   {k:'순번',   label:'순번',           req:0, ex:h=>h==='순번',            lo:h=>h.includes('순번')||h.includes('관리번호')},
   {k:'시행',   label:'시행시기',        req:0, ex:h=>h==='시행시기',        lo:h=>h.includes('시행')||h==='년도'||h==='연도'},
   {k:'발주처', label:'발주처',          req:1, ex:h=>h.includes('발주'),     lo:h=>h==='사업자'||h.includes('사업자')},
@@ -934,7 +939,9 @@ drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over
 drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
 drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])readFile(e.target.files[0]);e.target.value='';});
-function upMode(){return 'append';}   /* 누적만 지원 — 목록이 통째로 날아가는 사고를 막기 위해 교체 방식을 없앴다 */
+/* merge = 같은 건은 새 파일 값으로 갱신 / add = 같은 건은 그대로 두고 새 건만 추가.
+   목록을 통째로 갈아엎는 "교체"는 사고가 나서 없앴다. */
+function upMode(){const r=document.querySelector('input[name=upmode]:checked');return r?r.value:'merge';}
 const LS_PREV='gongjeong_prev_v1';
 /* 교체하기 직전 목록을 따로 보관해 두었다가 되살릴 수 있게 한다 */
 function stashPrev(){
@@ -960,7 +967,7 @@ document.getElementById('btnPrev').addEventListener('click',()=>{
   const cur=DATA.length?JSON.stringify({...stateObj(),n:DATA.length}):null;
   COL=p.COL||{};DISP=(p.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=p.colWidth||{};
   repairCols();
-  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x};deriveItem(d);return d;});
+  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g};deriveItem(d);return d;});
   loaded=true;markDup();buildColPanel();buildFilters();applyUI(p.ui);
   buildHead();renderCards();renderValidate();render();renderSettle();
   try{if(cur)localStorage.setItem(LS_PREV,cur);else localStorage.removeItem(LS_PREV);}catch(e){}
@@ -976,11 +983,13 @@ function dupList(){
   return out;
 }
 function updateUpMode(){
-  const n=DATA.length;
+  const n=DATA.length,m=upMode();
   const app=document.getElementById('upmodeApp');
   if(!app)return;
-  app.textContent=n?('기존 목록에 추가 (지금 '+n+'건 + 새 파일)'):'새로 불러오기 (지금 목록 없음)';
-  app.classList.toggle('safe',n>0);
+  app.innerHTML=n?('지금 <b>'+n+'</b>건'):'지금 목록 없음';
+  const mm=document.getElementById('umMerge'),ma=document.getElementById('umAdd');
+  if(mm)mm.classList.toggle('safe',m==='merge');
+  if(ma)ma.classList.toggle('safe',m==='add');
   const dup=dupList().length;
   const bd=document.getElementById('btnDedup');
   bd.textContent=dup?('중복 제외 ('+dup+'건)'):'중복 제외';
@@ -988,9 +997,15 @@ function updateUpMode(){
   document.getElementById('btnWipe').classList.toggle('hide',n===0);
   const note=document.getElementById('upmodeNote');
   note.innerHTML=n
-    ? '<div class="warn" style="margin:0 0 10px;background:#f0fdf4;border-color:#bbf7d0;color:#166534;">지금 목록 <b>'+n+'건</b>은 그대로 두고 새 파일을 <b>뒤에 붙입니다.</b> 공사코드+공사명이 같은 건은 한 번만 들어갑니다.'+(dup?' · 공사코드만 같은 건이 <b>'+dup+'건</b> 있어요 — 오른쪽 <b>중복 제외</b>로 정리할 수 있습니다.':'')+'</div>'
+    ? '<div class="warn" style="margin:0 0 10px;background:#f0fdf4;border-color:#bbf7d0;color:#166534;">'+
+      (m==='merge'
+        ? '같은 건은 <b>새 파일 값으로 갱신</b>하고, 없던 건은 뒤에 <b>추가</b>합니다. 파일에서 빈 칸은 건드리지 않아 직접 넣으신 값(이슈사항·구분 등)은 그대로 남습니다.'
+        : '같은 건은 <b>그대로 두고</b>, 없던 건만 뒤에 <b>추가</b>합니다.')+
+      ' 같은 건인지는 <b>공사코드</b>(없으면 관리번호)와 공사명으로 가립니다.'+
+      (dup?' · 공사코드만 같은 건이 <b>'+dup+'건</b> 있어요 — 오른쪽 <b>중복 제외</b>로 정리할 수 있습니다.':'')+'</div>'
     : '';
 }
+[...document.querySelectorAll('input[name=upmode]')].forEach(r=>r.addEventListener('change',()=>{updateUpMode();markDirty();}));
 document.getElementById('btnDedup').addEventListener('click',()=>{
   if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
   const dup=dupList();
@@ -1089,6 +1104,18 @@ function extractRows(aoa,hr,col){
   return out;
 }
 const BAALSET=new Set(['SKT','SKB','원인자']);
+/* 같은 건인지 가리는 열쇠. 공사코드가 있으면 그것을, 없으면 관리번호(순번)를 쓴다.
+   (원인자 리스트는 Eng 번호가 거의 비어 있고 관리번호가 고유함) */
+function keyVals(eng,seq,work){
+  const e=String(eng==null?'':eng).trim().toLowerCase();
+  const w=String(work==null?'':work).replace(/\s+/g,' ').trim().toLowerCase();
+  if(e)return 'e|'+e+'|'+w;
+  const n=String(seq==null?'':seq).trim().toLowerCase();
+  /* 관리번호처럼 생긴 것(1-4, 3-135)만 열쇠로 쓴다.
+     1,2,3 같은 단순 일련번호는 파일마다 밀릴 수 있어 공사명으로만 가린다. */
+  if(n&&/[^0-9]/.test(n))return 'n|'+n+'|'+w;
+  return 'w|'+w;
+}
 /* '발주처(자동)'을 뺀, 원본 발주처/사업자 칸의 위치 */
 function baalSourceIdx(labels){
   const sp=COLSPEC.find(x=>x.k==='발주처');const N=labels.map(nh);
@@ -1099,6 +1126,7 @@ function baalSourceIdx(labels){
 function baalOf(v){const t=String(v==null?'':v).replace(/\s/g,'').toUpperCase();return BAALSET.has(t)?t:'';}
 function guessBaal(fname,sheets){
   const f=String(fname||'').toUpperCase();
+  if(String(fname||'').includes('원인자'))return '원인자';
   if(f.includes('SKT'))return 'SKT';
   if(f.includes('SKB'))return 'SKB';
   let t=0,b=0;
@@ -1127,13 +1155,26 @@ function renderSheetPicker(fname,sheets){
     h+='<div class="controls" style="margin:12px 0 0;">'+
        '<label>이 파일의 발주처</label>'+
        '<select id="upBaal">'+['','SKT','SKB','원인자'].map(v=>'<option value="'+v+'"'+((PENDING&&PENDING.baal)===v?' selected':'')+'>'+(v||'(선택 안 함)')+'</option>').join('')+'</select>'+
-       '<span class="note" style="margin:0;">사업자 칸이 SKT·SKB·원인자가 아니면 이 값으로 채웁니다</span>'+
+       '<label style="font-size:13px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="upBaalAll"'+(PENDING&&PENDING.forceAll?' checked':'')+'>사업자 칸과 관계없이 <b>전부 이 발주처로</b></label>'+
+       '<span class="note" style="margin:0;" id="upBaalNote"></span>'+
        '<span style="flex:1"></span>'+
        '<button class="btn btn-primary" id="doImport">선택한 시트 불러오기</button></div>';
     h+='<p class="note">여러 시트를 골라도 공사코드+공사명이 같은 건은 자동으로 한 번만 들어갑니다. 시트마다 칸 구성이 달라도 머리글 이름으로 합쳐집니다.</p>';
   }
   box.innerHTML=h;box.classList.remove('hide');
   const btn=document.getElementById('doImport');if(btn)btn.addEventListener('click',importSelected);
+  const ba=document.getElementById('upBaalAll');
+  if(ba){
+    /* 사업자 칸으로 발주처를 못 정하는 줄이 많으면 미리 켜 둔다 */
+    let bad=0,tot=0;
+    sheets.forEach(sh=>{if(!sh.count)return;const bi=baalSourceIdx(sh.labels);
+      sh.rows.forEach(x=>{tot++;if(!baalOf(bi>=0?x[bi]:''))bad++;});});
+    if(tot&&bad/tot>0.3&&!PENDING.forceAllTouched)ba.checked=true;
+    const note=document.getElementById('upBaalNote');
+    if(note)note.textContent=tot?('사업자 칸으로 못 정하는 줄 '+bad+'건 / '+tot+'건'):'';
+    ba.addEventListener('change',()=>{PENDING.forceAll=ba.checked;PENDING.forceAllTouched=true;});
+    PENDING.forceAll=ba.checked;
+  }
 }
 document.getElementById('sheetBox').addEventListener('change',e=>{
   if(e.target.dataset.sh!==undefined&&PENDING)PENDING.sheets[+e.target.dataset.sh].pick=e.target.checked;
@@ -1143,7 +1184,7 @@ document.getElementById('sheetBox').addEventListener('change',e=>{
 function masterFromExisting(){
   const labels=DISP.map(c=>c.label);
   const rows=DATA.map(d=>DISP.map(c=>d.row[c.idx]));
-  const meta=DATA.map(d=>({p:d._pick!==false,s:!!d._sel,m:!!d._msel}));
+  const meta=DATA.map(d=>({p:d._pick!==false,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone}));
   return {labels,rows,meta};
 }
 
@@ -1152,7 +1193,9 @@ function importSelected(){
   const sel=PENDING.sheets.filter(x=>x.pick&&x.count);
   if(!sel.length){toast('불러올 시트를 하나 이상 선택하세요',true);return;}
   const fileBaal=(document.getElementById('upBaal')||{}).value||'';
-  const append=(upMode()==='append'&&DATA.length>0);
+  const forceAll=!!(document.getElementById('upBaalAll')||{}).checked;
+  const mode=upMode();                 /* merge = 갱신+추가 / add = 추가만 */
+  const append=DATA.length>0;
 
   let labels=[],rows=[],meta=[];
   if(append){const m=masterFromExisting();labels=m.labels.slice();rows=m.rows;meta=m.meta;}
@@ -1160,24 +1203,41 @@ function importSelected(){
   const ensure=l=>{if(idxOf[l]==null){idxOf[l]=labels.length;labels.push(l);}return idxOf[l];};
 
   const baseCol=labels.length?mapCols(labels).col:{};
-  const keyOf=(r,c)=>((c.eng!=null&&c.eng>=0?String(r[c.eng]==null?'':r[c.eng]).trim():'')+'|'+
-                      (c.공구명!=null&&c.공구명>=0?String(r[c.공구명]==null?'':r[c.공구명]).trim():'')).toLowerCase();
-  const have=new Set(rows.map(r=>keyOf(r,baseCol)));
+  const pick=(r,c,k)=>(c[k]!=null&&c[k]>=0)?r[c[k]]:'';
+  const keyOf=(r,c)=>keyVals(pick(r,c,'eng'),pick(r,c,'순번'),pick(r,c,'공구명'));
 
   const startLen=rows.length;
-  let added=0,skipped=0;const bySheet=[];
+  const where=new Map();
+  rows.forEach((r,i)=>{const k=keyOf(r,baseCol);if(!where.has(k))where.set(k,i);});
+  const seen=new Set();
+
+  let added=0,updated=0,same=0;const bySheet=[];
   sel.forEach(sh=>{
     const map=sh.labels.map(l=>l?ensure(l):-1);
-    let a=0,k=0;
+    let a=0,u=0,k=0;
     sh.rows.forEach(x=>{
       const key=keyOf(x,sh.col);
-      if(have.has(key)){skipped++;k++;return;}
-      have.add(key);
+      seen.add(key);
+      const at=where.get(key);
+      if(at!=null){
+        if(mode==='merge'){
+          let ch=false;
+          for(let c=0;c<map.length;c++){
+            if(map[c]<0)continue;
+            const v=x[c];
+            if(v===undefined||v===null||v==='')continue;   /* 파일이 빈 칸이면 기존 값을 그대로 둔다 */
+            const cur=rows[at][map[c]];
+            if(String(cur==null?'':cur)!==String(v)){rows[at][map[c]]=v;ch=true;}
+          }
+          if(ch){updated++;u++;}else{same++;k++;}
+        }else{same++;k++;}
+        return;
+      }
       const out=[];
       for(let c=0;c<map.length;c++){if(map[c]<0)continue;const v=x[c];if(v!==undefined&&v!==null&&v!=='')out[map[c]]=v;}
-      rows.push(out);meta.push({p:true});added++;a++;
+      rows.push(out);meta.push({p:true});where.set(key,rows.length-1);added++;a++;
     });
-    bySheet.push(sh.name+' '+a+'건'+(k?'(중복 '+k+')':''));
+    bySheet.push(sh.name+' 추가 '+a+(u?' · 갱신 '+u:'')+(k?' · 그대로 '+k:''));
   });
 
   /* 발주처 확정 : 사업자 칸이 SKT·SKB·원인자가 아니면 파일 발주처로 채운 별도 칸을 만든다.
@@ -1187,13 +1247,17 @@ function importSelected(){
   const srcIdx=baalSourceIdx(labels);
   let needAuto=hadAuto;
   rows.forEach(r=>{if(!baalOf(srcIdx>=0?r[srcIdx]:''))needAuto=true;});
+  if(forceAll&&fileBaal)needAuto=true;
   let autoIdx=null;
   if(needAuto){
     autoIdx=ensure(AUTOL);
     rows.forEach((r,i)=>{
+      const touched=(i>=startLen)||seen.has(keyOf(r,baseCol));
       const fromSrc=baalOf(srcIdx>=0?r[srcIdx]:'');
       const prev=hadAuto?baalOf(r[autoIdx]):'';
-      r[autoIdx]=fromSrc||prev||(i>=startLen?(fileBaal||''):'');
+      if(!touched){r[autoIdx]=prev||fromSrc||'';return;}   /* 이번에 안 건드린 줄은 전에 정한 발주처를 지킨다 */
+      if(forceAll&&fileBaal){r[autoIdx]=fileBaal;return;}
+      r[autoIdx]=fromSrc||prev||fileBaal||'';
     });
   }
   /* 정산내역서 양식의 '구분'이 원본에 없으면 채울 수 있게 빈 칸을 만들어 둔다 */
@@ -1217,19 +1281,29 @@ function importSelected(){
     if(e){e.st='ok';e.h='발주처(자동)'+(srcIdx>=0?' ← '+labels[srcIdx]:'');}
   }
   colWidth={};colFilter={};sortCI=null;
-  DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false};deriveItem(d);return d;});
+  DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false,_chk:meta[i]?!!meta[i].x:false};deriveItem(d);return d;});
   loaded=true;markDup();lastUpload=DATA.slice();
+
+  /* 이번 파일에 없던 기존 건 — 이번에 들어온 발주처와 같은 건만 비교한다 */
+  let gone=0;
+  DATA.forEach((d,i)=>{
+    d._gone=false;
+    if(i>=startLen)return;
+    if(!fileBaal||d.baal!==fileBaal)return;   /* 이 파일의 발주처와 같은 건만 견준다 */
+    if(seen.has(keyVals(d.eng,d.seq,d.work)))return;
+    d._gone=true;d._msel=true;gone++;
+  });
 
   const noBaal=DATA.filter(d=>!d.baal).length;
   resetUpResult();
-  document.getElementById('upMsg').textContent=(append?'누적 ':'')+'전체 '+DATA.length+'건 · 정산가능 '+DATA.filter(able).length+'건 ('+bySheet.join(', ')+')';
-  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun,madeDays);
+  document.getElementById('upMsg').textContent='전체 '+DATA.length+'건 · 새로 추가 '+added+'건'+(updated?' · 갱신 '+updated+'건':'')+(same?' · 변화 없음 '+same+'건':'')+(gone?' · 이번 파일에 없는 기존 건 '+gone+'건':'');
+  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun,madeDays,gone);
   renderCheckBox();
   document.getElementById('upResult').classList.remove('hide');
   renderPreview();
   buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
   updateUpMode();markDirty();
-  toast('불러오기 완료 · '+added+'건 추가'+(skipped?' / 중복 '+skipped+'건 제외':''));
+  toast('불러오기 완료 · 추가 '+added+'건'+(updated?' · 갱신 '+updated+'건':'')+(gone?' · 없어진 건 '+gone+'건':''));
 }
 
 /* 예전 단일시트 방식 호환 (테스트·직접호출용) */
@@ -1243,7 +1317,7 @@ function parseMaster(aoa){
 }
 
 /* 헤더 인식 결과 */
-function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays){
+function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays,gone){
   const box=document.getElementById('mapBox');
   const no=rep.filter(x=>x.st==='no'),noReq=no.filter(x=>x.req),lo=rep.filter(x=>x.st==='lo');
   let h='';
@@ -1257,7 +1331,8 @@ function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays){
     const neg=DATA.filter(d=>d.days!=null&&d.days<0).length;
     h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;"><b>소요일수</b> (요청일 → Tango업로드) '+ok+'건 계산'+(no?' · 날짜가 없거나 글자라 계산 못 한 건 '+no+'건':'')+(neg?' · <span style="color:#b91c1c">업로드가 요청일보다 빠른 건 '+neg+'건</span>':'')+'</div>';
   }
-  if(append)h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;">기존 목록에 누적했습니다. 새로 들어온 칸은 뒤에 추가됐어요.</div>';
+  if(gone)h+='<div class="warn"><b>이번 파일에 없는 기존 건 '+gone+'건</b><br>같은 발주처인데 이번 파일에는 안 들어온 건입니다. 줄을 미리 체크해 뒀으니, 리스트관리에서 점검 필터 <b>「이번 파일에 없던 건」</b>으로 확인하고 정말 빠진 게 맞으면 <b>선택 삭제</b> 하세요.</div>';
+  if(append)h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;">기존 목록에 이어 붙였습니다. 새로 들어온 칸은 뒤에 추가됐어요.</div>';
   h+='<div style="margin-top:8px;"><button class="linkish" onclick="document.getElementById(\'mapDetail\').classList.toggle(\'on\')">인식 결과 전체 보기</button></div>';
   h+='<div class="maprow" id="mapDetail">'+mapTable(rep)+'</div>';
   box.innerHTML=h;box.classList.remove('hide');
@@ -1313,6 +1388,7 @@ function deriveItem(d){
   d.jisa=String(x[COL.지사]||'').trim();
   d.시행=String(x[COL.시행]||'');
   d.eng=String(x[COL.eng]==null?'':x[COL.eng]).trim();
+  d.seq=String(x[COL.순번]==null?'':x[COL.순번]).trim();
   d.tangoType=String(x[COL.사업구분]||'');
   d.jin=String(x[COL.진행]||'').trim();
   d.jeong=String(x[COL.정산상황]||'').trim();
@@ -1557,6 +1633,7 @@ function visible(){
     if(fjin&&d.jin!==fjin)return false;
     if(fjeo&&d.jeongKey!==fjeo)return false;
     if(fis==='hasdays'){if(d.days==null)return false;}
+    else if(fis==='gone'){if(!d._gone)return false;}
     else if(fis==='checked'){if(!d._chk)return false;}
     else if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
     if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;
