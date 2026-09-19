@@ -156,12 +156,6 @@ tr.rowsel td{background:#fff3cd;}
 .ep-right textarea{flex:1;}
 .ep-prev{margin-top:8px;font-size:12px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:7px 9px;word-break:break-all;line-height:1.5;}
 .ep-prev b{color:#EA002C;}
-#rainPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:412;display:flex;align-items:center;justify-content:center;padding:20px;}
-#rpText{width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;line-height:1.7;color:#1e293b;resize:vertical;outline:none;}
-#rpText:focus{border-color:#0284C7;box-shadow:0 0 0 3px rgba(2,132,199,.12);}
-.rp-list{display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow:auto;}
-.rp-day{background:#e0f2fe;border:1px solid #bae6fd;color:#075985;border-radius:6px;padding:3px 9px;font-size:12px;font-variant-numeric:tabular-nums;}
-.rp-none{font-size:13px;color:#94a3b8;}
 .edit-b textarea{width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;line-height:1.6;color:#1e293b;resize:vertical;outline:none;}
 .edit-b textarea:focus{border-color:#EA002C;box-shadow:0 0 0 3px rgba(234,0,44,.12);}
 .edit-f{display:flex;align-items:center;gap:8px;padding:0 16px 14px;flex-wrap:wrap;}
@@ -398,7 +392,6 @@ td.left{text-align:left;}
           <option value="구분">구분 미입력</option>
           <option value="중복">공사코드 중복</option>
           <option value="hasdays">소요일수 있는 건만</option>
-          <option value="hasrain">비 온 날 겹친 건만</option>
         </select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
         <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
@@ -406,7 +399,6 @@ td.left{text-align:left;}
         <button class="btn tbtn" id="btnIssue" style="padding:7px 14px;--c:#BE185D">선택 이슈 체크</button>
         <button class="btn tbtn" id="btnDel" style="padding:7px 14px;--c:#DC2626">선택 삭제</button>
         <button class="btn tbtn" id="btnAddCol" style="padding:7px 14px;--c:#059669">목록 추가</button>
-        <button class="btn tbtn" id="btnRain" style="padding:7px 14px;--c:#0284C7">비 온 날</button>
         <button class="btn tbtn" id="btnExcel" style="padding:7px 14px;--c:#EA580C">엑셀 내보내기</button>
         <span style="flex:1"></span>
         <button class="btn btn-primary savebtn" id="btnSaveList">저장</button>
@@ -515,22 +507,6 @@ td.left{text-align:left;}
 
 </div>
 <div id="colFilterPop" class="hide"></div>
-<div id="rainPop" class="hide"><div class="view-card">
-  <div class="cell-h"><b>비 온 날 등록</b><span class="cell-x" id="rpX">✕</span></div>
-  <div class="view-b">
-    <p class="note" style="margin:12px 0 8px;">등록한 날짜를 기준으로 각 건의 <b>요청일 ~ Tango업로드</b> 사이에 비 온 날이 며칠 끼었는지 세어 <b>강우일수</b> 칸에 넣습니다.</p>
-    <div class="vp-sec">날짜 입력</div>
-    <textarea id="rpText" rows="7" spellcheck="false" placeholder="2026-05-20&#10;2026-05-21&#10;5/27&#10;20260528"></textarea>
-    <p class="note" style="margin-top:6px;">한 줄에 하나씩, 또는 쉼표·띄어쓰기로 구분해 주세요. <b>2026-05-20 / 2026.5.20 / 5/20 / 20260520</b> 모두 됩니다. (연도를 안 쓰면 2026년으로 봅니다)</p>
-    <div class="vp-sec">등록된 날 <span id="rpCnt" style="color:#64748b;font-weight:400;"></span></div>
-    <div id="rpList" class="rp-list"></div>
-    <div class="vp-save" style="margin-top:14px;">
-      <button class="btn" id="rpClear" style="padding:7px 16px;">모두 지우기</button>
-      <span style="flex:1"></span>
-      <button class="btn btn-primary" id="rpSave" style="padding:7px 22px;">적용</button>
-    </div>
-  </div>
-</div></div>
 <div id="viewPop" class="hide"><div class="view-card">
   <div class="cell-h"><b>보기 설정</b><span class="cell-x" id="vpX">✕</span></div>
   <div class="view-b">
@@ -616,9 +592,10 @@ td.left{text-align:left;}
    BUILD 28: 비 온 날 등록 + 「강우일수」 자동 계산 (요청일~Tango업로드 구간)
    BUILD 29: 표 맨 아래 합계 줄 (측량거리·소요일수 등 숫자 칸 자동 합산)
              + 이슈 사유에 「폭염 작업중지」 추가
-   BUILD 30: 합계 줄에서 노란 평균 글씨 제거 (소요일수·강우일수 모두 합계만)
+   BUILD 30: 합계 줄에서 노란 평균 글씨 제거
+   BUILD 31: 강우일수·비 온 날 기능 전체 제거 (BUILD 28 되돌림)
    ======================================================================== */
-const BUILD_NO='30';
+const BUILD_NO='31';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -671,7 +648,7 @@ function estAmt(d){return calcCost(d.tango,d.mKey,d.jisa).total;}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fval(v){return (v==null||v==='')?'(빈칸)':String(v);}
 function isLeft(label){return /공구|비고|공사명|측량명칭|심사|사업유형|협력/.test(label);}
-function noComma(idx){return idx===COL.순번||idx===COL.eng||idx===COL.소요일수||idx===COL.강우일수;}
+function noComma(idx){return idx===COL.순번||idx===COL.eng||idx===COL.소요일수;}
 function cellVal(v,idx){
   if(v==null||v==='')return '';
   if(isDateObj(v))return fmtDate(v);
@@ -700,45 +677,6 @@ function parseDate(v){
   m=s.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일?$/);
   if(m)return new Date(+m[1],+m[2]-1,+m[3]);
   return null;
-}
-/* ---- 비 온 날 ----
-   등록한 날짜를 정렬해 두고, 각 건의 요청일~Tango업로드 구간에 몇 날이 끼는지 센다. */
-const LS_RAIN='gongjeong_rain_v1';
-const RAIN_SEED=['2026-05-03','2026-05-04','2026-05-07','2026-05-12','2026-05-20','2026-05-21','2026-05-27','2026-05-28'];
-let RAIN=[];          /* 'YYYY-MM-DD' 정렬된 배열 */
-let RAINMS=[];        /* 같은 순서의 시각 */
-function parseRainDay(t){
-  let s=String(t||'').trim();if(!s)return '';
-  s=s.replace(/[.]/g,'-').replace(/\//g,'-');
-  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if(!m){m=s.match(/^(\d{4})(\d{2})(\d{2})$/);}
-  if(!m){const k=s.match(/^(\d{1,2})-(\d{1,2})$/);if(k)m=[0,'2026',k[1],k[2]];}
-  if(!m)return '';
-  const y=+m[1],mo=+m[2],d=+m[3];
-  if(mo<1||mo>12||d<1||d>31)return '';
-  const p=n=>String(n).padStart(2,'0');
-  return y+'-'+p(mo)+'-'+p(d);
-}
-function setRain(list){
-  const uniq=[...new Set(list.filter(Boolean))].sort();
-  RAIN=uniq;RAINMS=uniq.map(x=>{const a=x.split('-');return new Date(+a[0],+a[1]-1,+a[2]).getTime();});
-  try{localStorage.setItem(LS_RAIN,JSON.stringify(RAIN));}catch(e){}
-}
-function loadRain(){
-  let r=null;try{r=localStorage.getItem(LS_RAIN);}catch(e){}
-  if(r===null){setRain(RAIN_SEED);return;}
-  let a=[];try{a=JSON.parse(r)||[];}catch(e){a=[];}
-  setRain(Array.isArray(a)?a:[]);
-}
-function rainBetween(a,b){
-  if(!RAINMS.length)return 0;
-  const d1=parseDate(a),d2=parseDate(b);
-  if(!d1||!d2)return null;
-  let t1=d1.getTime(),t2=d2.getTime();
-  if(t1>t2){const t=t1;t1=t2;t2=t;}
-  let n=0;
-  for(let i=0;i<RAINMS.length;i++){const t=RAINMS[i];if(t>t2)break;if(t>=t1)n++;}
-  return n;
 }
 function daysBetween(a,b){
   const d1=parseDate(a),d2=parseDate(b);
@@ -948,8 +886,7 @@ const COLSPEC=[
   {k:'요청일', label:'요청일',           req:0, ex:h=>h==='요청일',           lo:h=>h.includes('요청')&&h.includes('일')},
   {k:'탱고업로드',label:'Tango업로드',    req:0, ex:h=>h.toLowerCase()==='tango업로드', lo:h=>h.toLowerCase().includes('tango')&&h.includes('업로')},
   {k:'소요일수',label:'소요일수',         req:0, ex:h=>h==='소요일수'||h==='소요기간', lo:h=>h.includes('소요')},
-  {k:'이슈',   label:'이슈사항',          req:0, ex:h=>h==='이슈사항',        lo:h=>h.includes('이슈')},
-  {k:'강우일수',label:'강우일수',          req:0, ex:h=>h==='강우일수'||h==='비온날', lo:h=>h.includes('강우')}
+  {k:'이슈',   label:'이슈사항',          req:0, ex:h=>h==='이슈사항',        lo:h=>h.includes('이슈')}
 ];
 const nh=h=>String(h==null?'':h).replace(/\s/g,'');
 function mapCols(H){
@@ -1266,17 +1203,12 @@ function importSelected(){
   let madeDays=false;
   const mTmp=mapCols(labels).col;
   if(mTmp.소요일수<0&&mTmp.요청일>=0&&mTmp.탱고업로드>=0){ensure('소요일수');madeDays=true;}
-  if(mapCols(labels).col.강우일수<0&&mTmp.요청일>=0&&mTmp.탱고업로드>=0)ensure('강우일수');
   const mapped=mapCols(labels);
 
   DISP=labels.map((l,i)=>({idx:i,label:l||('칸'+(i+1)),vis:!!l}));
   COL=mapped.col;COLREP=mapped.rep;
   if(COL.소요일수>=0&&COL.탱고업로드>=0){
     const from=DISP.findIndex(c=>c.idx===COL.소요일수),to=DISP.findIndex(c=>c.idx===COL.탱고업로드);
-    if(from>=0&&to>=0&&from!==to+1){const it=DISP.splice(from,1)[0];DISP.splice(to<from?to+1:to,0,it);}
-  }
-  if(COL.강우일수>=0&&COL.소요일수>=0){
-    const from=DISP.findIndex(c=>c.idx===COL.강우일수),to=DISP.findIndex(c=>c.idx===COL.소요일수);
     if(from>=0&&to>=0&&from!==to+1){const it=DISP.splice(from,1)[0];DISP.splice(to<from?to+1:to,0,it);}
   }
   if(autoIdx!=null){
@@ -1391,8 +1323,6 @@ function deriveItem(d){
   d.tup=(COL.탱고업로드!=null&&COL.탱고업로드>=0)?x[COL.탱고업로드]:null;
   d.days=daysBetween(d.req,d.tup);
   if(COL.소요일수!=null&&COL.소요일수>=0)x[COL.소요일수]=(d.days==null?'':d.days);
-  d.rain=(d.days==null)?null:rainBetween(d.req,d.tup);
-  if(COL.강우일수!=null&&COL.강우일수>=0)x[COL.강우일수]=(d.rain==null?'':d.rain);
 }
 function markDup(){
   const cnt={};
@@ -1432,10 +1362,6 @@ function renderValidate(){
     extra=' <span class="note" style="margin:0;">· 소요일수(요청일 → Tango업로드) '+dOk+'건 계산 / 날짜가 없거나 글자라 계산 못 한 건 '+(DATA.length-dOk)+'건</span>';
   }else if(DATA.length){
     extra=' <span class="note" style="margin:0;">· 소요일수는 요청일·Tango업로드 칸이 있어야 계산돼요.</span>';
-  }
-  if(DATA.length&&COL.강우일수>=0){
-    const rOk=DATA.filter(d=>d.rain).length;
-    extra+=' <span class="note" style="margin:0;">· 비 온 날 '+RAIN.length+'일 등록 / 기간에 겹친 건 '+rOk+'건</span>';
   }
   document.getElementById('vMapLink').innerHTML=(COLREP.length?'<button class="linkish" id="vMapBtn">엑셀 컬럼 인식 결과 보기</button>':'<span class="note">저장된 목록이라 컬럼 인식 결과는 없어요.</span>')+extra;
   const mb=document.getElementById('vMapBtn');
@@ -1631,7 +1557,6 @@ function visible(){
     if(fjin&&d.jin!==fjin)return false;
     if(fjeo&&d.jeongKey!==fjeo)return false;
     if(fis==='hasdays'){if(d.days==null)return false;}
-    else if(fis==='hasrain'){if(!d.rain)return false;}
     else if(fis==='checked'){if(!d._chk)return false;}
     else if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
     if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;
@@ -1727,7 +1652,7 @@ function buildFoot(){
       any=true;tip=n+'건 합산';
       if(isDistCol(c.label))txt=sum.toFixed(3)+'<span class="unit">km</span>';
       else if(isMoneyCol(c.label))txt=Math.round(sum).toLocaleString('ko-KR');
-      else if(c.idx===COL.소요일수||c.idx===COL.강우일수){
+      else if(c.idx===COL.소요일수){
         txt=Math.round(sum).toLocaleString('ko-KR');
         tip=n+'건 합산 · 평균 '+(sum/n).toFixed(1)+'일';   /* 평균은 마우스를 올렸을 때만 */
       }
@@ -1811,7 +1736,7 @@ function editFormHTML(d){
   const keyIdx=new Set([COL.측량구분,COL.탱고거리,COL.지사,COL.구분].filter(i=>i!=null&&i>=0));
   const fields=DISP.map(c=>{
     const v=d.row[c.idx];const val=esc(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
-    const auto=(COL.소요일수>=0&&c.idx===COL.소요일수)||(COL.강우일수>=0&&c.idx===COL.강우일수);
+    const auto=(COL.소요일수>=0&&c.idx===COL.소요일수);
     return '<label class="ef'+(keyIdx.has(c.idx)?' key':'')+'"><span>'+esc(c.label)+(auto?' (자동)':'')+'</span><input data-eidx="'+c.idx+'" value="'+val+'"'+(auto?' readonly style="background:#f1f5f9;color:#64748b;"':'')+'></label>';
   }).join('');
   const iss=issuesOf(d);
@@ -1941,7 +1866,6 @@ function openEditPop(tr,td){
   const d=DATA.find(x=>String(x._id)===String(tr.dataset.id));if(!d)return;
   const c=colOfTd(td);if(!c)return;
   if(COL.소요일수>=0&&c.idx===COL.소요일수){toast('소요일수는 요청일과 Tango업로드로 자동 계산돼요',true);return;}
-  if(COL.강우일수>=0&&c.idx===COL.강우일수){toast('강우일수는 등록한 비 온 날로 자동 계산돼요',true);return;}
   const iss=isIssueCol(c.idx);
   EP={id:d._id,idx:c.idx,label:c.label,ci:td.cellIndex,iss:iss,tag:''};
   const v=d.row[c.idx];
@@ -2024,7 +1948,6 @@ document.getElementById('bulkClose').addEventListener('click',()=>toggleBar('bul
 document.getElementById('bulkApply').addEventListener('click',()=>{
   const idx=+document.getElementById('bulkCol').value,val=document.getElementById('bulkVal').value;
   if(COL.소요일수>=0&&idx===COL.소요일수){toast('소요일수는 자동 계산되는 칸이라 직접 넣을 수 없어요',true);return;}
-  if(COL.강우일수>=0&&idx===COL.강우일수){toast('강우일수는 자동 계산되는 칸이라 직접 넣을 수 없어요',true);return;}
   const sel=DATA.filter(d=>d._msel);
   if(!sel.length){toast('선택된 줄이 없습니다',true);return;}
   let nv=val;
@@ -2098,46 +2021,7 @@ function syncToolbar(){
   on('btnBulk',!document.getElementById('bulkBar').classList.contains('hide'));
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
   on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
-  on('btnRain',!document.getElementById('rainPop').classList.contains('hide'));
 }
-
-/* ---- 비 온 날 등록 창 ---- */
-function renderRainList(){
-  const box=document.getElementById('rpList');
-  document.getElementById('rpCnt').textContent=RAIN.length?('· '+RAIN.length+'일'):'';
-  box.innerHTML=RAIN.length?RAIN.map(d=>'<span class="rp-day">'+esc(d)+'</span>').join(''):'<span class="rp-none">아직 등록한 날이 없습니다.</span>';
-}
-function openRainPop(){
-  document.getElementById('rpText').value=RAIN.join('\n');
-  renderRainList();
-  document.getElementById('rainPop').classList.remove('hide');syncToolbar();
-  setTimeout(()=>document.getElementById('rpText').focus(),0);
-}
-function closeRainPop(){document.getElementById('rainPop').classList.add('hide');syncToolbar();}
-document.getElementById('btnRain').addEventListener('click',()=>{
-  if(!document.getElementById('rainPop').classList.contains('hide'))closeRainPop();else openRainPop();
-});
-document.getElementById('rpX').addEventListener('click',closeRainPop);
-document.getElementById('rainPop').addEventListener('click',e=>{if(e.target.id==='rainPop')closeRainPop();});
-document.getElementById('rpText').addEventListener('keydown',e=>e.stopPropagation());
-document.getElementById('rpClear').addEventListener('click',()=>{
-  if(!RAIN.length){toast('등록된 날이 없습니다');return;}
-  if(!confirm('등록한 비 온 날 '+RAIN.length+'일을 모두 지웁니다.\n\n계속할까요?'))return;
-  document.getElementById('rpText').value='';setRain([]);renderRainList();
-  DATA.forEach(deriveItem);render(true);renderValidate();markDirty();
-  toast('비 온 날을 모두 지웠습니다');
-});
-document.getElementById('rpSave').addEventListener('click',()=>{
-  const raw=document.getElementById('rpText').value.split(/[\n,;\s]+/);
-  const ok=[],bad=[];
-  raw.forEach(t=>{if(!t.trim())return;const d=parseRainDay(t);if(d)ok.push(d);else bad.push(t.trim());});
-  setRain(ok);renderRainList();
-  DATA.forEach(deriveItem);
-  buildFilters();renderValidate();render(true);renderSettle();markDirty();
-  const hit=DATA.filter(d=>d.rain).length;
-  closeRainPop();
-  toast('비 온 날 '+RAIN.length+'일 적용'+(hit?' · 겹치는 건 '+hit+'건':'')+(bad.length?' / 못 읽은 값 '+bad.length+'개':''));
-});
 
 /* ---- 툴바 입력 줄 켜고 끄기 : 같은 버튼을 다시 누르면 닫힌다 ---- */
 const BARS=['bulkBar','colAddBar','exBar'];
@@ -2257,6 +2141,18 @@ document.getElementById('exGo').addEventListener('click',()=>{
    나중에 생긴 항목 정보가 없어, 라벨을 보고 다시 이어 준다. ---- */
 function repairCols(){
   if(!DISP.length)return {fixed:[],made:''};
+  /* 예전 버전에서 만들어 둔 "강우일수" 칸은 기능을 뺐으므로 정리한다 */
+  for(let i=DISP.length-1;i>=0;i--){
+    if(/^강우일수( \d+)?$/.test(DISP[i].label)){
+      const gone=DISP[i].idx;
+      DISP.splice(i,1);
+      DATA.forEach(d=>{if(d.row)delete d.row[gone];});
+      delete colWidth[gone];delete colFilter[gone];
+      Object.keys(COL).forEach(k=>{if(COL[k]===gone)COL[k]=-1;});
+    }
+  }
+  delete COL.강우일수;
+  try{localStorage.removeItem('gongjeong_rain_v1');}catch(e){}
   const labels=[];DISP.forEach(c=>{labels[c.idx]=c.label;});
   const m=mapCols(labels).col;
   const fixed=[];
@@ -2274,12 +2170,6 @@ function repairCols(){
     const at=DISP.findIndex(c=>c.idx===COL.탱고업로드);
     DISP.splice(at>=0?at+1:DISP.length,0,{idx:idx,label:label,vis:true});
     COL.소요일수=idx;made=label;
-  }
-  if(COL.강우일수<0&&COL.요청일>=0&&COL.탱고업로드>=0){
-    const idx=nextColIdx(),label=uniqLabel('강우일수');
-    const at=DISP.findIndex(c=>c.idx===COL.소요일수);
-    DISP.splice(at>=0?at+1:DISP.length,0,{idx:idx,label:label,vis:true});
-    COL.강우일수=idx;if(!made)made=label;
   }
   return {fixed:fixed,made:made};
 }
@@ -2434,7 +2324,6 @@ document.addEventListener('keydown',e=>{
   closeCellPop();closeColFilter();
   if(!document.getElementById('editPop').classList.contains('hide'))closeEditPop();
   if(!document.getElementById('viewPop').classList.contains('hide'))closeViewPop();
-  if(!document.getElementById('rainPop').classList.contains('hide'))closeRainPop();
   if(BARS.some(barOpen)){closeBars();syncToolbar();}
 });
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
@@ -2568,7 +2457,7 @@ document.getElementById('export').addEventListener('click',()=>{
 });
 
 /* ======================= 시작 ======================= */
-loadRates();renderRates();loadRain();
+loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
 updateUpMode();showPrevBtn();syncToolbar();
 document.getElementById('mapBox').innerHTML='';
