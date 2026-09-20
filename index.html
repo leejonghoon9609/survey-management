@@ -37,12 +37,45 @@ header .spacer{flex:1;}
 #p-stats.on{display:flex;flex-direction:column;gap:10px;}
 #p-stats .card{margin-bottom:0;display:flex;flex-direction:column;min-height:0;}
 #p-stats .proc-h{flex:none;}
-#statsCard{flex:0 0 auto;max-height:44%;}
+#statsCard{flex:0 0 auto;max-height:46%;}
 #statsCard .stbody{overflow:auto;min-height:0;padding-right:2px;}
 #stCondCard{flex:0 0 auto;}
 #stListCard{flex:1 1 0;min-height:140px;}
 #stListCard .stlist{flex:1 1 0;min-height:0;max-height:none;}
 #stListCard .note{flex:none;margin-top:6px;}
+.st3{display:grid;grid-template-columns:1.1fr 1.6fr 1.3fr;gap:10px;}
+.stpane{border:1px solid #e2e8f0;border-radius:10px;background:#fff;display:flex;flex-direction:column;min-height:0;}
+.stpane-h{padding:6px 10px;border-bottom:2px solid var(--c);font-size:12.5px;font-weight:700;color:var(--c);display:flex;align-items:center;gap:8px;}
+.stpane-b{padding:8px 10px;overflow:auto;flex:1;min-height:0;}
+.stpane-f{display:flex;align-items:center;gap:8px;padding:6px 10px;border-top:1px solid #f1f5f9;}
+.sum-baal{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.sum-baal .bb{border:1.5px solid var(--c);color:var(--c);border-radius:8px;padding:3px 10px;font-size:13px;font-weight:600;background:#fff;opacity:.35;}
+.sum-baal .bb.on{background:var(--c);color:#fff;opacity:1;}
+.sum-baal .bb .n{font-weight:400;font-size:11px;margin-left:4px;}
+.sum-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 10px;}
+.sum-grid .k{font-size:11.5px;color:#64748b;}
+.sum-grid .v{font-size:17px;font-weight:700;color:#1e293b;font-variant-numeric:tabular-nums;line-height:1.2;}
+.sum-grid .v small{font-size:11px;color:#94a3b8;font-weight:400;margin-left:2px;}
+.sum-grid .s{font-size:11px;color:#94a3b8;}
+.cl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;border-top:1px dashed #e2e8f0;}
+.cl:first-child{border-top:none;padding-top:0;}
+.cl .no{font-size:11px;color:#94a3b8;width:16px;flex:none;}
+.cl .ib{border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:8px;padding:4px 10px;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cl .ib.set{background:var(--c);color:#fff;}
+.cl .ib:hover{filter:brightness(.95);}
+.cl select.op{padding:4px 6px;border:1.5px solid #059669;color:#059669;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:600;background:#fff;}
+.cl .x{border:none;background:transparent;color:#dc2626;cursor:pointer;font-size:13px;padding:0 4px;}
+.cl .pk{flex-basis:100%;display:flex;flex-direction:column;gap:3px;padding-left:22px;}
+.cl .pk span{display:inline-block;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;border-radius:6px;padding:2px 8px;font-size:11.5px;width:fit-content;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.res{border-bottom:1px dashed #e2e8f0;padding:6px 0;}
+.res:last-child{border-bottom:none;}
+.res .rt{font-size:12px;color:#64748b;}
+.res .rv{font-size:18px;font-weight:700;color:#059669;font-variant-numeric:tabular-nums;}
+.res .rv small{font-size:11px;color:#94a3b8;font-weight:400;}
+.res .rd{font-size:12px;color:#334155;line-height:1.6;white-space:pre-wrap;}
+.res.bad .rv{color:#dc2626;}
+@media(max-width:1100px){.st3{grid-template-columns:1fr;}}
+#stItemPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:445;display:flex;align-items:center;justify-content:center;padding:20px;}
 .stgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px;}
 .stbox{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#fff;}
 .stbox h4{font-size:12.5px;font-weight:500;color:#EA002C;margin:0 0 6px;}
@@ -616,29 +649,56 @@ td.left{text-align:left;}
   <!-- 통계 -->
   <div class="page" id="p-stats">
 
-    <!-- ① 조건에 맞는 통계 -->
+    <!-- ① 통계현황 : 조건대상 요약 / 통계 계산 / 계산 결과 -->
     <div class="card" id="statsCard">
-      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">통계현황 <span class="stat" id="stTitle" style="font-weight:400;"></span>
-        <span style="flex:1"></span>
-        <span class="stat" style="font-weight:400;">분류</span>
-        <div class="fbtns" id="stGroups">
-          <button class="fbtn" data-g="baal" style="--c:#EA002C">발주처</button>
-          <button class="fbtn" data-g="jisa" style="--c:#0D9488">지사</button>
-          <button class="fbtn" data-g="method" style="--c:#7C3AED">측량구분</button>
-          <button class="fbtn" data-g="jeong" style="--c:#9333EA">정산상황</button>
-          <button class="fbtn" data-g="prog" style="--c:#0369A1">진행상황</button>
-          <button class="fbtn" data-g="tag" style="--c:#D97706">이슈 사유</button>
-          <button class="fbtn" data-g="month" style="--c:#4F46E5">월별</button>
-          <button class="fbtn" data-g="partner" style="--c:#B45309">공사협력사</button>
-          <button class="fbtn" data-g="mgr" style="--c:#64748b">담당자</button>
-          <button class="fbtn" data-g="period" style="--c:#065F46">시행시기</button>
+      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">통계현황 <span class="stat" id="stTitle" style="font-weight:400;"></span></div>
+      <div class="stbody">
+        <div class="st3">
+          <div class="stpane" id="stSum">
+            <div class="stpane-h" style="--c:#EAB308">조건대상</div>
+            <div class="stpane-b" id="stSumB"></div>
+          </div>
+          <div class="stpane" id="stCalcPane">
+            <div class="stpane-h" style="--c:#2563EB">통계 계산 <span class="stat" style="font-weight:400;">지금 조건 안에서</span></div>
+            <div class="stpane-b" id="stCalcB"></div>
+            <div class="stpane-f"><button class="lvl-mini" id="stCalcAdd" title="계산 줄 추가">+ 조건 추가</button><span style="flex:1"></span><button class="btn btn-primary" id="stCalcGo" style="padding:7px 20px;">계산</button></div>
+          </div>
+          <div class="stpane" id="stResPane">
+            <div class="stpane-h" style="--c:#059669">계산 결과</div>
+            <div class="stpane-b" id="stResB"><div class="vnone">왼쪽에서 항목을 정하고 「계산」을 누르면 여기에 세부 계산과 통계가 나옵니다.</div></div>
+          </div>
         </div>
       </div>
-      <div class="stbody">
-        <div class="cards" id="stCards"></div>
-        <div class="stgrid" id="stGrid"></div>
-      </div>
     </div>
+
+    <!-- 항목 설정창 -->
+    <div id="stItemPop" class="hide"><div class="view-card" style="max-width:560px;">
+      <div class="cell-h"><b id="ipTitle">항목 설정</b><span class="cell-x" id="ipX">✕</span></div>
+      <div class="view-b">
+        <div class="vp-sec">1. 어느 칸의 값으로 묶을까요</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select id="ipCol" class="lvl-col" style="flex:1;min-width:180px;"></select>
+          <span class="stat" id="ipBase" style="font-weight:400;"></span>
+        </div>
+        <div class="lvl-v" id="ipVals" style="margin-top:6px;max-height:160px;border:1px solid #e2e8f0;border-radius:8px;"></div>
+        <div class="vp-sec">2. 무엇을 셀까요</div>
+        <div class="fbtns" id="ipMetric">
+          <button class="fbtn on" data-m="n" style="--c:#EA002C">건수</button>
+          <button class="fbtn" data-m="km" style="--c:#2563EB">정산거리 합(km)</button>
+          <button class="fbtn" data-m="avg" style="--c:#B45309">평균 소요일수</button>
+          <button class="fbtn" data-m="med" style="--c:#7C3AED">중앙값 소요일수</button>
+          <button class="fbtn" data-m="le20" style="--c:#059669">20일 이내 건수</button>
+          <button class="fbtn" data-m="gt20" style="--c:#DC2626">20일 초과 건수</button>
+          <button class="fbtn" data-m="chk" style="--c:#BE185D">이슈 체크 건수</button>
+        </div>
+        <p class="note" id="ipPrev" style="margin-top:10px;"></p>
+        <div class="vp-save" style="margin-top:12px;justify-content:flex-end;">
+          <button class="btn" id="ipClear" style="padding:7px 14px;">비우기</button>
+          <button class="btn" id="ipClose" style="padding:7px 14px;">닫기</button>
+          <button class="btn btn-primary" id="ipOk" style="padding:7px 22px;">적용</button>
+        </div>
+      </div>
+    </div></div>
 
     <!-- ② 조건 설정 : 칸을 고르면 그 칸의 값이 체크바로 나온다 (3단계) -->
     <div class="card" id="stCondCard">
@@ -812,8 +872,10 @@ td.left{text-align:left;}
    BUILD 50: 「조건 수정」 — 조건 목록에서 고른 조건에 지금 세팅을 덮어쓰기
    BUILD 51: 브라우저 기본 확인창을 전부 화면 가운데 자체 창으로 교체
              + 조건 수정 창에서 이름도 바꿀 수 있게
+   BUILD 52: 통계현황 재구성 — 조건대상 요약 / 통계 계산(항목 A · 대비·빼기·추가 · 항목 B) / 계산 결과
+             분류 칩·분류표 제거, 항목은 목록 설정창(칸 → 값 → 계산값)으로 정함
    ======================================================================== */
-const BUILD_NO='51';
+const BUILD_NO='52';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2744,76 +2806,162 @@ document.getElementById('stReset').addEventListener('click',()=>{
   ['stFrom','stTo','stDays'].forEach(id=>{const e=document.getElementById(id);e.value='';e.classList.remove('on');});
   stFillSelects();renderLevels();renderStats();toast('조건을 초기화했습니다');
 });
-/* ---- 통계 분류 기준 (직접 고르기, 선택 저장) ---- */
-const LS_STG='gongjeong_statgroups_v1';
-const ST_GROUPS={
-  baal:  {label:'발주처별',   key:d=>d.baal,                sort:'n'},
-  jisa:  {label:'지사별',     key:d=>d.jisa,                sort:'n'},
-  method:{label:'측량구분별', key:d=>d.mKey||'(미분류)',    sort:'n'},
-  jeong: {label:'정산상황별', key:d=>d.jeongKey||'(빈칸)',  sort:'n'},
-  prog:  {label:'진행상황별', key:d=>d.jin||'(빈칸)',       sort:'n'},
-  tag:   {label:'이슈 사유별',key:d=>splitIssue(d.row[COL.이슈]).tag||(d._chk?'(사유 없음)':'(이슈 아님)'),sort:'n'},
-  month: {label:'월별 (요청일)',key:d=>{const q=parseDate(d.req);return q?(q.getFullYear()+'-'+String(q.getMonth()+1).padStart(2,'0')):'(날짜 아님)';},sort:'key'},
-  partner:{label:'공사협력사별',key:d=>String(d.row[COL.협력사]==null?'':d.row[COL.협력사]).trim()||'(빈칸)',sort:'n'},
-  mgr:   {label:'담당자별',   key:d=>{const i=DISP.find(c=>/담당/.test(c.label));return i?(String(d.row[i.idx]==null?'':d.row[i.idx]).trim()||'(빈칸)'):'(칸 없음)';},sort:'n'},
-  period:{label:'시행시기별', key:d=>d.시행||'(빈칸)',       sort:'key'}
-};
-let STG=['baal','jisa'];
-try{const r=localStorage.getItem(LS_STG);if(r){const a=JSON.parse(r);if(Array.isArray(a)&&a.every(k=>ST_GROUPS[k]))STG=a;}}catch(e){}
-function syncGroupBtns(){[...document.querySelectorAll('#stGroups .fbtn')].forEach(b=>b.classList.toggle('on',STG.includes(b.dataset.g)));}
-document.getElementById('stGroups').addEventListener('click',e=>{
-  const b=e.target.closest('[data-g]');if(!b)return;
-  const g=b.dataset.g;
-  if(STG.includes(g))STG=STG.filter(x=>x!==g);else STG.push(g);
-  try{localStorage.setItem(LS_STG,JSON.stringify(STG));}catch(x){}
-  syncGroupBtns();renderStats();
-});
-function stGroup(rows,keyFn,label){
-  const g={};
-  rows.forEach(d=>{const k=keyFn(d)||'(없음)';const o=g[k]||(g[k]={n:0,km:0,days:[],chk:0});o.n++;
-    if(typeof d.tango==='number')o.km+=d.tango;if(d.days!=null)o.days.push(d.days);if(d._chk)o.chk++;});
-  const rowsOut=Object.keys(g).map(k=>({k:k,n:g[k].n,km:g[k].km,avg:g[k].days.length?g[k].days.reduce((a,b)=>a+b,0)/g[k].days.length:null,chk:g[k].chk}));
-  return {label:label,rows:rowsOut};
-}
-function stBox(gr,sortBy){
-  const rows=gr.rows.slice().sort(sortBy==='key'?((a,b)=>String(a.k).localeCompare(String(b.k),'ko')):((a,b)=>b.n-a.n));
-  const max=Math.max(1,...rows.map(r=>r.n));
-  const totN=rows.reduce((a,r)=>a+r.n,0),totKm=rows.reduce((a,r)=>a+r.km,0);
-  const allD=[];gr.rows.forEach(r=>{if(r.avg!=null)allD.push(r);});
-  return '<div class="stbox"><h4>'+esc(gr.label)+'</h4><table class="sttbl"><thead><tr><th>구분</th><th>건수</th><th>거리(km)</th><th>평균일수</th><th>이슈</th><th></th></tr></thead><tbody>'+
-    rows.map(r=>'<tr><td title="'+esc(r.k)+'">'+esc(r.k)+'</td><td>'+r.n.toLocaleString('ko-KR')+'</td><td>'+r.km.toFixed(3)+'</td><td>'+(r.avg==null?'-':r.avg.toFixed(1))+'</td><td>'+(r.chk||'-')+'</td><td class="bar"><div class="bw"><div class="bf" style="width:'+Math.round(r.n/max*100)+'%"></div></div></td></tr>').join('')+
-    '<tr class="tot"><td>합계</td><td>'+totN.toLocaleString('ko-KR')+'</td><td>'+totKm.toFixed(3)+'</td><td></td><td>'+rows.reduce((a,r)=>a+r.chk,0)+'</td><td></td></tr>'+
-    '</tbody></table></div>';
-}
 function renderStats(){
   if(!document.getElementById('p-stats'))return;
   const rows=statRows();
   document.getElementById('stTitle').textContent='조건: '+stCondText();
   const sum=document.getElementById('stCondSum');if(sum)sum.textContent='→ '+rows.length.toLocaleString('ko-KR')+'건';
+  renderSummary(rows);
+  renderCalc();
+  renderStatList(rows);
+  renderPopWin();
+}
+/* ---- 조건대상 요약 (왼쪽) ---- */
+function stMetrics(rows){
   const n=rows.length;
   const km=rows.reduce((a,d)=>a+(typeof d.tango==='number'?d.tango:0),0);
   const ds=rows.filter(d=>d.days!=null).map(d=>d.days).sort((a,b)=>a-b);
   const avg=ds.length?ds.reduce((a,b)=>a+b,0)/ds.length:null;
   const med=ds.length?ds[Math.floor(ds.length/2)]:null;
-  const le20=ds.filter(v=>v<=20).length;
+  const le20=ds.filter(v=>v<=20).length,gt20=ds.length-le20;
   const chk=rows.filter(d=>d._chk).length;
-  const able_=rows.filter(able).length;
-  const c=(lab,val,sub,cls)=>'<div class="stat-c"><div class="lab">'+lab+'</div><div class="val'+(cls?' '+cls:'')+'">'+val+'</div>'+(sub?'<div class="sub2">'+sub+'</div>':'')+'</div>';
-  document.getElementById('stCards').innerHTML=
-    c('건수',n.toLocaleString('ko-KR')+'<span style="font-size:12px;color:#94a3b8">건</span>','전체 '+DATA.length+'건 중')+
-    c('정산가능',able_.toLocaleString('ko-KR')+'<span style="font-size:12px;color:#94a3b8">건</span>','','blue')+
-    c('정산거리 합계',km.toFixed(3)+'<span style="font-size:12px;color:#94a3b8">km</span>','')+
-    c('평균 소요일수',avg==null?'-':avg.toFixed(1)+'<span style="font-size:12px;color:#94a3b8">일</span>',ds.length?('중앙값 '+med+'일 · '+ds.length+'건 기준'):'계산 가능한 건 없음','amber')+
-    c('20일 이내',ds.length?(Math.round(le20/ds.length*100)+'<span style="font-size:12px;color:#94a3b8">%</span>'):'-',ds.length?(le20+'건 / 초과 '+(ds.length-le20)+'건'):'','green')+
-    c('이슈 체크',chk.toLocaleString('ko-KR')+'<span style="font-size:12px;color:#94a3b8">건</span>','',chk?'blue':'');
-  if(!n){document.getElementById('stGrid').innerHTML='<div class="stempty">조건에 맞는 건이 없습니다.</div>';}
-  else if(!STG.length){document.getElementById('stGrid').innerHTML='<div class="stempty">오른쪽 위에서 분류 기준을 고르면 표가 나옵니다.</div>';}
-  else{
-    document.getElementById('stGrid').innerHTML=STG.map(g=>{const G=ST_GROUPS[g];return stBox(stGroup(rows,G.key,G.label),G.sort);}).join('');
-  }
-  renderStatList(rows);
-  renderPopWin();
+  return {n,km,dn:ds.length,avg,med,le20,gt20,chk,able:rows.filter(able).length};
 }
+function renderSummary(rows){
+  const box=document.getElementById('stSumB');if(!box)return;
+  const m=stMetrics(rows);
+  const cnt={};DATA.forEach(d=>{if(d.baal)cnt[d.baal]=(cnt[d.baal]||0)+1;});
+  const sel=SFL[0].v;
+  const col={SKT:'#EA002C',SKB:'#2563EB',원인자:'#B45309'};
+  const baals=['SKT','SKB','원인자'].filter(b=>cnt[b]);
+  const on=b=>sel.size===0||sel.has(b);
+  const f1=v=>v==null?'-':v.toFixed(1);
+  box.innerHTML='<div class="sum-baal">'+baals.map(b=>'<span class="bb'+(on(b)?' on':'')+'" style="--c:'+(col[b]||'#64748b')+'">'+esc(b)+'<span class="n">'+(rows.filter(d=>d.baal===b).length)+'</span></span>').join('')+'</div>'+
+    '<div class="sum-grid">'+
+    '<div><div class="k">건수</div><div class="v">'+m.n.toLocaleString('ko-KR')+'<small>건</small></div><div class="s">전체 '+DATA.length+'건 중 · 정산가능 '+m.able+'</div></div>'+
+    '<div><div class="k">정산거리 합</div><div class="v">'+m.km.toFixed(3)+'<small>km</small></div></div>'+
+    '<div><div class="k">평균 소요일수</div><div class="v">'+f1(m.avg)+'<small>일</small></div><div class="s">'+(m.dn?'중앙값 '+m.med+'일 · '+m.dn+'건 기준':'계산 가능한 건 없음')+'</div></div>'+
+    '<div><div class="k">20일 이내</div><div class="v">'+(m.dn?Math.round(m.le20/m.dn*100):'-')+'<small>%</small></div><div class="s">'+(m.dn?m.le20+'건 / 초과 '+m.gt20+'건':'')+'</div></div>'+
+    '<div><div class="k">이슈 체크</div><div class="v">'+m.chk+'<small>건</small></div></div>'+
+    '</div>';
+}
+/* ---- 통계 계산 (가운데) ----
+   줄마다 [항목 A] [연산] [항목 B]. 항목 = {col:'baal'|'col:idx'|…, vals:[…], metric:'n'|'km'|…}
+   항목을 비워 두면 "조건 전체" 로 본다. */
+const LS_STCALC='gongjeong_statcalc_v1';
+let STCALC=[];
+try{const r=localStorage.getItem(LS_STCALC);if(r){const a=JSON.parse(r);if(Array.isArray(a))STCALC=a;}}catch(e){}
+if(!STCALC.length)STCALC=[{a:null,op:'ratio',b:null}];
+function stCalcSave(){try{localStorage.setItem(LS_STCALC,JSON.stringify(STCALC));}catch(e){}}
+const ST_METRIC={n:'건수',km:'정산거리 합',avg:'평균 소요일수',med:'중앙값 소요일수',le20:'20일 이내 건수',gt20:'20일 초과 건수',chk:'이슈 체크 건수'};
+const ST_UNIT={n:'건',km:'km',avg:'일',med:'일',le20:'건',gt20:'건',chk:'건'};
+const ST_OP={ratio:'대비',sub:'빼기',add:'추가'};
+function itemField(k){if(!k)return null;return stField(k);}
+function itemRows(it,base){
+  if(!it||!it.col)return base;
+  const F=itemField(it.col);if(!F)return base;
+  const vs=new Set(it.vals||[]);if(!vs.size)return base;
+  return base.filter(d=>vs.has(F.get(d)));
+}
+function itemValue(it,base){
+  const rows=itemRows(it,base),m=stMetrics(rows),k=(it&&it.metric)||'n';
+  const v={n:m.n,km:m.km,avg:m.avg,med:m.med,le20:m.le20,gt20:m.gt20,chk:m.chk}[k];
+  return {v:v,rows:rows,m:m,k:k};
+}
+function itemLabel(it){
+  if(!it||!it.col)return '조건 전체';
+  const F=itemField(it.col);const vs=it.vals||[];
+  return (F?F.label:it.col)+(vs.length?': '+vs.slice(0,2).join(', ')+(vs.length>2?' 외 '+(vs.length-2):''):' 전체');
+}
+function fmtV(v,k){if(v==null)return '-';if(k==='km')return v.toFixed(3);if(k==='avg')return v.toFixed(1);return Math.round(v).toLocaleString('ko-KR');}
+function renderCalc(){
+  const box=document.getElementById('stCalcB');if(!box)return;
+  box.innerHTML=STCALC.map((L,i)=>{
+    const ib=(it,side)=>'<button class="ib'+(it&&it.col?' set':'')+'" style="--c:'+(side==='a'?'#EA002C':'#EAB308')+'" data-item="'+i+'" data-side="'+side+'" title="눌러서 항목 설정">'+esc(it&&it.col?itemLabel(it):(side==='a'?'항목 A 설정':'항목 B 설정'))+'</button>';
+    const pk=(it)=>it&&it.col?'<span>'+esc(itemLabel(it)+' · '+ST_METRIC[it.metric||'n'])+'</span>':'';
+    return '<div class="cl"><span class="no">'+(i+1)+'</span>'+ib(L.a,'a')+
+      '<select class="op" data-op="'+i+'">'+Object.keys(ST_OP).map(k=>'<option value="'+k+'"'+(L.op===k?' selected':'')+'>'+ST_OP[k]+'</option>').join('')+'</select>'+
+      ib(L.b,'b')+(STCALC.length>1?'<button class="x" data-del="'+i+'" title="이 줄 삭제">✕</button>':'')+
+      ((L.a&&L.a.col)||(L.b&&L.b.col)?'<div class="pk">'+pk(L.a)+pk(L.b)+'</div>':'')+'</div>';
+  }).join('');
+}
+function runCalc(){
+  const base=statRows();const out=[];
+  STCALC.forEach((L,i)=>{
+    const A=itemValue(L.a,base),B=itemValue(L.b,base);
+    const ka=A.k,kb=B.k,ua=ST_UNIT[ka],ub=ST_UNIT[kb];
+    const la=itemLabel(L.a)+' '+ST_METRIC[ka],lb=itemLabel(L.b)+' '+ST_METRIC[kb];
+    let val='',unit='',bad=false,det='';
+    if(A.v==null||B.v==null){bad=true;val='계산 불가';det='소요일수가 계산된 건이 없어 값을 낼 수 없습니다.';}
+    else if(L.op==='ratio'){
+      if(B.v===0){bad=true;val='계산 불가';det=lb+' 가 0 이라 나눌 수 없습니다.';}
+      else{val=(A.v/B.v*100).toFixed(1);unit='%';det=la+' '+fmtV(A.v,ka)+ua+'  ÷  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+'%';
+        if(ka!==kb)det+='\n※ 두 항목의 계산값이 달라(단위 '+ua+'/'+ub+') 참고용입니다.';}
+    }else if(L.op==='sub'){val=fmtV(A.v-B.v,ka);unit=ua;det=la+' '+fmtV(A.v,ka)+ua+'  −  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+unit;}
+    else{val=fmtV(A.v+B.v,ka);unit=ua;det=la+' '+fmtV(A.v,ka)+ua+'  +  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+unit;}
+    det+='\n(A '+A.rows.length+'건 · B '+B.rows.length+'건 · 조건 전체 '+base.length+'건)';
+    out.push({i,val,unit,bad,det,title:itemLabel(L.a)+' '+ST_OP[L.op]+' '+itemLabel(L.b)});
+  });
+  document.getElementById('stResB').innerHTML=out.map(r=>'<div class="res'+(r.bad?' bad':'')+'"><div class="rt">'+(r.i+1)+'. '+esc(r.title)+'</div><div class="rv">'+esc(r.val)+(r.unit?'<small>'+esc(r.unit)+'</small>':'')+'</div><div class="rd">'+esc(r.det)+'</div></div>').join('');
+}
+document.getElementById('stCalcB').addEventListener('click',e=>{
+  const b=e.target.closest('[data-item]');
+  if(b){openItemPop(+b.dataset.item,b.dataset.side);return;}
+  const x=e.target.closest('[data-del]');
+  if(x){STCALC.splice(+x.dataset.del,1);if(!STCALC.length)STCALC=[{a:null,op:'ratio',b:null}];stCalcSave();renderCalc();return;}
+});
+document.getElementById('stCalcB').addEventListener('change',e=>{const o=e.target.closest('[data-op]');if(!o)return;STCALC[+o.dataset.op].op=o.value;stCalcSave();});
+document.getElementById('stCalcAdd').addEventListener('click',()=>{STCALC.push({a:null,op:'ratio',b:null});stCalcSave();renderCalc();});
+document.getElementById('stCalcGo').addEventListener('click',runCalc);
+
+/* ---- 항목 설정창 ---- */
+let IP={i:0,side:'a',col:'',vals:new Set(),metric:'n'};
+function openItemPop(i,side){
+  const cur=STCALC[i]&&STCALC[i][side];
+  IP={i:i,side:side,col:cur?cur.col:'',vals:new Set(cur&&cur.vals?cur.vals:[]),metric:cur&&cur.metric?cur.metric:'n'};
+  document.getElementById('ipTitle').textContent='항목 '+(side==='a'?'A':'B')+' 설정 · '+(i+1)+'번 줄';
+  const fl=stFieldList();
+  document.getElementById('ipCol').innerHTML='<option value="">(칸 선택 — 안 고르면 조건 전체)</option>'+fl.map(f=>'<option value="'+esc(f.k)+'"'+(IP.col===f.k?' selected':'')+'>'+esc(f.label)+'</option>').join('');
+  [...document.querySelectorAll('#ipMetric .fbtn')].forEach(b=>b.classList.toggle('on',b.dataset.m===IP.metric));
+  renderIpVals();
+  document.getElementById('stItemPop').classList.remove('hide');
+}
+function closeItemPop(){document.getElementById('stItemPop').classList.add('hide');}
+function renderIpVals(){
+  const box=document.getElementById('ipVals'),base=statRows();
+  document.getElementById('ipBase').textContent='지금 조건 '+base.length+'건';
+  if(!IP.col){box.innerHTML='<div class="vnone">칸을 고르면 값이 나옵니다. 안 고르면 조건 전체를 씁니다.</div>';renderIpPrev();return;}
+  const F=itemField(IP.col);if(!F){box.innerHTML='';return;}
+  const cnt={};base.forEach(d=>{const v=F.get(d);cnt[v]=(cnt[v]||0)+1;});
+  let keys=Object.keys(cnt);
+  if(F.sort==='fixed')keys=F.order.filter(k=>cnt[k]!=null);else if(F.sort==='key')keys.sort((a,b)=>String(a).localeCompare(String(b),'ko'));else keys.sort((a,b)=>cnt[b]-cnt[a]||String(a).localeCompare(String(b),'ko'));
+  [...IP.vals].forEach(v=>{if(cnt[v]==null)IP.vals.delete(v);});
+  box.innerHTML='<label class="vchk vall"><input type="checkbox" data-ipall="1"'+(IP.vals.size===0?' checked':'')+'>전체 <span class="n">'+base.length+'</span></label>'+
+    keys.slice(0,100).map(k=>'<label class="vchk'+(IP.vals.has(k)?' on':'')+'" title="'+esc(k)+'"><input type="checkbox" data-ipv="'+esc(k)+'"'+(IP.vals.has(k)?' checked':'')+'><span class="t">'+esc(k)+'</span><span class="n">'+cnt[k]+'</span></label>').join('');
+  renderIpPrev();
+}
+function renderIpPrev(){
+  const it={col:IP.col,vals:[...IP.vals],metric:IP.metric};
+  const r=itemValue(it,statRows());
+  document.getElementById('ipPrev').innerHTML='이 항목: <b>'+esc(itemLabel(it))+'</b> · '+esc(ST_METRIC[IP.metric])+' = <b>'+esc(fmtV(r.v,IP.metric))+esc(ST_UNIT[IP.metric])+'</b> ('+r.rows.length+'건)';
+}
+document.getElementById('ipCol').addEventListener('change',e=>{IP.col=e.target.value;IP.vals=new Set();renderIpVals();});
+document.getElementById('ipVals').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.ipall!=null)IP.vals=new Set();
+  else if(t.dataset.ipv!=null){if(t.checked)IP.vals.add(t.dataset.ipv);else IP.vals.delete(t.dataset.ipv);}
+  renderIpVals();
+});
+document.getElementById('ipMetric').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;IP.metric=b.dataset.m;[...document.querySelectorAll('#ipMetric .fbtn')].forEach(x=>x.classList.toggle('on',x===b));renderIpPrev();});
+document.getElementById('ipOk').addEventListener('click',()=>{
+  const L=STCALC[IP.i];if(!L){closeItemPop();return;}
+  L[IP.side]={col:IP.col,vals:[...IP.vals],metric:IP.metric};
+  stCalcSave();renderCalc();closeItemPop();
+});
+document.getElementById('ipClear').addEventListener('click',()=>{const L=STCALC[IP.i];if(L)L[IP.side]=null;stCalcSave();renderCalc();closeItemPop();});
+document.getElementById('ipClose').addEventListener('click',closeItemPop);
+document.getElementById('ipX').addEventListener('click',closeItemPop);
+document.getElementById('stItemPop').addEventListener('click',e=>{if(e.target.id==='stItemPop')closeItemPop();});
 function renderStatList(rows){
   rows=stSorted(rows);
   const vis=stColsList();
@@ -2870,7 +3018,7 @@ function stCondSaveAll(a){try{localStorage.setItem(LS_STCOND,JSON.stringify(a));
 function stCondObj(name){
   const vf={};Object.keys(STVF).forEach(k=>{const c=DISP.find(x=>x.idx===+k);if(c&&STVF[k]&&STVF[k].size)vf[c.label]=[...STVF[k]];});
   return {name:name,at:Date.now(),baal:[...SFL[0].v],vf:vf,from:SF.from,to:SF.to,days:SF.days,
-          cols:STCOLS?[...STCOLS]:null,ord:STORD?STORD.slice():null,groups:STG.slice(),sort:{label:STSORT.label,dir:STSORT.dir}};
+          cols:STCOLS?[...STCOLS]:null,ord:STORD?STORD.slice():null,calc:JSON.parse(JSON.stringify(STCALC)),sort:{label:STSORT.label,dir:STSORT.dir}};
 }
 function stCondApply(o){
   if(!o)return;
@@ -2880,7 +3028,7 @@ function stCondApply(o){
   ['stFrom','stTo','stDays'].forEach(id=>{const e=document.getElementById(id);const v={stFrom:SF.from,stTo:SF.to,stDays:SF.days}[id];e.value=v;e.classList.toggle('on',!!v);});
   STCOLS=o.cols?new Set(o.cols):null;stSaveCols();
   STORD=o.ord?o.ord.slice():null;stSaveOrd();
-  if(Array.isArray(o.groups)&&o.groups.every(k=>ST_GROUPS[k])){STG=o.groups.slice();try{localStorage.setItem(LS_STG,JSON.stringify(STG));}catch(e){}syncGroupBtns();}
+  if(Array.isArray(o.calc)&&o.calc.length){STCALC=JSON.parse(JSON.stringify(o.calc));stCalcSave();}
   STVFCOL='';
   STSORT=(o.sort&&o.sort.label)?{label:o.sort.label,dir:o.sort.dir===-1?-1:1}:{label:'',dir:1};
   renderLevels();renderStats();
@@ -2910,7 +3058,7 @@ function openSavePop(mode,idx){
   document.getElementById('ssTitle').textContent=mode==='edit'?'조건 수정':'조건 저장';
   document.getElementById('ssSave').textContent=mode==='edit'?'수정':'저장';
   document.getElementById('ssName').value=cur?cur.name:'';
-  document.getElementById('ssWhat').textContent=(mode==='edit'?'이름을 바꿀 수 있고, 이 조건을 지금 세팅으로 덮어씁니다.\n':'')+'저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 정렬 / 통계 분류 선택';
+  document.getElementById('ssWhat').textContent=(mode==='edit'?'이름을 바꿀 수 있고, 이 조건을 지금 세팅으로 덮어씁니다.\n':'')+'저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 정렬 / 통계 계산 줄';
   document.getElementById('stSavePop').classList.remove('hide');
   setTimeout(()=>{const e=document.getElementById('ssName');e.focus();if(cur)e.select();},0);
 }
@@ -3103,7 +3251,7 @@ function openPopWin(){
 document.getElementById('stPopWin').addEventListener('click',openPopWin);
 window.addEventListener('beforeunload',()=>{if(STWIN&&!STWIN.closed)STWIN.close();});
 
-function openStats(){stFillSelects();syncGroupBtns();renderCondSel();renderLevels();renderStats();requestAnimationFrame(fitStats);}
+function openStats(){stFillSelects();renderCondSel();renderLevels();renderStats();requestAnimationFrame(fitStats);}
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
    예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
@@ -3297,6 +3445,7 @@ document.addEventListener('keydown',e=>{
   if(!document.getElementById('editPop').classList.contains('hide'))closeEditPop();
   if(!document.getElementById('viewPop').classList.contains('hide'))closeViewPop();
   if(!document.getElementById('stSavePop').classList.contains('hide'))closeSavePop();
+  if(!document.getElementById('stItemPop').classList.contains('hide'))closeItemPop();
   if(BARS.some(barOpen)){closeBars();syncToolbar();}
 });
 document.getElementById('head').addEventListener('change',e=>{if(e.target.id==='mAll'){const ck=e.target.checked;mRows.forEach(d=>d._msel=ck);document.querySelectorAll('#rows .msel').forEach(cb=>cb.checked=ck);updateSelUI();}});
