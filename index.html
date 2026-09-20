@@ -57,7 +57,38 @@ header .spacer{flex:1;}
 .stlist{min-height:120px;}
 .stdate{padding:5px 7px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:12.5px;}
 .stx{display:flex;align-items:center;gap:5px;font-size:12.5px;color:#475569;font-weight:400;}
-.lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stline{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #f1f5f9;min-width:0;}
+.stline:first-of-type{border-top:none;}
+.lvl-col-s{width:150px;flex:none;}
+.lvl-v.inline{padding:0;max-height:none;overflow:visible;flex:1;min-width:0;}
+.stcols{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+.stcols::-webkit-scrollbar{height:6px;}
+.stcols::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+.cchip{display:inline-flex;align-items:center;gap:3px;border:1px solid #e2e8f0;border-radius:7px;padding:2px 3px 2px 6px;font-size:12px;color:#334155;background:#fff;white-space:nowrap;cursor:grab;flex:none;user-select:none;}
+.cchip input{margin:0;accent-color:#EA002C;cursor:pointer;}
+.cchip.on{border-color:#EA002C;background:#fff1f2;}
+.cchip.vf{border-color:#2563EB;box-shadow:inset 0 -2px 0 #2563EB;}
+.cchip .t{max-width:96px;overflow:hidden;text-overflow:ellipsis;}
+.cchip .dd{border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:11px;padding:0 3px;line-height:1;border-radius:4px;}
+.cchip .dd:hover,.cchip.open .dd{background:#2563EB;color:#fff;}
+.cchip.vf .dd{color:#2563EB;}
+.cchip.dragging{opacity:.4;}
+.cchip.dropL{box-shadow:-3px 0 0 #EA002C;}
+.cchip.dropR{box-shadow:3px 0 0 #EA002C;}
+#stVfPop{position:fixed;z-index:430;background:#fff;border:1px solid #94a3b8;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.18);width:300px;max-height:340px;display:flex;flex-direction:column;overflow:hidden;}
+#stVfPop .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12.5px;font-weight:500;color:#2563EB;}
+#stVfPop .ph .x{margin-left:auto;border:none;background:transparent;cursor:pointer;color:#64748b;font-size:14px;}
+#stVfPop .pb{overflow:auto;padding:6px 8px;display:flex;flex-direction:column;gap:3px;}
+#stVfPop .pb label{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 5px;border-radius:6px;cursor:pointer;}
+#stVfPop .pb label:hover{background:#f8fafc;}
+#stVfPop .pb label.on{background:#eff6ff;}
+#stVfPop .pb .n{margin-left:auto;color:#94a3b8;font-size:11px;}
+#stVfPop .pb .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#stVfPop .pf{display:flex;gap:6px;padding:7px 10px;border-top:1px solid #e2e8f0;}
+#stTable{table-layout:fixed;min-width:0;}
+#stHead th{position:sticky;top:0;padding-right:14px;}
+#stHead th .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
+#stHead th .rsz:hover{background:#FFB400;}
 .lvl{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
 .lvl-h{display:flex;align-items:center;gap:8px;padding:6px 9px;border-bottom:2px solid var(--c);background:#fff;}
 .lvl-t{font-size:12.5px;font-weight:700;color:var(--c);white-space:nowrap;}
@@ -608,12 +639,19 @@ td.left{text-align:left;}
         <select id="stDays" class="csel" style="--c:#065F46"><option value="">소요일수 전체</option><option value="has">계산된 건만</option><option value="le20">20일 이내</option><option value="gt20">20일 초과</option><option value="gt30">30일 초과</option></select>
         <button class="btn tbtn" id="stReset" style="padding:6px 14px;--c:#64748b">조건 초기화</button>
       </div>
-      <div class="lvls" id="stLvls">
-        <div class="lvl" data-l="0"><div class="lvl-h" style="--c:#EAB308"><span class="lvl-t">조건대상</span><select class="lvl-col" data-l="0"></select></div><div class="lvl-v" data-l="0"></div></div>
-        <div class="lvl" id="stColsBox"><div class="lvl-h" style="--c:#EA002C"><span class="lvl-t">분류</span><span class="stat" style="font-weight:400;">리스트에 보일 칸</span><span style="flex:1"></span><button class="lvl-mini" id="stColsAll">전체</button><button class="lvl-mini" id="stColsNone">해제</button><button class="lvl-mini" id="stColsSync">리스트관리와 같게</button></div><div class="lvl-v" id="stColsV"></div></div>
-        <div class="lvl" id="stVfBox"><div class="lvl-h" style="--c:#2563EB"><span class="lvl-t">세부 분류</span><select class="lvl-col" id="stVfCol"></select></div><div class="stvf-on" id="stVfOn"></div><div class="lvl-v" id="stVfV"></div></div>
+      <div class="stline" id="stLvls">
+        <span class="lvl-t" style="--c:#EAB308">조건대상</span>
+        <select class="lvl-col lvl-col-s" data-l="0"></select>
+        <div class="lvl-v inline" data-l="0"></div>
+      </div>
+      <div class="stline">
+        <span class="lvl-t" style="--c:#EA002C">분류</span>
+        <span class="stat" style="font-weight:400;white-space:nowrap;">리스트에 보일 칸</span>
+        <button class="lvl-mini" id="stColsAll">전체</button><button class="lvl-mini" id="stColsNone">해제</button><button class="lvl-mini" id="stColsSync">리스트관리와 같게</button>
+        <div class="stcols" id="stColsV"></div>
       </div>
     </div>
+    <div id="stVfPop" class="hide"></div>
 
     <!-- ③ 조건에 맞는 리스트 -->
     <div class="card" id="stListCard">
@@ -729,8 +767,10 @@ td.left{text-align:left;}
    BUILD 41: 조건 설정을 3단계(조건대상 → 분류 → 세부 분류)로 재구성
              칸을 고르면 그 칸의 값이 체크바로 나오고, 체크한 값만 리스트에 남음
    BUILD 42: 분류 = 리스트에 보일 칸 체크(1차 정리) / 세부 분류 = 칸 골라 값 체크(추려내기)
+   BUILD 43: 조건 설정 두 줄로 — 조건대상 값을 같은 줄에, 분류 칸을 한 줄에
+             칸마다 ▾ 로 값 체크(세부 분류 줄 삭제), 칸 끌어서 순서 이동, 리스트 칸 너비 조절
    ======================================================================== */
-const BUILD_NO='42';
+const BUILD_NO='43';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2366,10 +2406,22 @@ const SFL=[{f:'baal',v:new Set()}];            /* 조건대상 한 단계 */
 const LS_STCOLS='gongjeong_statcols_v1';
 let STCOLS=null;                                 /* 리스트에 보일 칸 (라벨 Set). null = 리스트관리와 같게 */
 try{const r=localStorage.getItem(LS_STCOLS);if(r){const a=JSON.parse(r);if(Array.isArray(a))STCOLS=new Set(a);}}catch(e){}
-let STVF={};                                     /* 세부 분류 값 필터 {idx: Set(값)} */
-let STVFCOL='';                                  /* 지금 고른 세부 분류 칸 idx */
-function stColsList(){return DISP.filter(c=>STCOLS?STCOLS.has(c.label):c.vis);}
+let STVF={};                                     /* 값 필터 {idx: Set(값)} */
+let STVFCOL='';                                  /* 지금 ▾ 로 펼친 칸 idx */
+const LS_STORD='gongjeong_statorder_v1',LS_STW='gongjeong_statwidth_v1';
+let STORD=null;                                  /* 리스트 칸 순서 (라벨 배열). null = DISP 순서 */
+let STW={};                                      /* 리스트 칸 너비 {라벨: px} */
+try{const r=localStorage.getItem(LS_STORD);if(r){const a=JSON.parse(r);if(Array.isArray(a))STORD=a;}}catch(e){}
+try{const r=localStorage.getItem(LS_STW);if(r){const o=JSON.parse(r);if(o&&typeof o==='object')STW=o;}}catch(e){}
+function stOrdered(){                            /* DISP 를 저장된 순서로 */
+  if(!STORD)return DISP.slice();
+  const pos={};STORD.forEach((l,i)=>pos[l]=i);
+  return DISP.slice().sort((a,b)=>(pos[a.label]==null?1e9:pos[a.label])-(pos[b.label]==null?1e9:pos[b.label]));
+}
+function stColsList(){return stOrdered().filter(c=>STCOLS?STCOLS.has(c.label):c.vis);}
 function stSaveCols(){try{if(STCOLS)localStorage.setItem(LS_STCOLS,JSON.stringify([...STCOLS]));else localStorage.removeItem(LS_STCOLS);}catch(e){}}
+function stSaveOrd(){try{if(STORD)localStorage.setItem(LS_STORD,JSON.stringify(STORD));else localStorage.removeItem(LS_STORD);}catch(e){}}
+function stSaveW(){try{localStorage.setItem(LS_STW,JSON.stringify(STW));}catch(e){}}
 const stVal=(d,idx)=>{const v=d.row[idx];const t=fval(cellVal(v,idx));return t===''?'(빈칸)':t;};
 const ST_FIELDS=[
   {k:'baal',  label:'발주처',      get:d=>d.baal||'(없음)',       sort:'n'},
@@ -2426,34 +2478,43 @@ function stFillSelects(){
     const i=+sel.dataset.l;
     sel.innerHTML='<option value="">(칸 선택)</option>'+fl.map(f=>'<option value="'+esc(f.k)+'"'+(SFL[i].f===f.k?' selected':'')+'>'+esc(f.label)+'</option>').join('');
   });
-  const vs=document.getElementById('stVfCol');
-  if(vs){
-    if(STVFCOL!==''&&!DISP.some(c=>String(c.idx)===String(STVFCOL)))STVFCOL='';
-    vs.innerHTML='<option value="">(칸 선택)</option>'+DISP.map(c=>'<option value="'+c.idx+'"'+(String(c.idx)===String(STVFCOL)?' selected':'')+'>'+esc(c.label)+(STVF[c.idx]&&STVF[c.idx].size?' ●':'')+'</option>').join('');
-  }
 }
 /* 분류 : 리스트에 보일 칸 체크 */
 function renderCols(){
   const box=document.getElementById('stColsV');if(!box)return;
   const on=new Set(stColsList().map(c=>c.label));
-  box.innerHTML=DISP.length?DISP.map(c=>'<label class="vchk'+(on.has(c.label)?' on':'')+'"><input type="checkbox" data-col="'+esc(c.label)+'"'+(on.has(c.label)?' checked':'')+'><span class="t">'+esc(c.label)+'</span></label>').join(''):'<div class="vnone">목록을 먼저 불러와 주세요.</div>';
+  box.innerHTML=DISP.length?stOrdered().map(c=>{
+    const vf=STVF[c.idx]&&STVF[c.idx].size;
+    return '<span class="cchip'+(on.has(c.label)?' on':'')+(vf?' vf':'')+(String(c.idx)===String(STVFCOL)?' open':'')+'" draggable="true" data-chip="'+esc(c.label)+'" title="'+esc(c.label)+(vf?' · 값 필터 '+STVF[c.idx].size+'개':'')+' — 끌어서 순서 이동">'+
+      '<input type="checkbox" data-col="'+esc(c.label)+'"'+(on.has(c.label)?' checked':'')+'><span class="t">'+esc(c.label)+'</span>'+
+      '<button class="dd" data-dd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></span>';}).join('')
+    :'<div class="vnone">목록을 먼저 불러와 주세요.</div>';
 }
-/* 세부 분류 : 고른 칸의 값 체크 (값 필터) */
+/* ▾ 값 팝업 : 그 칸의 값 체크 (값 필터) */
 function renderVf(){
-  const box=document.getElementById('stVfV'),onBox=document.getElementById('stVfOn');if(!box)return;
-  onBox.innerHTML=Object.keys(STVF).filter(k=>STVF[k]&&STVF[k].size).map(k=>{const c=DISP.find(x=>x.idx===+k);if(!c)return '';const a=[...STVF[k]];
-    return '<span class="fchip" title="'+esc(a.join(', '))+'"><b>'+esc(c.label)+'</b><span>'+esc(a.slice(0,3).join(', ')+(a.length>3?' 외 '+(a.length-3):''))+'</span><button data-vfx="'+k+'" title="이 필터 해제">✕</button></span>';}).join('');
-  if(STVFCOL===''){box.innerHTML='<div class="vnone">위에서 칸을 고르면 그 칸의 값이 여기에 체크바로 나옵니다. 체크한 값만 리스트에 남습니다.</div>';return;}
-  const idx=+STVFCOL,c=DISP.find(x=>x.idx===idx);if(!c){box.innerHTML='';return;}
+  const pop=document.getElementById('stVfPop');if(!pop)return;
+  if(STVFCOL===''){pop.classList.add('hide');return;}
+  const idx=+STVFCOL,c=DISP.find(x=>x.idx===idx);if(!c){pop.classList.add('hide');return;}
   const base=statRows({skipVf:idx});
   const cnt={};base.forEach(d=>{const v=stVal(d,idx);cnt[v]=(cnt[v]||0)+1;});
   const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||String(a).localeCompare(String(b),'ko'));
   const sel=STVF[idx]||new Set();
-  const CAP=100;
-  box.innerHTML='<label class="vchk vall"><input type="checkbox" data-vfall="1"'+(sel.size===0?' checked':'')+'>전체 <span class="n">'+base.length+'</span></label>'+
-    keys.slice(0,CAP).map(k=>'<label class="vchk'+(sel.has(k)?' on':'')+'" title="'+esc(k)+'"><input type="checkbox" data-vf="'+esc(k)+'"'+(sel.has(k)?' checked':'')+'><span class="t">'+esc(k)+'</span><span class="n">'+cnt[k]+'</span></label>').join('')+
-    (keys.length>CAP?'<span class="vnone">… 외 '+(keys.length-CAP)+'개</span>':'');
+  const CAP=150;
+  pop.innerHTML='<div class="ph">'+esc(c.label)+' <span class="stat" style="font-weight:400">· 값으로 추려내기</span><button class="x" data-vfclose="1" title="닫기">✕</button></div>'+
+    '<div class="pb"><label'+(sel.size===0?' class="on"':'')+'><input type="checkbox" data-vfall="1"'+(sel.size===0?' checked':'')+'><span class="t">(전체)</span><span class="n">'+base.length+'</span></label>'+
+    keys.slice(0,CAP).map(k=>'<label'+(sel.has(k)?' class="on"':'')+' title="'+esc(k)+'"><input type="checkbox" data-vf="'+esc(k)+'"'+(sel.has(k)?' checked':'')+'><span class="t">'+esc(k)+'</span><span class="n">'+cnt[k]+'</span></label>').join('')+
+    (keys.length>CAP?'<div class="vnone">… 외 '+(keys.length-CAP)+'개</div>':'')+'</div>'+
+    '<div class="pf"><button class="btn" data-vfclr="1" style="padding:5px 12px;">이 칸 필터 해제</button><span style="flex:1"></span><button class="btn btn-primary" data-vfclose="1" style="padding:5px 14px;">닫기</button></div>';
+  pop.classList.remove('hide');
+  /* 칩 아래에 붙인다 */
+  const chip=document.querySelector('.cchip[data-chip="'+CSS.escape(c.label)+'"]');
+  if(chip){const r=chip.getBoundingClientRect();let left=r.left,top=r.bottom+4;
+    const W=300,H=Math.min(340,window.innerHeight-20);
+    if(left+W>window.innerWidth-8)left=Math.max(8,window.innerWidth-8-W);
+    if(top+H>window.innerHeight-8)top=Math.max(8,r.top-4-H);
+    pop.style.left=left+'px';pop.style.top=top+'px';}
 }
+function closeVfPop(){STVFCOL='';renderVf();renderCols();}
 function renderLevels(){
   renderCols();renderVf();
   for(let i=0;i<SFL.length;i++){
@@ -2493,15 +2554,47 @@ document.getElementById('stColsV').addEventListener('change',e=>{
 document.getElementById('stColsAll').addEventListener('click',()=>{STCOLS=new Set(DISP.map(c=>c.label));stSaveCols();renderCols();renderStats();});
 document.getElementById('stColsNone').addEventListener('click',()=>{STCOLS=new Set();stSaveCols();renderCols();renderStats();});
 document.getElementById('stColsSync').addEventListener('click',()=>{STCOLS=null;stSaveCols();renderCols();renderStats();toast('리스트관리에서 보이는 칸과 같게 맞췄습니다');});
-/* 세부 분류(값 필터) */
-document.getElementById('stVfCol').addEventListener('change',e=>{STVFCOL=e.target.value;renderVf();});
-document.getElementById('stVfV').addEventListener('change',e=>{
+/* ▾ 값 팝업 */
+document.getElementById('stColsV').addEventListener('click',e=>{
+  const b=e.target.closest('[data-dd]');if(!b)return;
+  e.preventDefault();
+  STVFCOL=(String(STVFCOL)===b.dataset.dd)?'':b.dataset.dd;
+  renderCols();renderVf();
+});
+document.getElementById('stVfPop').addEventListener('change',e=>{
   const t=e.target;if(STVFCOL==='')return;const idx=+STVFCOL;
   if(t.dataset.vfall!=null){delete STVF[idx];}
   else if(t.dataset.vf!=null){const set=STVF[idx]||(STVF[idx]=new Set());if(t.checked)set.add(t.dataset.vf);else set.delete(t.dataset.vf);if(!set.size)delete STVF[idx];}
-  stFillSelects();renderLevels();renderStats();
+  renderCols();renderVf();renderStats();
 });
-document.getElementById('stVfOn').addEventListener('click',e=>{const b=e.target.closest('[data-vfx]');if(!b)return;delete STVF[+b.dataset.vfx];stFillSelects();renderLevels();renderStats();});
+document.getElementById('stVfPop').addEventListener('click',e=>{
+  if(e.target.closest('[data-vfclose]')){closeVfPop();return;}
+  if(e.target.closest('[data-vfclr]')){if(STVFCOL!=='')delete STVF[+STVFCOL];renderCols();renderVf();renderStats();}
+});
+document.addEventListener('mousedown',e=>{
+  const pop=document.getElementById('stVfPop');
+  if(!pop||pop.classList.contains('hide'))return;
+  const t=e.target;
+  if(t&&typeof t.closest==='function'&&(pop.contains(t)||t.closest('[data-dd]')))return;
+  closeVfPop();
+});
+/* 칸 끌어서 순서 이동 */
+(function(){
+  const box=document.getElementById('stColsV');let dragL=null;
+  box.addEventListener('dragstart',e=>{const c=e.target.closest('.cchip');if(!c)return;dragL=c.dataset.chip;c.classList.add('dragging');try{e.dataTransfer.setData('text/plain',dragL);e.dataTransfer.effectAllowed='move';}catch(x){}});
+  box.addEventListener('dragover',e=>{const c=e.target.closest('.cchip');if(!c||!dragL||c.dataset.chip===dragL)return;e.preventDefault();
+    const r=c.getBoundingClientRect();const right=e.clientX>r.left+r.width/2;
+    [...box.querySelectorAll('.cchip')].forEach(x=>x.classList.remove('dropL','dropR'));c.classList.add(right?'dropR':'dropL');});
+  box.addEventListener('dragleave',e=>{const c=e.target.closest('.cchip');if(c)c.classList.remove('dropL','dropR');});
+  box.addEventListener('drop',e=>{const c=e.target.closest('.cchip');if(!c||!dragL)return;e.preventDefault();
+    const r=c.getBoundingClientRect();const right=e.clientX>r.left+r.width/2;
+    let ord=stOrdered().map(x=>x.label);
+    ord=ord.filter(l=>l!==dragL);
+    let at=ord.indexOf(c.dataset.chip);if(right)at++;
+    ord.splice(at,0,dragL);STORD=ord;stSaveOrd();dragL=null;
+    renderCols();renderStats();toast('칸 순서를 옮겼습니다');});
+  box.addEventListener('dragend',()=>{dragL=null;[...box.querySelectorAll('.cchip')].forEach(x=>x.classList.remove('dragging','dropL','dropR'));});
+})();
 document.getElementById('stLvls').addEventListener('change',e=>{
   const t=e.target;
   if(t.classList.contains('lvl-col')){
@@ -2597,7 +2690,11 @@ function renderStats(){
 }
 function renderStatList(rows){
   const vis=stColsList();
-  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>'<th>'+esc(c.label)+'</th>').join('');
+  const tbl=document.getElementById('stTable');const old=tbl.querySelector('colgroup');if(old)old.remove();
+  let total=46,cg='<col style="width:46px">';
+  vis.forEach(c=>{const w=STW[c.label]||defW(c.label);total+=w;cg+='<col data-l="'+esc(c.label)+'" style="width:'+w+'px">';});
+  tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
+  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>'<th data-l="'+esc(c.label)+'" title="'+esc(c.label)+' — 오른쪽 경계선을 끌면 너비 조절"><span class="thtxt">'+esc(c.label)+'</span><span class="rsz" data-strz="'+esc(c.label)+'"></span></th>').join('');
   const CAP=300;
   document.getElementById('stRows').innerHTML=rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn" style="left:0;">'+(i+1)+'</td>'+vis.map(c=>{
     const v=d.row[c.idx];const cls=cellCls(d,c);
@@ -2619,6 +2716,16 @@ function fitStats(){
   pg.style.height=Math.max(480,Math.floor(window.innerHeight-top-14))+'px';
 }
 window.addEventListener('resize',fitStats);
+document.getElementById('stHead').addEventListener('mousedown',e=>{
+  const rz=e.target.closest('[data-strz]');if(!rz)return;e.preventDefault();
+  const l=rz.dataset.strz;const col=document.querySelector('#stTable colgroup col[data-l="'+CSS.escape(l)+'"]');if(!col)return;
+  const th=rz.closest('th');let sw=STW[l]||defW(l);const thw=th?th.getBoundingClientRect().width:0;if(thw>0&&Math.abs(thw-sw)>1)sw=thw;
+  const sx=e.clientX;document.body.style.userSelect='none';rz.classList.add('on');
+  function mv(ev){const w=Math.max(45,Math.round(sw+(ev.clientX-sx)));col.style.width=w+'px';STW[l]=w;
+    let t=46;stColsList().forEach(c=>{t+=STW[c.label]||defW(c.label);});document.getElementById('stTable').style.width=t+'px';}
+  function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';rz.classList.remove('on');stSaveW();}
+  document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+});
 function openStats(){stFillSelects();syncGroupBtns();renderLevels();renderStats();requestAnimationFrame(fitStats);}
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
