@@ -66,11 +66,23 @@ header .spacer{flex:1;}
 .cl select.op{padding:4px 6px;border:1.5px solid #059669;color:#059669;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:600;background:#fff;}
 .cl .x{border:none;background:transparent;color:#dc2626;cursor:pointer;font-size:13px;padding:0 4px;}
 .cl .pk{flex-basis:100%;display:flex;flex-direction:column;gap:3px;padding-left:22px;}
-.cl .pk span{display:inline-block;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;border-radius:6px;padding:2px 8px;font-size:11.5px;width:fit-content;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cl .pk span{display:inline-flex;align-items:center;gap:5px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;border-radius:6px;padding:2px 4px 2px 8px;font-size:11.5px;width:fit-content;max-width:100%;white-space:nowrap;cursor:pointer;}
+.cl .pk span b{font-weight:700;color:#be185d;}
+.cl .pk .px{border:none;background:transparent;color:#be185d;cursor:pointer;font-size:12px;padding:0 3px;line-height:1;border-radius:4px;}
+.cl .pk .px:hover{background:#be185d;color:#fff;}
+.cl .plus{border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:8px;width:26px;height:26px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;line-height:1;padding:0;margin-left:-2px;}
+.cl .plus:hover{background:var(--c);color:#fff;}
 .res{border-bottom:1px dashed #e2e8f0;padding:6px 0;}
 .res:last-child{border-bottom:none;}
 .res .rt{font-size:12px;color:#64748b;}
 .res .rv{font-size:18px;font-weight:700;color:#059669;font-variant-numeric:tabular-nums;}
+.ri{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:baseline;padding:3px 0;border-bottom:1px dotted #e2e8f0;}
+.ri .rn{font-size:11.5px;color:#be185d;font-weight:700;white-space:nowrap;}
+.ri .rl{font-size:12.5px;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ri .ra{font-size:12.5px;color:#059669;white-space:nowrap;}.ri .ra b{font-size:15px;}
+.ri .rs{grid-column:2/4;font-size:11px;color:#94a3b8;}
+.rop{display:flex;align-items:baseline;gap:8px;margin-top:5px;flex-wrap:wrap;}
+.rop .rt{flex:1;min-width:0;}
 .res.head{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;margin-bottom:6px;}
 .res.head .rv{font-size:14.5px;color:#166534;line-height:1.5;}
 .res .rv small{font-size:11px;color:#94a3b8;font-weight:400;}
@@ -880,8 +892,9 @@ td.left{text-align:left;}
    BUILD 53: 계산 결과를 간단명료하게 — "총 N건 · 전체 M일 소요 · 평균 1건당 X일"
              + 계산값에 「소요일수 합계」 추가, 단위가 다른 대비는 계산 불가로
    BUILD 54: 연산에 「평균(A÷B)」 추가 — 예) 소요일수 합계 ÷ 건수 = 1건당 며칠
+   BUILD 55: 항목 여러 개(+) · 항목 ✕ 삭제 · 결과를 "조건별 평균 1사업당 며칠" 로
    ======================================================================== */
-const BUILD_NO='54';
+const BUILD_NO='55';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2860,7 +2873,9 @@ function renderSummary(rows){
 const LS_STCALC='gongjeong_statcalc_v1';
 let STCALC=[];
 try{const r=localStorage.getItem(LS_STCALC);if(r){const a=JSON.parse(r);if(Array.isArray(a))STCALC=a;}}catch(e){}
-if(!STCALC.length)STCALC=[{a:null,op:'ratio',b:null}];
+/* 예전 형식({a:항목|null}) → 새 형식({a:[항목…]}) */
+STCALC=STCALC.map(L=>({a:Array.isArray(L.a)?L.a:(L.a?[L.a]:[]),op:L.op||'ratio',b:Array.isArray(L.b)?L.b:(L.b?[L.b]:[])}));
+if(!STCALC.length)STCALC=[{a:[],op:'ratio',b:[]}];
 function stCalcSave(){try{localStorage.setItem(LS_STCALC,JSON.stringify(STCALC));}catch(e){}}
 const ST_METRIC={n:'건수',km:'정산거리 합',sum:'소요일수 합계',avg:'평균 소요일수',med:'중앙값 소요일수',le20:'20일 이내 건수',gt20:'20일 초과 건수',chk:'이슈 체크 건수'};
 const ST_UNIT={n:'건',km:'km',sum:'일',avg:'일',med:'일',le20:'건',gt20:'건',chk:'건'};
@@ -2877,6 +2892,22 @@ function itemValue(it,base){
   const v={n:m.n,km:m.km,sum:m.dn?m.sum:null,avg:m.avg,med:m.med,le20:m.le20,gt20:m.gt20,chk:m.chk}[k];
   return {v:v,rows:rows,m:m,k:k};
 }
+function sideRows(items,base){
+  if(!items||!items.length)return base;
+  const seen=new Set(),out=[];
+  items.forEach(it=>{itemRows(it,base).forEach(d=>{if(!seen.has(d._id)){seen.add(d._id);out.push(d);}});});
+  return out;
+}
+function sideValue(items,base){
+  const k=(items&&items[0]&&items[0].metric)||'n';
+  const rows=sideRows(items,base),m=stMetrics(rows);
+  const v={n:m.n,km:m.km,sum:m.dn?m.sum:null,avg:m.avg,med:m.med,le20:m.le20,gt20:m.gt20,chk:m.chk}[k];
+  return {v:v,rows:rows,m:m,k:k};
+}
+function sideLabel(items){
+  if(!items||!items.length)return '조건 전체';
+  return items.map(itemLabel).join(' + ');
+}
 function itemLabel(it){
   if(!it||!it.col)return '조건 전체';
   const F=itemField(it.col);const vs=it.vals||[];
@@ -2890,12 +2921,14 @@ function fmtV(v,k){if(v==null)return '-';if(k==='km')return v.toFixed(3);if(k===
 function renderCalc(){
   const box=document.getElementById('stCalcB');if(!box)return;
   box.innerHTML=STCALC.map((L,i)=>{
-    const ib=(it,side)=>'<button class="ib'+(it&&it.col?' set':'')+'" style="--c:'+(side==='a'?'#EA002C':'#EAB308')+'" data-item="'+i+'" data-side="'+side+'" title="눌러서 항목 설정">'+esc(it&&it.col?itemLabel(it):(side==='a'?'항목 A 설정':'항목 B 설정'))+'</button>';
-    const pk=(it)=>it&&it.col?'<span>'+esc(itemLabel(it)+' · '+ST_METRIC[it.metric||'n'])+'</span>':'';
+    const ib=(items,side)=>{const c=side==='a'?'#EA002C':'#EAB308';const n=items.length;
+      return '<button class="ib'+(n?' set':'')+'" style="--c:'+c+'" data-item="'+i+'" data-side="'+side+'" data-k="'+(n?0:-1)+'" title="'+(n?'첫 항목 고치기':'항목 설정')+'">'+esc(n?('항목 '+side.toUpperCase()+' · '+n+'개'):(side==='a'?'항목 A 설정':'항목 B 설정'))+'</button>'+
+        '<button class="plus" style="--c:'+c+'" data-item="'+i+'" data-side="'+side+'" data-k="-1" title="항목 '+side.toUpperCase()+' 에 하나 더 추가">+</button>';};
+    const pk=(items,side)=>items.map((it,k)=>'<span data-edit="'+i+'" data-side="'+side+'" data-k="'+k+'" title="눌러서 고치기"><b>'+side.toUpperCase()+(k+1)+'</b> '+esc(itemLabel(it)+' · '+ST_METRIC[it.metric||'n'])+'<button class="px" data-rm="'+i+'" data-side="'+side+'" data-k="'+k+'" title="이 항목 지우기">✕</button></span>').join('');
     return '<div class="cl"><span class="no">'+(i+1)+'</span>'+ib(L.a,'a')+
       '<select class="op" data-op="'+i+'">'+Object.keys(ST_OP).map(k=>'<option value="'+k+'"'+(L.op===k?' selected':'')+'>'+ST_OP[k]+'</option>').join('')+'</select>'+
       ib(L.b,'b')+(STCALC.length>1?'<button class="x" data-del="'+i+'" title="이 줄 삭제">✕</button>':'')+
-      ((L.a&&L.a.col)||(L.b&&L.b.col)?'<div class="pk">'+pk(L.a)+pk(L.b)+'</div>':'')+'</div>';
+      ((L.a.length||L.b.length)?'<div class="pk">'+pk(L.a,'a')+pk(L.b,'b')+'</div>':'')+'</div>';
   }).join('');
 }
 function renderResHead(){
@@ -2903,12 +2936,20 @@ function renderResHead(){
   return '<div class="res head"><div class="rt">지금 조건</div><div class="rv">'+esc(brief(m))+'</div>'+
     (m.dn?'<div class="rd">중앙값 '+m.med+'일 · 20일 이내 '+m.le20+'건('+Math.round(m.le20/m.dn*100)+'%) · 초과 '+m.gt20+'건</div>':'')+'</div>';
 }
+function perItemLine(no,it,base){
+  const r=itemValue(it,base),m=r.m;
+  const avg=m.dn?(m.sum/m.dn).toFixed(1)+'일':'-';
+  return '<div class="ri"><span class="rn">'+esc(no)+'</span><span class="rl">'+esc(itemLabel(it))+'</span><span class="ra">평균 1사업당 <b>'+avg+'</b></span><span class="rs">'+m.n+'건'+(m.dn!==m.n?' 중 '+m.dn+'건 계산':'')+' · '+m.sum.toLocaleString('ko-KR')+'일</span></div>';
+}
 function runCalc(){
   const base=statRows();const out=[];
   STCALC.forEach((L,i)=>{
-    const A=itemValue(L.a,base),B=itemValue(L.b,base);
+    const A=sideValue(L.a,base),B=sideValue(L.b,base);
     const ka=A.k,kb=B.k,ua=ST_UNIT[ka],ub=ST_UNIT[kb];
-    const la=itemLabel(L.a)+' '+ST_METRIC[ka],lb=itemLabel(L.b)+' '+ST_METRIC[kb];
+    const la=sideLabel(L.a)+' '+ST_METRIC[ka],lb=sideLabel(L.b)+' '+ST_METRIC[kb];
+    let items='';let no=0;
+    L.a.forEach(it=>{no++;items+=perItemLine('조건 '+no+' (A)',it,base);});
+    L.b.forEach(it=>{no++;items+=perItemLine('조건 '+no+' (B)',it,base);});
     let val='',unit='',bad=false,det='';
     if(A.v==null||B.v==null){bad=true;val='계산 불가';det='소요일수가 계산된 건이 없어 값을 낼 수 없습니다.';}
     else if(L.op==='div'){
@@ -2921,27 +2962,36 @@ function runCalc(){
       else{val=(A.v/B.v*100).toFixed(1);unit='%';det=fmtV(A.v,ka)+ua+' ÷ '+fmtV(B.v,kb)+ub+' = '+val+'%';}
     }else if(L.op==='sub'){val=fmtV(A.v-B.v,ka);unit=ua;det=fmtV(A.v,ka)+ua+' − '+fmtV(B.v,kb)+ub+' = '+val+unit;}
     else{val=fmtV(A.v+B.v,ka);unit=ua;det=fmtV(A.v,ka)+ua+' + '+fmtV(B.v,kb)+ub+' = '+val+unit;}
-    det+='\nA · '+brief(A.m)+'\nB · '+brief(B.m);
-    out.push({i,val,unit,bad,det,title:itemLabel(L.a)+' '+ST_OP[L.op]+' '+itemLabel(L.b)});
+    if(L.a.length>1)det+='\nA · '+brief(A.m);
+    if(L.b.length>1)det+='\nB · '+brief(B.m);
+    out.push({i,val,unit,bad,det,items,title:sideLabel(L.a)+' '+ST_OP[L.op]+' '+sideLabel(L.b),has:(L.a.length||L.b.length)});
   });
-  document.getElementById('stResB').innerHTML=renderResHead()+out.map(r=>'<div class="res'+(r.bad?' bad':'')+'"><div class="rt">'+(r.i+1)+'. '+esc(r.title)+'</div><div class="rv">'+esc(r.val)+(r.unit?'<small>'+esc(r.unit)+'</small>':'')+'</div><div class="rd">'+esc(r.det)+'</div></div>').join('');
+  document.getElementById('stResB').innerHTML=renderResHead()+out.map(r=>'<div class="res'+(r.bad?' bad':'')+'"><div class="rt">'+(r.i+1)+'번 줄</div>'+r.items+
+    (r.has?'<div class="rop"><span class="rt">'+esc(r.title)+'</span><span class="rv">'+esc(r.val)+(r.unit?'<small>'+esc(r.unit)+'</small>':'')+'</span></div><div class="rd">'+esc(r.det)+'</div>':'<div class="rd">항목을 정하지 않아 조건 전체끼리 비교합니다.</div>')+'</div>').join('');
 }
 document.getElementById('stCalcB').addEventListener('click',e=>{
+  const rm=e.target.closest('[data-rm]');
+  if(rm){const L=STCALC[+rm.dataset.rm];if(L){L[rm.dataset.side].splice(+rm.dataset.k,1);stCalcSave();renderCalc();}return;}
+  const ed=e.target.closest('[data-edit]');
+  if(ed){openItemPop(+ed.dataset.edit,ed.dataset.side,+ed.dataset.k);return;}
   const b=e.target.closest('[data-item]');
-  if(b){openItemPop(+b.dataset.item,b.dataset.side);return;}
+  if(b){openItemPop(+b.dataset.item,b.dataset.side,+b.dataset.k);return;}
   const x=e.target.closest('[data-del]');
-  if(x){STCALC.splice(+x.dataset.del,1);if(!STCALC.length)STCALC=[{a:null,op:'ratio',b:null}];stCalcSave();renderCalc();return;}
+  if(x){STCALC.splice(+x.dataset.del,1);if(!STCALC.length)STCALC=[{a:[],op:'ratio',b:[]}];stCalcSave();renderCalc();return;}
 });
 document.getElementById('stCalcB').addEventListener('change',e=>{const o=e.target.closest('[data-op]');if(!o)return;STCALC[+o.dataset.op].op=o.value;stCalcSave();});
-document.getElementById('stCalcAdd').addEventListener('click',()=>{STCALC.push({a:null,op:'ratio',b:null});stCalcSave();renderCalc();});
+document.getElementById('stCalcAdd').addEventListener('click',()=>{STCALC.push({a:[],op:'ratio',b:[]});stCalcSave();renderCalc();});
 document.getElementById('stCalcGo').addEventListener('click',runCalc);
 
 /* ---- 항목 설정창 ---- */
-let IP={i:0,side:'a',col:'',vals:new Set(),metric:'n'};
-function openItemPop(i,side){
-  const cur=STCALC[i]&&STCALC[i][side];
-  IP={i:i,side:side,col:cur?cur.col:'',vals:new Set(cur&&cur.vals?cur.vals:[]),metric:cur&&cur.metric?cur.metric:'n'};
-  document.getElementById('ipTitle').textContent='항목 '+(side==='a'?'A':'B')+' 설정 · '+(i+1)+'번 줄';
+let IP={i:0,side:'a',k:-1,col:'',vals:new Set(),metric:'n'};
+function openItemPop(i,side,k){
+  if(k==null)k=-1;
+  const arr=(STCALC[i]&&STCALC[i][side])||[];
+  const cur=(k>=0&&arr[k])?arr[k]:null;
+  const sib=arr.length?arr[0]:null;
+  IP={i:i,side:side,k:cur?k:-1,col:cur?cur.col:'',vals:new Set(cur&&cur.vals?cur.vals:[]),metric:cur&&cur.metric?cur.metric:(sib&&sib.metric?sib.metric:'n')};
+  document.getElementById('ipTitle').textContent='항목 '+side.toUpperCase()+(cur?(k+1)+' 고치기':(arr.length?' 하나 더 추가':' 설정'))+' · '+(i+1)+'번 줄';
   const fl=stFieldList();
   document.getElementById('ipCol').innerHTML='<option value="">(칸 선택 — 안 고르면 조건 전체)</option>'+fl.map(f=>'<option value="'+esc(f.k)+'"'+(IP.col===f.k?' selected':'')+'>'+esc(f.label)+'</option>').join('');
   [...document.querySelectorAll('#ipMetric .fbtn')].forEach(b=>b.classList.toggle('on',b.dataset.m===IP.metric));
@@ -2977,10 +3027,11 @@ document.getElementById('ipVals').addEventListener('change',e=>{
 document.getElementById('ipMetric').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;IP.metric=b.dataset.m;[...document.querySelectorAll('#ipMetric .fbtn')].forEach(x=>x.classList.toggle('on',x===b));renderIpPrev();});
 document.getElementById('ipOk').addEventListener('click',()=>{
   const L=STCALC[IP.i];if(!L){closeItemPop();return;}
-  L[IP.side]={col:IP.col,vals:[...IP.vals],metric:IP.metric};
+  const it={col:IP.col,vals:[...IP.vals],metric:IP.metric};
+  if(IP.k>=0&&L[IP.side][IP.k])L[IP.side][IP.k]=it;else L[IP.side].push(it);
   stCalcSave();renderCalc();closeItemPop();
 });
-document.getElementById('ipClear').addEventListener('click',()=>{const L=STCALC[IP.i];if(L)L[IP.side]=null;stCalcSave();renderCalc();closeItemPop();});
+document.getElementById('ipClear').addEventListener('click',()=>{const L=STCALC[IP.i];if(L&&IP.k>=0)L[IP.side].splice(IP.k,1);stCalcSave();renderCalc();closeItemPop();});
 document.getElementById('ipClose').addEventListener('click',closeItemPop);
 document.getElementById('ipX').addEventListener('click',closeItemPop);
 document.getElementById('stItemPop').addEventListener('click',e=>{if(e.target.id==='stItemPop')closeItemPop();});
