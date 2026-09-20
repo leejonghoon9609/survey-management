@@ -33,7 +33,16 @@ header .spacer{flex:1;}
 .seg{display:inline-flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:1rem;}
 .seg button{padding:8px 18px;border:none;background:#fff;font-family:inherit;font-size:14px;cursor:pointer;color:#475569;}
 .seg button.on{background:#EA002C;color:#fff;}
-/* 통계 */
+/* 통계 : 한 화면에 세 구간 고정, 구간 안에서 스크롤 */
+#p-stats.on{display:flex;flex-direction:column;gap:10px;}
+#p-stats .card{margin-bottom:0;display:flex;flex-direction:column;min-height:0;}
+#p-stats .proc-h{flex:none;}
+#statsCard{flex:0 0 auto;max-height:44%;}
+#statsCard .stbody{overflow:auto;min-height:0;padding-right:2px;}
+#stCondCard{flex:0 0 auto;}
+#stListCard{flex:1 1 0;min-height:140px;}
+#stListCard .stlist{flex:1 1 0;min-height:0;max-height:none;}
+#stListCard .note{flex:none;margin-top:6px;}
 .stgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px;}
 .stbox{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#fff;}
 .stbox h4{font-size:12.5px;font-weight:500;color:#EA002C;margin:0 0 6px;}
@@ -45,7 +54,7 @@ header .spacer{flex:1;}
 .sttbl .bw{height:9px;background:#f1f5f9;border-radius:5px;overflow:hidden;}
 .sttbl .bf{height:100%;background:#EA002C;border-radius:5px;}
 .sttbl tr.tot td{font-weight:700;color:#9f1239;border-top:1.5px solid #9f1239;background:#fbeaed;}
-.stlist{max-height:52vh;min-height:160px;}
+.stlist{min-height:120px;}
 .stdate{padding:6px 8px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;}
 #stCond label{display:flex;align-items:center;gap:5px;font-size:13px;color:#475569;}
 .stempty{color:#94a3b8;font-size:13px;padding:14px 4px;}
@@ -546,9 +555,26 @@ td.left{text-align:left;}
 
     <!-- ① 조건에 맞는 통계 -->
     <div class="card" id="statsCard">
-      <div class="proc-h" style="display:flex;align-items:center;gap:10px;">통계현황 <span class="stat" id="stTitle" style="font-weight:400;"></span></div>
-      <div class="cards" id="stCards"></div>
-      <div class="stgrid" id="stGrid"></div>
+      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">통계현황 <span class="stat" id="stTitle" style="font-weight:400;"></span>
+        <span style="flex:1"></span>
+        <span class="stat" style="font-weight:400;">분류</span>
+        <div class="fbtns" id="stGroups">
+          <button class="fbtn" data-g="baal" style="--c:#EA002C">발주처</button>
+          <button class="fbtn" data-g="jisa" style="--c:#0D9488">지사</button>
+          <button class="fbtn" data-g="method" style="--c:#7C3AED">측량구분</button>
+          <button class="fbtn" data-g="jeong" style="--c:#9333EA">정산상황</button>
+          <button class="fbtn" data-g="prog" style="--c:#0369A1">진행상황</button>
+          <button class="fbtn" data-g="tag" style="--c:#D97706">이슈 사유</button>
+          <button class="fbtn" data-g="month" style="--c:#4F46E5">월별</button>
+          <button class="fbtn" data-g="partner" style="--c:#B45309">공사협력사</button>
+          <button class="fbtn" data-g="mgr" style="--c:#64748b">담당자</button>
+          <button class="fbtn" data-g="period" style="--c:#065F46">시행시기</button>
+        </div>
+      </div>
+      <div class="stbody">
+        <div class="cards" id="stCards"></div>
+        <div class="stgrid" id="stGrid"></div>
+      </div>
     </div>
 
     <!-- ② 조건 설정 -->
@@ -572,15 +598,15 @@ td.left{text-align:left;}
         <span style="flex:1"></span>
         <button class="btn tbtn" id="stReset" style="padding:7px 14px;--c:#64748b">조건 초기화</button>
       </div>
-      <p class="note" id="stCondNote">조건을 고르면 위 통계와 아래 리스트가 바로 바뀝니다. 요청일이 날짜가 아닌 건("23년 이월" 등)은 기간 조건을 걸면 빠집니다.</p>
+
     </div>
 
     <!-- ③ 조건에 맞는 리스트 -->
-    <div class="card">
+    <div class="card" id="stListCard">
       <div class="proc-h" style="display:flex;align-items:center;gap:10px;">조건에 맞는 리스트 <span class="stat" id="stListStat" style="font-weight:400;"></span><span style="flex:1"></span>
         <button class="btn tbtn" id="stExcel" style="padding:6px 14px;--c:#EA580C">엑셀 내보내기</button></div>
       <div class="tblwrap stlist" id="stListWrap"><table id="stTable"><thead><tr id="stHead"></tr></thead><tbody id="stRows"></tbody></table></div>
-      <p class="note">리스트관리에서 보이게 둔 칸 구성을 그대로 따릅니다. 300건까지 표시하고, 엑셀 내보내기는 조건에 맞는 건 전체를 내보냅니다.</p>
+
     </div>
 
   </div>
@@ -684,8 +710,10 @@ td.left{text-align:left;}
    BUILD 37: 표 높이를 화면에 맞춰 스크롤이 표 안에서만 일어나게 (머리글 고정 유지)
    BUILD 38: 「통계」 탭 자리 마련 (빈 화면)
    BUILD 39: 통계 화면 1차 — 조건 설정 / 조건에 맞는 통계 / 조건에 맞는 리스트
+   BUILD 40: 통계 화면을 한 페이지 세 구간으로 고정 (구간별 스크롤)
+             + 분류 기준을 직접 고르기, 리스트는 남는 높이를 채우고 안에서 스크롤
    ======================================================================== */
-const BUILD_NO='39';
+const BUILD_NO='40';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2315,6 +2343,29 @@ function exportRowsToExcel(rows,cols,nameTag){
 /* ======================= 통계 =======================
    조건 설정 → 조건에 맞는 건만 골라 통계와 리스트를 그린다. 저장하지 않는 화면 상태. */
 const SF={baal:'',jisa:'',period:'',method:'',jeong:'',prog:'',from:'',to:'',chk:'',tag:'',days:''};
+const LS_STG='gongjeong_statgroups_v1';
+const ST_GROUPS={
+  baal:  {label:'발주처별',   key:d=>d.baal,                sort:'n'},
+  jisa:  {label:'지사별',     key:d=>d.jisa,                sort:'n'},
+  method:{label:'측량구분별', key:d=>d.mKey||'(미분류)',    sort:'n'},
+  jeong: {label:'정산상황별', key:d=>d.jeongKey||'(빈칸)',  sort:'n'},
+  prog:  {label:'진행상황별', key:d=>d.jin||'(빈칸)',       sort:'n'},
+  tag:   {label:'이슈 사유별',key:d=>splitIssue(d.row[COL.이슈]).tag||(d._chk?'(사유 없음)':'(이슈 아님)'),sort:'n'},
+  month: {label:'월별 (요청일)',key:d=>{const q=parseDate(d.req);return q?(q.getFullYear()+'-'+String(q.getMonth()+1).padStart(2,'0')):'(날짜 아님)';},sort:'key'},
+  partner:{label:'공사협력사별',key:d=>String(d.row[COL.협력사]==null?'':d.row[COL.협력사]).trim()||'(빈칸)',sort:'n'},
+  mgr:   {label:'담당자별',   key:d=>{const i=DISP.find(c=>/담당/.test(c.label));return i?(String(d.row[i.idx]==null?'':d.row[i.idx]).trim()||'(빈칸)'):'(칸 없음)';},sort:'n'},
+  period:{label:'시행시기별', key:d=>d.시행||'(빈칸)',       sort:'key'}
+};
+let STG=['baal','jisa'];
+try{const r=localStorage.getItem(LS_STG);if(r){const a=JSON.parse(r);if(Array.isArray(a)&&a.every(k=>ST_GROUPS[k]))STG=a;}}catch(e){}
+function syncGroupBtns(){[...document.querySelectorAll('#stGroups .fbtn')].forEach(b=>b.classList.toggle('on',STG.includes(b.dataset.g)));}
+document.getElementById('stGroups').addEventListener('click',e=>{
+  const b=e.target.closest('[data-g]');if(!b)return;
+  const g=b.dataset.g;
+  if(STG.includes(g))STG=STG.filter(x=>x!==g);else STG.push(g);
+  try{localStorage.setItem(LS_STG,JSON.stringify(STG));}catch(x){}
+  syncGroupBtns();renderStats();
+});
 function statRows(){
   const f1=SF.from?parseDate(SF.from):null,f2=SF.to?parseDate(SF.to):null;
   return DATA.filter(d=>{
@@ -2392,15 +2443,9 @@ function renderStats(){
     c('20일 이내',ds.length?(Math.round(le20/ds.length*100)+'<span style="font-size:12px;color:#94a3b8">%</span>'):'-',ds.length?(le20+'건 / 초과 '+(ds.length-le20)+'건'):'','green')+
     c('이슈 체크',chk.toLocaleString('ko-KR')+'<span style="font-size:12px;color:#94a3b8">건</span>','',chk?'blue':'');
   if(!n){document.getElementById('stGrid').innerHTML='<div class="stempty">조건에 맞는 건이 없습니다.</div>';}
+  else if(!STG.length){document.getElementById('stGrid').innerHTML='<div class="stempty">오른쪽 위에서 분류 기준을 고르면 표가 나옵니다.</div>';}
   else{
-    const month=d=>{const q=parseDate(d.req);return q?(q.getFullYear()+'-'+String(q.getMonth()+1).padStart(2,'0')):'(날짜 아님)';};
-    document.getElementById('stGrid').innerHTML=
-      stBox(stGroup(rows,d=>d.baal,'발주처별'),'n')+
-      stBox(stGroup(rows,d=>d.jisa,'지사별'),'n')+
-      stBox(stGroup(rows,d=>d.mKey||'(미분류)','측량구분별'),'n')+
-      stBox(stGroup(rows,d=>d.jeongKey||'(빈칸)','정산상황별'),'n')+
-      stBox(stGroup(rows,d=>splitIssue(d.row[COL.이슈]).tag||(d._chk?'(사유 없음)':'(이슈 아님)'),'이슈 사유별'),'n')+
-      stBox(stGroup(rows,month,'월별 (요청일)'),'key');
+    document.getElementById('stGrid').innerHTML=STG.map(g=>{const G=ST_GROUPS[g];return stBox(stGroup(rows,G.key,G.label),G.sort);}).join('');
   }
   renderStatList(rows);
 }
@@ -2431,7 +2476,13 @@ document.getElementById('stExcel').addEventListener('click',()=>{
   const rows=statRows();if(!rows.length){toast('내보낼 건이 없습니다',true);return;}
   exportRowsToExcel(rows,DISP.filter(c=>c.vis),'통계_'+stCondText().replace(/[^\w가-힣]+/g,'_').slice(0,40));
 });
-function openStats(){stFillSelects();renderStats();}
+function fitStats(){
+  const pg=document.getElementById('p-stats');if(!pg||!pg.classList.contains('on'))return;
+  const top=pg.getBoundingClientRect().top+(window.scrollY||0);
+  pg.style.height=Math.max(480,Math.floor(window.innerHeight-top-14))+'px';
+}
+window.addEventListener('resize',fitStats);
+function openStats(){stFillSelects();syncGroupBtns();renderStats();requestAnimationFrame(fitStats);}
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
    예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
