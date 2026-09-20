@@ -614,8 +614,9 @@ td.left{text-align:left;}
    BUILD 32: 같은 건 갱신 + 없어진 건 표시 (재업로드 동기화)
              + 원인자 리스트 양식 대응, 발주처 일괄 지정
    BUILD 33: 화면 아래에 늘 붙어 있는 가로 스크롤바
+   BUILD 34: 탭을 바꿔 들어오면 가로 막대가 안 보이던 문제 수정
    ======================================================================== */
-const BUILD_NO='33';
+const BUILD_NO='34';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -852,9 +853,10 @@ document.querySelector('.nav').addEventListener('click',e=>{
   [...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b===e.target));
   ['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
   if(e.target.dataset.t==='process')renderProcess();
+  if(e.target.dataset.t==='manage')requestAnimationFrame(syncHbar);
 });
 function segMode(m){document.getElementById('seg-up').classList.toggle('on',m==='up');document.getElementById('seg-in').classList.toggle('on',m==='in');document.getElementById('mode-up').classList.toggle('hide',m!=='up');document.getElementById('mode-in').classList.toggle('hide',m!=='in');}
-function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();}
+function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();if(t==='manage')requestAnimationFrame(syncHbar);}
 
 /* ======================= 공정관리 ======================= */
 const P_STAGES=[{name:'실시간',kw:['실시간']},{name:'후측량',kw:['후측량']},{name:'탐사측량',kw:['탐사']},{name:'탱고',kw:['탱고','업로딩']},{name:'성과심사',kw:['심사']},{name:'정산',kw:['정산']}];
@@ -2451,7 +2453,8 @@ function syncHbar(){
   if(!wrap||!hb||!hin||!col)return;
   const tw=tbl?(parseFloat(tbl.style.width)||tbl.offsetWidth||0):0;
   hin.style.width=tw+'px';
-  const need=tw>0&&wrap.clientWidth>0&&tw>wrap.clientWidth+2;
+  if(wrap.clientWidth===0)return;          /* 다른 탭에 가려져 있으면 나중에 다시 판정 */
+  const need=tw>0&&tw>wrap.clientWidth+2;
   hb.classList.toggle('hide',!need);
   col.classList.toggle('hasbar',need);
   if(need&&hb.scrollLeft!==wrap.scrollLeft)hb.scrollLeft=wrap.scrollLeft;
@@ -2463,6 +2466,7 @@ function syncHbar(){
   wrap.addEventListener('scroll',()=>{if(lock)return;lock=true;hb.scrollLeft=wrap.scrollLeft;lock=false;});
   hb.addEventListener('scroll',()=>{if(lock)return;lock=true;wrap.scrollLeft=hb.scrollLeft;lock=false;});
   window.addEventListener('resize',syncHbar);
+  if(typeof ResizeObserver!=='undefined'){try{new ResizeObserver(()=>syncHbar()).observe(wrap);}catch(e){}}
 })();
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{render();markDirty();}));
 document.getElementById('fIssue').addEventListener('change',()=>{renderValidate();render();markDirty();});
