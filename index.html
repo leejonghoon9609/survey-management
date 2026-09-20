@@ -65,6 +65,8 @@ header .spacer{flex:1;}
 .cchip{display:flex;align-items:center;gap:3px;border:1px solid #e2e8f0;border-radius:7px;padding:2px 3px 2px 6px;font-size:12px;color:#334155;background:#fff;white-space:nowrap;cursor:grab;min-width:0;user-select:none;}
 .cchip input{margin:0;accent-color:#EA002C;cursor:pointer;}
 .cchip.on{border-color:#EA002C;background:#fff1f2;}
+.cchip .t{cursor:pointer;}.cchip .t:hover{color:#EA002C;text-decoration:underline;}
+.cchip.sorted{border-color:#EA002C;box-shadow:inset 0 2px 0 #EA002C;}
 .cchip.vf{border-color:#2563EB;box-shadow:inset 0 -2px 0 #2563EB;}
 .cchip .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .cchip .dd{flex:none;}
@@ -86,7 +88,8 @@ header .spacer{flex:1;}
 #stVfPop .pb .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #stVfPop .pf{display:flex;gap:6px;padding:7px 10px;border-top:1px solid #e2e8f0;}
 #stTable{table-layout:fixed;min-width:0;}
-#stHead th{position:sticky;top:0;padding-right:14px;}
+#stHead th{position:sticky;top:0;padding-right:14px;cursor:pointer;}
+#stHead th:hover .thtxt{color:#EA002C;}
 #stHead th .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
 #stHead th .rsz:hover{background:#FFB400;}
 .lvl{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
@@ -790,8 +793,9 @@ td.left{text-align:left;}
    BUILD 45: 조건 저장/불러오기(조건 목록 · 조건 저장 창)
              + 「창 보기」 — 독립 리스트 창(크기 조절·이동), 조건 바꾸면 자동 갱신
    BUILD 46: 독립 창 머리글에도 ▾ 값 필터 — 창에서 고르면 본 화면 조건 설정에 바로 반영
+   BUILD 47: 통계 리스트 정렬 — 분류 칩 가운데 / 리스트 머리글 / 독립 창 머리글 클릭 = 정렬 ▲▼
    ======================================================================== */
-const BUILD_NO='46';
+const BUILD_NO='47';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2428,6 +2432,23 @@ const LS_STCOLS='gongjeong_statcols_v1';
 let STCOLS=null;                                 /* 리스트에 보일 칸 (라벨 Set). null = 리스트관리와 같게 */
 try{const r=localStorage.getItem(LS_STCOLS);if(r){const a=JSON.parse(r);if(Array.isArray(a))STCOLS=new Set(a);}}catch(e){}
 let STVF={};                                     /* 값 필터 {idx: Set(값)} */
+let STSORT={label:'',dir:1};                     /* 통계 리스트 정렬 (칸 이름, 1=▲ / -1=▼) */
+function stSorted(rows){
+  if(!STSORT.label)return rows;
+  const c=DISP.find(x=>x.label===STSORT.label);if(!c)return rows;
+  const ci=c.idx,dir=STSORT.dir;
+  return rows.slice().sort((a,b)=>{
+    const av=a.row[ci],bv=b.row[ci],na=isBlank(av),nb=isBlank(bv);
+    if(na&&nb)return 0;if(na)return 1;if(nb)return -1;      /* 빈칸은 늘 뒤 */
+    const da=isDateObj(av)?av.getTime():av,db=isDateObj(bv)?bv.getTime():bv;
+    return cmpVal(da,db)*dir;
+  });
+}
+function stToggleSort(label){
+  if(STSORT.label===label)STSORT.dir=-STSORT.dir;else STSORT={label:label,dir:1};
+  renderCols();renderStats();
+}
+const stSortMark=l=>STSORT.label===l?(STSORT.dir>0?' ▲':' ▼'):'';
 let STVFCOL='';                                  /* 지금 ▾ 로 펼친 칸 idx */
 const LS_STORD='gongjeong_statorder_v1',LS_STW='gongjeong_statwidth_v1';
 let STORD=null;                                  /* 리스트 칸 순서 (라벨 배열). null = DISP 순서 */
@@ -2506,8 +2527,8 @@ function renderCols(){
   const on=new Set(stColsList().map(c=>c.label));
   box.innerHTML=DISP.length?stOrdered().map(c=>{
     const vf=STVF[c.idx]&&STVF[c.idx].size;
-    return '<span class="cchip'+(on.has(c.label)?' on':'')+(vf?' vf':'')+(String(c.idx)===String(STVFCOL)?' open':'')+'" draggable="true" data-chip="'+esc(c.label)+'" title="'+esc(c.label)+(vf?' · 값 필터 '+STVF[c.idx].size+'개':'')+' — 끌어서 순서 이동">'+
-      '<input type="checkbox" data-col="'+esc(c.label)+'"'+(on.has(c.label)?' checked':'')+'><span class="t">'+esc(c.label)+'</span>'+
+    return '<span class="cchip'+(on.has(c.label)?' on':'')+(vf?' vf':'')+(STSORT.label===c.label?' sorted':'')+(String(c.idx)===String(STVFCOL)?' open':'')+'" draggable="true" data-chip="'+esc(c.label)+'" title="'+esc(c.label)+(vf?' · 값 필터 '+STVF[c.idx].size+'개':'')+' — 끌어서 순서 이동">'+
+      '<input type="checkbox" data-col="'+esc(c.label)+'"'+(on.has(c.label)?' checked':'')+'><span class="t" data-sort="'+esc(c.label)+'" title="'+esc(c.label)+' — 누르면 정렬 ▲▼">'+esc(c.label)+esc(stSortMark(c.label))+'</span>'+
       '<button class="dd" data-dd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></span>';}).join('')
     :'<div class="vnone">목록을 먼저 불러와 주세요.</div>';
   const n=DISP.length,cols=Math.max(1,Math.ceil(n/2));       /* 정확히 두 줄에 나눠 꽉 채운다 */
@@ -2579,10 +2600,10 @@ document.getElementById('stColsNone').addEventListener('click',()=>{STCOLS=new S
 document.getElementById('stColsSync').addEventListener('click',()=>{STCOLS=null;stSaveCols();renderCols();renderStats();toast('리스트관리에서 보이는 칸과 같게 맞췄습니다');});
 /* ▾ 값 팝업 */
 document.getElementById('stColsV').addEventListener('click',e=>{
-  const b=e.target.closest('[data-dd]');if(!b)return;
-  e.preventDefault();
-  STVFCOL=(String(STVFCOL)===b.dataset.dd)?'':b.dataset.dd;
-  renderCols();renderVf();
+  const b=e.target.closest('[data-dd]');
+  if(b){e.preventDefault();STVFCOL=(String(STVFCOL)===b.dataset.dd)?'':b.dataset.dd;renderCols();renderVf();return;}
+  const t=e.target.closest('[data-sort]');
+  if(t){e.preventDefault();stToggleSort(t.dataset.sort);}
 });
 document.getElementById('stVfPop').addEventListener('change',e=>{
   const t=e.target;if(STVFCOL==='')return;const idx=+STVFCOL;
@@ -2638,7 +2659,7 @@ document.getElementById('stLvls').addEventListener('change',e=>{
 });
 document.getElementById('stReset').addEventListener('click',()=>{
   SF.from='';SF.to='';SF.days='';
-  SFL[0]={f:'baal',v:new Set()};STVF={};STVFCOL='';
+  SFL[0]={f:'baal',v:new Set()};STVF={};STVFCOL='';STSORT={label:'',dir:1};
   ['stFrom','stTo','stDays'].forEach(id=>{const e=document.getElementById(id);e.value='';e.classList.remove('on');});
   stFillSelects();renderLevels();renderStats();toast('조건을 초기화했습니다');
 });
@@ -2713,12 +2734,13 @@ function renderStats(){
   renderPopWin();
 }
 function renderStatList(rows){
+  rows=stSorted(rows);
   const vis=stColsList();
   const tbl=document.getElementById('stTable');const old=tbl.querySelector('colgroup');if(old)old.remove();
   let total=46,cg='<col style="width:46px">';
   vis.forEach(c=>{const w=STW[c.label]||defW(c.label);total+=w;cg+='<col data-l="'+esc(c.label)+'" style="width:'+w+'px">';});
   tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
-  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>'<th data-l="'+esc(c.label)+'" title="'+esc(c.label)+' — 오른쪽 경계선을 끌면 너비 조절"><span class="thtxt">'+esc(c.label)+'</span><span class="rsz" data-strz="'+esc(c.label)+'"></span></th>').join('');
+  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>'<th data-l="'+esc(c.label)+'" title="'+esc(c.label)+' — 클릭=정렬 ▲▼ · 오른쪽 경계선을 끌면 너비 조절"><span class="thtxt" data-stsort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><span class="rsz" data-strz="'+esc(c.label)+'"></span></th>').join('');
   const CAP=300;
   document.getElementById('stRows').innerHTML=rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn" style="left:0;">'+(i+1)+'</td>'+vis.map(c=>{
     const v=d.row[c.idx];const cls=cellCls(d,c);
@@ -2740,6 +2762,11 @@ function fitStats(){
   pg.style.height=Math.max(480,Math.floor(window.innerHeight-top-14))+'px';
 }
 window.addEventListener('resize',fitStats);
+document.getElementById('stHead').addEventListener('click',e=>{
+  if(e.target.closest('[data-strz]'))return;
+  const th=e.target.closest('th[data-l]');if(!th)return;
+  stToggleSort(th.dataset.l);
+});
 document.getElementById('stHead').addEventListener('mousedown',e=>{
   const rz=e.target.closest('[data-strz]');if(!rz)return;e.preventDefault();
   const l=rz.dataset.strz;const col=document.querySelector('#stTable colgroup col[data-l="'+CSS.escape(l)+'"]');if(!col)return;
@@ -2757,7 +2784,7 @@ function stCondSaveAll(a){try{localStorage.setItem(LS_STCOND,JSON.stringify(a));
 function stCondObj(name){
   const vf={};Object.keys(STVF).forEach(k=>{const c=DISP.find(x=>x.idx===+k);if(c&&STVF[k]&&STVF[k].size)vf[c.label]=[...STVF[k]];});
   return {name:name,at:Date.now(),baal:[...SFL[0].v],vf:vf,from:SF.from,to:SF.to,days:SF.days,
-          cols:STCOLS?[...STCOLS]:null,ord:STORD?STORD.slice():null,groups:STG.slice()};
+          cols:STCOLS?[...STCOLS]:null,ord:STORD?STORD.slice():null,groups:STG.slice(),sort:{label:STSORT.label,dir:STSORT.dir}};
 }
 function stCondApply(o){
   if(!o)return;
@@ -2769,6 +2796,7 @@ function stCondApply(o){
   STORD=o.ord?o.ord.slice():null;stSaveOrd();
   if(Array.isArray(o.groups)&&o.groups.every(k=>ST_GROUPS[k])){STG=o.groups.slice();try{localStorage.setItem(LS_STG,JSON.stringify(STG));}catch(e){}syncGroupBtns();}
   STVFCOL='';
+  STSORT=(o.sort&&o.sort.label)?{label:o.sort.label,dir:o.sort.dir===-1?-1:1}:{label:'',dir:1};
   renderLevels();renderStats();
 }
 function renderCondSel(){
@@ -2827,7 +2855,7 @@ function popListHTML(rows,cols){
   const total=cols.reduce((a,c)=>a+(STW[c.label]||defW(c.label)),46);
   const CAP=2000;
   return '<table style="width:'+total+'px"><colgroup>'+cg+'</colgroup><thead><tr><th class="rn">#</th>'+cols.map(c=>{const on=STVF[c.idx]&&STVF[c.idx].size;
-      return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt">'+esc(c.label)+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></th>';}).join('')+'</tr></thead><tbody>'+
+      return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+' — 클릭=정렬 ▲▼'+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt" data-psort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></th>';}).join('')+'</tr></thead><tbody>'+
     rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn">'+(i+1)+'</td>'+cols.map(c=>cell(d,c)).join('')+'</tr>').join('')+
     '</tbody></table>'+(rows.length>CAP?'<p class="note">앞 '+CAP+'건만 표시</p>':'');
 }
@@ -2841,7 +2869,7 @@ table{border-collapse:collapse;table-layout:fixed;min-width:0;}
 th,td{padding:6px 9px;text-align:center;border:1px solid #cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;}
 th{position:sticky;top:0;background:#fbeaed;color:#9f1239;font-weight:500;z-index:2;box-shadow:inset 0 -1px 0 #94a3b8;}
 th.rn,td.rn{position:sticky;left:0;z-index:3;width:46px;background:#fff;color:#94a3b8;font-size:12px;}th.rn{background:#fbeaed;z-index:4;}
-th .tt{display:inline-block;max-width:calc(100% - 22px);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;}
+th .tt{display:inline-block;max-width:calc(100% - 22px);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:pointer;}th .tt:hover{color:#EA002C;text-decoration:underline;}
 th .dd{border:none;background:transparent;color:#c08;cursor:pointer;font-size:11px;padding:0 4px;line-height:1;border-radius:4px;vertical-align:middle;}
 th .dd:hover,th.open .dd{background:#2563EB;color:#fff;}
 th.vf{box-shadow:inset 0 -3px 0 #2563EB,inset 0 -1px 0 #94a3b8;}th.vf .dd{color:#2563EB;font-weight:700;}
@@ -2888,7 +2916,7 @@ function renderPopFilt(){
 }
 function renderPopWin(){
   if(!STWIN||STWIN.closed){STWIN=null;return;}
-  const doc=STWIN.document;const rows=statRows(),cols=stColsList();
+  const doc=STWIN.document;const rows=stSorted(statRows()),cols=stColsList();
   doc.title='조건 리스트 · '+rows.length+'건';
   const c=doc.getElementById('cond'),n=doc.getElementById('cnt'),wrap=doc.getElementById('wrap');
   if(c)c.textContent='조건: '+stCondText();
@@ -2902,6 +2930,8 @@ function bindPopWin(doc){
     const t=e.target;if(!t||typeof t.closest!=='function')return;
     const dd=t.closest('[data-pdd]');
     if(dd){e.preventDefault();PVFCOL=(String(PVFCOL)===dd.dataset.pdd)?'':dd.dataset.pdd;renderPopFilt();return;}
+    const ps=t.closest('[data-psort]');
+    if(ps){stToggleSort(ps.dataset.psort);return;}
     if(t.closest('[data-pclose]')){PVFCOL='';renderPopFilt();return;}
     if(t.closest('[data-pclr]')){if(PVFCOL!=='')delete STVF[+PVFCOL];renderCols();renderVf();renderStats();return;}
     const box=doc.getElementById('pfilt');
