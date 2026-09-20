@@ -76,6 +76,10 @@ header .spacer{flex:1;}
 .cchip.dragging{opacity:.4;}
 .cchip.dropL{box-shadow:-3px 0 0 #EA002C;}
 .cchip.dropR{box-shadow:3px 0 0 #EA002C;}
+#askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
+.ask-card{max-width:460px;}
+.ask-b{padding:16px 18px 6px;font-size:14px;line-height:1.7;color:#1e293b;white-space:pre-wrap;word-break:keep-all;}
+.ask-f{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px 16px;}
 #stSavePop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:440;display:flex;align-items:center;justify-content:center;padding:20px;}
 #stVfPop{position:fixed;z-index:430;background:#fff;border:1px solid #94a3b8;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.18);width:300px;max-height:340px;display:flex;flex-direction:column;overflow:hidden;}
 #stVfPop .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12.5px;font-weight:500;color:#2563EB;}
@@ -662,8 +666,13 @@ td.left{text-align:left;}
       </div>
     </div>
     <div id="stVfPop" class="hide"></div>
+<div id="askPop" class="hide"><div class="view-card ask-card">
+  <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
+  <div class="ask-b" id="askMsg"></div>
+  <div class="ask-f"><button class="btn" id="askNo" style="padding:8px 18px;">취소</button><button class="btn btn-primary" id="askOk" style="padding:8px 22px;">확인</button></div>
+</div></div>
 <div id="stSavePop" class="hide"><div class="view-card" style="max-width:420px;">
-  <div class="cell-h"><b>조건 저장</b><span class="cell-x" id="ssX">✕</span></div>
+  <div class="cell-h"><b id="ssTitle">조건 저장</b><span class="cell-x" id="ssX">✕</span></div>
   <div class="view-b">
     <div class="vp-sec">조건 이름</div>
     <input type="text" id="ssName" placeholder="예) SKT 26년 20일 초과" maxlength="30" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;">
@@ -801,8 +810,10 @@ td.left{text-align:left;}
    BUILD 48: 독립 창 머리글에서도 칸 너비 조절 — 본 화면과 양방향 연동
    BUILD 49: 본 화면 리스트 머리글에도 ▾ 값 체크 (칩·창과 같은 값 필터)
    BUILD 50: 「조건 수정」 — 조건 목록에서 고른 조건에 지금 세팅을 덮어쓰기
+   BUILD 51: 브라우저 기본 확인창을 전부 화면 가운데 자체 창으로 교체
+             + 조건 수정 창에서 이름도 바꿀 수 있게
    ======================================================================== */
-const BUILD_NO='50';
+const BUILD_NO='51';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -995,10 +1006,13 @@ function loadRates(){
 document.getElementById('btnSave').addEventListener('click',()=>saveState(false));
 document.getElementById('btnSaveList').addEventListener('click',()=>saveState(false));
 document.getElementById('btnClear').addEventListener('click',()=>{
-  if(!confirm('이 브라우저에 저장된 목록을 지웁니다.\n지금 화면의 목록은 그대로 남지만, 새로고침하면 사라져요.\n\n계속할까요?'))return;
+  askConfirm('이 브라우저에 저장된 목록을 지웁니다.\n지금 화면의 목록은 그대로 남지만, 새로고침하면 사라져요.\n\n계속할까요?',()=>{
   try{localStorage.removeItem(LS_KEY);}catch(e){}
   setDot('','저장 지움');toast('저장을 지웠습니다');
-});
+
+  });
+  return;
+  });
 document.getElementById('btnBackup').addEventListener('click',()=>{
   if(!DATA.length){toast('내보낼 목록이 없습니다',true);return;}
   const blob=new Blob([JSON.stringify({...stateObj(),SAFE},null,1)],{type:'application/json'});
@@ -1015,7 +1029,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
     try{
       const s=JSON.parse(ev.target.result);
       if(!s.rows||!s.rows.length)throw 0;
-      if(DATA.length&&!confirm('지금 목록('+DATA.length+'건)을 백업 내용('+s.rows.length+'건)으로 교체합니다. 계속할까요?'))return;
+      const __go=()=>{
       COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
       repairCols();
@@ -1023,7 +1037,11 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
       buildHead();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
-    }catch(err){toast('백업 파일을 읽지 못했습니다',true);}
+    
+      };
+      if(DATA.length)askConfirm('지금 목록('+DATA.length+'건)을 백업 내용('+s.rows.length+'건)으로 교체합니다. 계속할까요?',__go);else __go();
+      return;
+      }catch(err){toast('백업 파일을 읽지 못했습니다',true);}
   };
   rd.readAsText(f);
 });
@@ -1167,7 +1185,7 @@ function showPrevBtn(){
 }
 document.getElementById('btnPrev').addEventListener('click',()=>{
   const p=prevInfo();if(!p){toast('되살릴 목록이 없습니다',true);return;}
-  if(DATA.length&&!confirm('지금 목록 '+DATA.length+'건을 버리고,\n직전 목록 '+(p.n||p.rows.length)+'건으로 되돌립니다.\n\n계속할까요?'))return;
+  const __go=()=>{
   const cur=DATA.length?JSON.stringify({...stateObj(),n:DATA.length}):null;
   COL=p.COL||{};DISP=(p.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=p.colWidth||{};
   repairCols();
@@ -1177,7 +1195,11 @@ document.getElementById('btnPrev').addEventListener('click',()=>{
   try{if(cur)localStorage.setItem(LS_PREV,cur);else localStorage.removeItem(LS_PREV);}catch(e){}
   showPrevBtn();updateUpMode();markDirty();goTab('manage');
   toast(DATA.length+'건으로 되돌렸습니다');
-});
+
+  };
+  if(DATA.length)askConfirm('지금 목록 '+DATA.length+'건을 버리고,\n직전 목록 '+(p.n||p.rows.length)+'건으로 되돌립니다.\n\n계속할까요?',__go);else __go();
+  return;
+  });
 /* 불러오는 방식 표시 : 지금 목록이 몇 건인지, 무엇이 없어지는지 */
 function dupList(){
   /* 공사코드가 같은 건 중 뒤에 온 것들의 위치 */
@@ -1215,16 +1237,19 @@ document.getElementById('btnDedup').addEventListener('click',()=>{
   const dup=dupList();
   if(!dup.length){toast('공사코드가 겹치는 건이 없습니다');return;}
   const groups=new Set(dup.map(i=>String(DATA[i].eng||'').trim().toLowerCase())).size;
-  if(!confirm('공사코드가 같은 건이 '+groups+'개 코드에 걸쳐 있습니다.\n먼저 들어온 건만 남기고 뒤의 '+dup.length+'건을 지웁니다.\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?'))return;
+  askConfirm('공사코드가 같은 건이 '+groups+'개 코드에 걸쳐 있습니다.\n먼저 들어온 건만 남기고 뒤의 '+dup.length+'건을 지웁니다.\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
   stashPrev();
   const kill=new Set(dup);
   DATA=DATA.filter((d,i)=>!kill.has(i));
   pruneFilters();afterDataChange();updateUpMode();
   toast(dup.length+'건 중복 제외 · 남은 목록 '+DATA.length+'건');
-});
+
+  });
+  return;
+  });
 document.getElementById('btnWipe').addEventListener('click',()=>{
   if(!DATA.length){toast('이미 목록이 비어 있습니다');return;}
-  if(!confirm('지금 목록 '+DATA.length+'건을 모두 비웁니다.\n칸 구성도 함께 초기화됩니다.\n\n(저장해 둔 보기 설정과 요율은 그대로 남습니다)\n(비운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?'))return;
+  askConfirm('지금 목록 '+DATA.length+'건을 모두 비웁니다.\n칸 구성도 함께 초기화됩니다.\n\n(저장해 둔 보기 설정과 요율은 그대로 남습니다)\n(비운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
   stashPrev();
   DATA=[];DISP=[];COL={};COLREP=[];colFilter={};colWidth={};sortCI=null;lastUpload=null;PENDING=null;
   try{localStorage.removeItem(LS_KEY);}catch(e){}
@@ -1234,7 +1259,10 @@ document.getElementById('btnWipe').addEventListener('click',()=>{
   buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
   updateUpMode();showPrevBtn();setDot('','저장된 목록 없음');
   toast('목록을 비웠습니다 · 0건');
-});
+
+  });
+  return;
+  });
 function clearAllFiltersSilent(){
   curBaal='';
   [...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===''));
@@ -1773,12 +1801,18 @@ document.getElementById('vpList').addEventListener('click',e=>{
     if(v)toast('"'+v.name+'" 보기를 적용했습니다'+(hit?' · '+mRows.length+'건 표시':''));return;}
   const up=e.target.closest('[data-vup]');
   if(up){const i=+up.dataset.vup;if(!arr[i])return;
-    if(!confirm('"'+arr[i].name+'" 보기를 지금 화면 설정으로 덮어씁니다.\n\n계속할까요?'))return;
-    const nm=arr[i].name;arr[i]=viewObj(nm);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 덮어썼습니다');return;}
+    askConfirm('"'+arr[i].name+'" 보기를 지금 화면 설정으로 덮어씁니다.\n\n계속할까요?',()=>{
+    const nm=arr[i].name;arr[i]=viewObj(nm);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 덮어썼습니다');return;
+    });
+    return;
+    }
   const del=e.target.closest('[data-vdel]');
   if(del){const i=+del.dataset.vdel;if(!arr[i])return;
-    if(!confirm('"'+arr[i].name+'" 보기를 삭제합니다.\n(목록 데이터는 그대로 남습니다)\n\n계속할까요?'))return;
-    const nm=arr[i].name;arr.splice(i,1);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 삭제했습니다');}
+    askConfirm('"'+arr[i].name+'" 보기를 삭제합니다.\n(목록 데이터는 그대로 남습니다)\n\n계속할까요?',()=>{
+    const nm=arr[i].name;arr.splice(i,1);saveViews(arr);renderViews();toast('"'+nm+'" 보기를 삭제했습니다');
+    });
+    return;
+    }
 });
 document.getElementById('vpSave').addEventListener('click',()=>{
   const nm=document.getElementById('vpName').value.replace(/\s+/g,' ').trim();
@@ -1786,12 +1820,16 @@ document.getElementById('vpSave').addEventListener('click',()=>{
   if(!DISP.length){toast('먼저 목록을 불러와 주세요',true);return;}
   const arr=loadViews();
   const i=arr.findIndex(v=>v.name===nm);
-  if(i>=0&&!confirm('같은 이름의 보기가 있습니다.\n"'+nm+'" 을(를) 지금 화면 설정으로 덮어쓸까요?'))return;
+  const __go=()=>{
   if(i>=0)arr[i]=viewObj(nm);else arr.push(viewObj(nm));
   saveViews(arr);renderViews();
   document.getElementById('vpName').value='';
   toast('"'+nm+'" 보기를 저장했습니다');
-});
+
+  };
+  if(i>=0)askConfirm('같은 이름의 보기가 있습니다.\n"'+nm+'" 을(를) 지금 화면 설정으로 덮어쓸까요?',__go);else __go();
+  return;
+  });
 document.getElementById('vpName').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')document.getElementById('vpSave').click();});
 document.getElementById('colPanel').addEventListener('change',e=>{if(e.target.id==='cpAll'){DISP.forEach(c=>c.vis=e.target.checked);buildColPanel();buildHead();render();markDirty();return;}if(e.target.dataset.v!==undefined){DISP[+e.target.dataset.v].vis=e.target.checked;const a=document.getElementById('cpAll');if(a)a.checked=DISP.every(c=>c.vis);buildHead();render();markDirty();}});
 document.getElementById('colPanel').addEventListener('click',e=>{
@@ -2000,12 +2038,16 @@ function confirmPicks(){
   const sel=DATA.filter(d=>d._pick);
   if(!sel.length){toast('선택된 사업이 없습니다',true);return;}
   const drop=DATA.length-sel.length;
-  if(drop&&!confirm('체크 안 한 '+drop+'건은 목록에서 빠집니다.\n(사업추가 화면의 "마지막 업로드 전체 복원"으로 되돌릴 수 있어요)\n\n계속할까요?'))return;
+  const __go=()=>{
   DATA=sel;colFilter={};sortCI=null;markDup();
   buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
   document.getElementById('upResult').innerHTML='<span style="font-size:14px;color:#166534;">'+sel.length+'건을 리스트관리로 넘겼습니다.</span>'+(drop?'<button class="btn" onclick="restoreUpload()">마지막 업로드 전체 복원 ('+(sel.length+drop)+'건)</button>':'');
   markDirty();goTab('manage');toast(sel.length+'건을 리스트관리로 가져왔습니다');
-}
+
+  };
+  if(drop)askConfirm('체크 안 한 '+drop+'건은 목록에서 빠집니다.\n(사업추가 화면의 "마지막 업로드 전체 복원"으로 되돌릴 수 있어요)\n\n계속할까요?',__go);else __go();
+  return;
+  }
 function restoreUpload(){
   if(!lastUpload||!lastUpload.length){toast('복원할 업로드가 없습니다',true);return;}
   DATA=lastUpload.slice();DATA.forEach(d=>d._pick=true);markDup();
@@ -2251,12 +2293,15 @@ document.getElementById('btnIssue').addEventListener('click',()=>{
 document.getElementById('btnDel').addEventListener('click',()=>{
   const sel=DATA.filter(d=>d._msel);
   if(!sel.length){toast('삭제할 줄을 먼저 체크하세요',true);return;}
-  if(!confirm(sel.length+'건을 목록에서 삭제합니다. 되돌릴 수 없어요.\n\n계속할까요?'))return;
+  askConfirm(sel.length+'건을 목록에서 삭제합니다. 되돌릴 수 없어요.\n\n계속할까요?',()=>{
   DATA=DATA.filter(d=>!d._msel);
   const pruned=pruneFilters();
   afterDataChange();
   toast(sel.length+'건 삭제 · 남은 목록 '+DATA.length+'건'+(pruned?' (맞는 값이 없어진 값 필터는 해제했어요)':''));
-});
+
+  });
+  return;
+  });
 
 /* ======================= 헤더 정렬/필터/리사이즈 ======================= */
 document.getElementById('fBaal').addEventListener('click',e=>{if(e.target.dataset.b!==undefined){curBaal=e.target.dataset.b;[...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));render();markDirty();}});
@@ -2312,6 +2357,34 @@ function syncToolbar(){
   on('btnAddCol',!document.getElementById('colAddBar').classList.contains('hide'));
   on('btnExcel',!document.getElementById('exBar').classList.contains('hide'));
 }
+
+/* ---- 자체 확인창 : 브라우저 기본 confirm 대신 화면 가운데 뜬다 ----
+   askConfirm(문구, 확인 시 실행, {title, ok, cancel}) */
+let ASK_ON=null;
+function askConfirm(msg,onOk,opt){
+  opt=opt||{};
+  if(typeof window.__confirmHook==='function'){if(window.__confirmHook(msg))onOk();return;}   /* 자동 테스트용 */
+  const pop=document.getElementById('askPop');
+  document.getElementById('askTitle').textContent=opt.title||'확인';
+  document.getElementById('askMsg').textContent=msg;
+  document.getElementById('askOk').textContent=opt.ok||'확인';
+  document.getElementById('askNo').textContent=opt.cancel||'취소';
+  ASK_ON=onOk;pop.classList.remove('hide');
+  setTimeout(()=>document.getElementById('askOk').focus(),0);
+}
+function askClose(ok){
+  const pop=document.getElementById('askPop');pop.classList.add('hide');
+  const fn=ASK_ON;ASK_ON=null;if(ok&&fn)fn();
+}
+document.getElementById('askOk').addEventListener('click',()=>askClose(true));
+document.getElementById('askNo').addEventListener('click',()=>askClose(false));
+document.getElementById('askX').addEventListener('click',()=>askClose(false));
+document.getElementById('askPop').addEventListener('click',e=>{if(e.target.id==='askPop')askClose(false);});
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('askPop').classList.contains('hide'))return;
+  if(e.key==='Enter'){e.preventDefault();askClose(true);}
+  else if(e.key==='Escape'){e.preventDefault();askClose(false);}
+},true);
 
 /* ---- 툴바 입력 줄 켜고 끄기 : 같은 버튼을 다시 누르면 닫힌다 ---- */
 const BARS=['bulkBar','colAddBar','exBar'];
@@ -2830,12 +2903,18 @@ document.getElementById('stCondSel').addEventListener('change',e=>{
   const o=arr[+i];if(!o)return;
   stCondApply(o);toast('"'+o.name+'" 조건을 적용했습니다 · '+statRows().length+'건');
 });
-document.getElementById('stCondSave').addEventListener('click',()=>{
-  document.getElementById('ssName').value='';
-  document.getElementById('ssWhat').textContent='저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 통계 분류 선택';
+let SS={mode:'new',idx:-1};
+function openSavePop(mode,idx){
+  SS={mode:mode,idx:(idx==null?-1:idx)};
+  const arr=stCondLoadAll();const cur=(mode==='edit'&&arr[idx])?arr[idx]:null;
+  document.getElementById('ssTitle').textContent=mode==='edit'?'조건 수정':'조건 저장';
+  document.getElementById('ssSave').textContent=mode==='edit'?'수정':'저장';
+  document.getElementById('ssName').value=cur?cur.name:'';
+  document.getElementById('ssWhat').textContent=(mode==='edit'?'이름을 바꿀 수 있고, 이 조건을 지금 세팅으로 덮어씁니다.\n':'')+'저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 정렬 / 통계 분류 선택';
   document.getElementById('stSavePop').classList.remove('hide');
-  setTimeout(()=>document.getElementById('ssName').focus(),0);
-});
+  setTimeout(()=>{const e=document.getElementById('ssName');e.focus();if(cur)e.select();},0);
+}
+document.getElementById('stCondSave').addEventListener('click',()=>openSavePop('new'));
 function closeSavePop(){document.getElementById('stSavePop').classList.add('hide');}
 document.getElementById('ssX').addEventListener('click',closeSavePop);
 document.getElementById('ssClose').addEventListener('click',closeSavePop);
@@ -2844,28 +2923,43 @@ document.getElementById('ssName').addEventListener('keydown',e=>{e.stopPropagati
 document.getElementById('ssSave').addEventListener('click',()=>{
   const nm=document.getElementById('ssName').value.replace(/\s+/g,' ').trim();
   if(!nm){toast('조건 이름을 넣어주세요',true);document.getElementById('ssName').focus();return;}
-  const arr=stCondLoadAll();const i=arr.findIndex(o=>o.name===nm);
-  if(i>=0&&!confirm('같은 이름의 조건이 있습니다.\n"'+nm+'" 을(를) 지금 조건으로 덮어쓸까요?'))return;
+  const arr=stCondLoadAll();
+  if(SS.mode==='edit'){
+    const idx=SS.idx;if(!arr[idx]){toast('조건을 찾지 못했습니다',true);closeSavePop();renderCondSel();return;}
+    const dupI=arr.findIndex((o,k)=>o.name===nm&&k!==idx);
+    if(dupI>=0){toast('"'+nm+'" 이름은 다른 조건이 쓰고 있어요',true);document.getElementById('ssName').focus();return;}
+    const old=arr[idx].name;arr[idx]=stCondObj(nm);stCondSaveAll(arr);renderCondSel();
+    const sel=document.getElementById('stCondSel');sel.value=String(idx);sel.classList.add('on');
+    document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondUpd').classList.remove('hide');
+    closeSavePop();toast((old!==nm?'"'+old+'" → "'+nm+'" 이름 변경 · ':'"'+nm+'" ')+'지금 세팅으로 수정했습니다');return;
+  }
+  const i=arr.findIndex(o=>o.name===nm);
+  const __go=()=>{
   if(i>=0)arr[i]=stCondObj(nm);else arr.push(stCondObj(nm));
   stCondSaveAll(arr);renderCondSel();
   document.getElementById('stCondSel').value=String(i>=0?i:arr.length-1);
   document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondUpd').classList.remove('hide');document.getElementById('stCondSel').classList.add('on');
   closeSavePop();toast('"'+nm+'" 조건을 저장했습니다');
-});
+
+  };
+  if(i>=0)askConfirm('같은 이름의 조건이 있습니다.\n"'+nm+'" 을(를) 지금 조건으로 덮어쓸까요?',__go);else __go();
+  return;
+  });
 document.getElementById('stCondUpd').addEventListener('click',()=>{
   const sel=document.getElementById('stCondSel');const i=sel.value;
   if(i===''){toast('먼저 조건 목록에서 수정할 조건을 고르세요',true);return;}
-  const arr=stCondLoadAll();const o=arr[+i];if(!o){toast('조건을 찾지 못했습니다',true);renderCondSel();return;}
-  if(!confirm('"'+o.name+'" 조건을 지금 세팅으로 덮어씁니다.\n\n'+stCondText()+'\n\n계속할까요?'))return;
-  arr[+i]=stCondObj(o.name);stCondSaveAll(arr);renderCondSel();sel.value=String(i);
-  toast('"'+o.name+'" 조건을 지금 세팅으로 수정했습니다');
+  if(!stCondLoadAll()[+i]){toast('조건을 찾지 못했습니다',true);renderCondSel();return;}
+  openSavePop('edit',+i);
 });
 document.getElementById('stCondDel').addEventListener('click',()=>{
   const sel=document.getElementById('stCondSel');const i=sel.value;if(i==='')return;
   const arr=stCondLoadAll();const o=arr[+i];if(!o)return;
-  if(!confirm('"'+o.name+'" 조건을 삭제합니다.\n\n계속할까요?'))return;
+  askConfirm('"'+o.name+'" 조건을 삭제합니다.\n\n계속할까요?',()=>{
   arr.splice(+i,1);stCondSaveAll(arr);sel.value='';renderCondSel();toast('"'+o.name+'" 조건을 삭제했습니다');
-});
+
+  });
+  return;
+  });
 
 /* ======== 독립 리스트 창 ======== */
 let STWIN=null;
@@ -3098,7 +3192,7 @@ function delCol(i){
   const c=DISP[i];if(!c)return;
   const used=DATA.filter(d=>{const v=d.row[c.idx];return v!=null&&v!=='';}).length;
   const msg='"'+c.label+'" 칸을 목록에서 삭제합니다.'+(used?('\n\n이 칸에 값이 있는 줄이 '+used+'건 있습니다. 그 값도 함께 지워집니다.'):'\n\n이 칸은 비어 있습니다.')+'\n\n계속할까요?';
-  if(!confirm(msg))return;
+  askConfirm(msg,()=>{
   DISP.splice(i,1);
   DATA.forEach(d=>{delete d.row[c.idx];});
   delete colWidth[c.idx];delete colFilter[c.idx];
@@ -3107,7 +3201,10 @@ function delCol(i){
   DATA.forEach(deriveItem);pruneFilters();markDup();
   buildColPanel();buildHead();buildFilters();renderCards();renderValidate();render(true);renderSettle();markDirty();
   toast('"'+c.label+'" 칸을 삭제했습니다');
-}
+
+  });
+  return;
+  }
 
 /* ---- 머리글을 끌어서 컬럼 순서 바꾸기 ---- */
 function moveCol(a,b,before){
