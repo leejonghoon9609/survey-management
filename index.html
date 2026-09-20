@@ -318,6 +318,7 @@ td.left{text-align:left;}
   <button data-t="manage">리스트관리</button>
   <button data-t="process">사업 공정관리</button>
   <button data-t="settle">정산리스트</button>
+  <button data-t="stats">통계</button>
   <span class="navbuild" id="buildTag" title="배포 확인용 빌드 번호"></span>
 </div>
 
@@ -524,6 +525,11 @@ td.left{text-align:left;}
     </div>
   </div>
 
+  <!-- 통계 -->
+  <div class="page" id="p-stats">
+    <div class="card" id="statsCard" style="min-height:calc(100vh - 220px);background:#fff;"></div>
+  </div>
+
 </div>
 <div id="colFilterPop" class="hide"></div>
 <div id="viewPop" class="hide"><div class="view-card">
@@ -621,8 +627,9 @@ td.left{text-align:left;}
    BUILD 36: 머리글 순번(#) 칸이 오른쪽으로 밀려 시행시기와 겹치던 문제
              + 머리글이 세로 스크롤에 고정되지 않던 문제 + 가로 막대 항상 표시
    BUILD 37: 표 높이를 화면에 맞춰 스크롤이 표 안에서만 일어나게 (머리글 고정 유지)
+   BUILD 38: 「통계」 탭 자리 마련 (빈 화면)
    ======================================================================== */
-const BUILD_NO='37';
+const BUILD_NO='38';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -857,12 +864,12 @@ window.addEventListener('beforeunload',e=>{
 document.querySelector('.nav').addEventListener('click',e=>{
   if(!e.target.dataset.t)return;
   [...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b===e.target));
-  ['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
+  ['add','manage','process','settle','stats'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===e.target.dataset.t));
   if(e.target.dataset.t==='process')renderProcess();
   if(e.target.dataset.t==='manage')requestAnimationFrame(syncHbar);
 });
 function segMode(m){document.getElementById('seg-up').classList.toggle('on',m==='up');document.getElementById('seg-in').classList.toggle('on',m==='in');document.getElementById('mode-up').classList.toggle('hide',m!=='up');document.getElementById('mode-in').classList.toggle('hide',m!=='in');}
-function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();if(t==='manage')requestAnimationFrame(syncHbar);}
+function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle','stats'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();if(t==='manage')requestAnimationFrame(syncHbar);}
 
 /* ======================= 공정관리 ======================= */
 const P_STAGES=[{name:'실시간',kw:['실시간']},{name:'후측량',kw:['후측량']},{name:'탐사측량',kw:['탐사']},{name:'탱고',kw:['탱고','업로딩']},{name:'성과심사',kw:['심사']},{name:'정산',kw:['정산']}];
