@@ -71,6 +71,8 @@ header .spacer{flex:1;}
 .res:last-child{border-bottom:none;}
 .res .rt{font-size:12px;color:#64748b;}
 .res .rv{font-size:18px;font-weight:700;color:#059669;font-variant-numeric:tabular-nums;}
+.res.head{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+.res.head .rv{font-size:14.5px;color:#166534;line-height:1.5;}
 .res .rv small{font-size:11px;color:#94a3b8;font-weight:400;}
 .res .rd{font-size:12px;color:#334155;line-height:1.6;white-space:pre-wrap;}
 .res.bad .rv{color:#dc2626;}
@@ -685,6 +687,7 @@ td.left{text-align:left;}
         <div class="fbtns" id="ipMetric">
           <button class="fbtn on" data-m="n" style="--c:#EA002C">건수</button>
           <button class="fbtn" data-m="km" style="--c:#2563EB">정산거리 합(km)</button>
+          <button class="fbtn" data-m="sum" style="--c:#0369A1">소요일수 합계</button>
           <button class="fbtn" data-m="avg" style="--c:#B45309">평균 소요일수</button>
           <button class="fbtn" data-m="med" style="--c:#7C3AED">중앙값 소요일수</button>
           <button class="fbtn" data-m="le20" style="--c:#059669">20일 이내 건수</button>
@@ -874,8 +877,11 @@ td.left{text-align:left;}
              + 조건 수정 창에서 이름도 바꿀 수 있게
    BUILD 52: 통계현황 재구성 — 조건대상 요약 / 통계 계산(항목 A · 대비·빼기·추가 · 항목 B) / 계산 결과
              분류 칩·분류표 제거, 항목은 목록 설정창(칸 → 값 → 계산값)으로 정함
+   BUILD 53: 계산 결과를 간단명료하게 — "총 N건 · 전체 M일 소요 · 평균 1건당 X일"
+             + 계산값에 「소요일수 합계」 추가, 단위가 다른 대비는 계산 불가로
+   BUILD 54: 연산에 「평균(A÷B)」 추가 — 예) 소요일수 합계 ÷ 건수 = 1건당 며칠
    ======================================================================== */
-const BUILD_NO='52';
+const BUILD_NO='54';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2813,6 +2819,9 @@ function renderStats(){
   const sum=document.getElementById('stCondSum');if(sum)sum.textContent='→ '+rows.length.toLocaleString('ko-KR')+'건';
   renderSummary(rows);
   renderCalc();
+  const rb=document.getElementById('stResB');
+  if(rb&&!rb.querySelector('.res:not(.head)'))rb.innerHTML=renderResHead()+'<div class="vnone">항목을 정하고 「계산」을 누르면 아래에 세부 계산이 나옵니다.</div>';
+  else if(rb&&rb.querySelector('.res.head'))rb.querySelector('.res.head').outerHTML=renderResHead();
   renderStatList(rows);
   renderPopWin();
 }
@@ -2825,7 +2834,7 @@ function stMetrics(rows){
   const med=ds.length?ds[Math.floor(ds.length/2)]:null;
   const le20=ds.filter(v=>v<=20).length,gt20=ds.length-le20;
   const chk=rows.filter(d=>d._chk).length;
-  return {n,km,dn:ds.length,avg,med,le20,gt20,chk,able:rows.filter(able).length};
+  return {n,km,dn:ds.length,sum:ds.reduce((a,b)=>a+b,0),avg,med,le20,gt20,chk,able:rows.filter(able).length};
 }
 function renderSummary(rows){
   const box=document.getElementById('stSumB');if(!box)return;
@@ -2853,9 +2862,9 @@ let STCALC=[];
 try{const r=localStorage.getItem(LS_STCALC);if(r){const a=JSON.parse(r);if(Array.isArray(a))STCALC=a;}}catch(e){}
 if(!STCALC.length)STCALC=[{a:null,op:'ratio',b:null}];
 function stCalcSave(){try{localStorage.setItem(LS_STCALC,JSON.stringify(STCALC));}catch(e){}}
-const ST_METRIC={n:'건수',km:'정산거리 합',avg:'평균 소요일수',med:'중앙값 소요일수',le20:'20일 이내 건수',gt20:'20일 초과 건수',chk:'이슈 체크 건수'};
-const ST_UNIT={n:'건',km:'km',avg:'일',med:'일',le20:'건',gt20:'건',chk:'건'};
-const ST_OP={ratio:'대비',sub:'빼기',add:'추가'};
+const ST_METRIC={n:'건수',km:'정산거리 합',sum:'소요일수 합계',avg:'평균 소요일수',med:'중앙값 소요일수',le20:'20일 이내 건수',gt20:'20일 초과 건수',chk:'이슈 체크 건수'};
+const ST_UNIT={n:'건',km:'km',sum:'일',avg:'일',med:'일',le20:'건',gt20:'건',chk:'건'};
+const ST_OP={ratio:'대비',sub:'빼기',add:'추가',div:'평균(A÷B)'};
 function itemField(k){if(!k)return null;return stField(k);}
 function itemRows(it,base){
   if(!it||!it.col)return base;
@@ -2865,13 +2874,17 @@ function itemRows(it,base){
 }
 function itemValue(it,base){
   const rows=itemRows(it,base),m=stMetrics(rows),k=(it&&it.metric)||'n';
-  const v={n:m.n,km:m.km,avg:m.avg,med:m.med,le20:m.le20,gt20:m.gt20,chk:m.chk}[k];
+  const v={n:m.n,km:m.km,sum:m.dn?m.sum:null,avg:m.avg,med:m.med,le20:m.le20,gt20:m.gt20,chk:m.chk}[k];
   return {v:v,rows:rows,m:m,k:k};
 }
 function itemLabel(it){
   if(!it||!it.col)return '조건 전체';
   const F=itemField(it.col);const vs=it.vals||[];
   return (F?F.label:it.col)+(vs.length?': '+vs.slice(0,2).join(', ')+(vs.length>2?' 외 '+(vs.length-2):''):' 전체');
+}
+function brief(m){   /* "155건 중 114건 계산 · 전체 3,306일 · 평균 29.0일" */
+  if(!m.dn)return m.n.toLocaleString('ko-KR')+'건 · 소요일수 계산된 건 없음';
+  return '총 '+m.n.toLocaleString('ko-KR')+'건'+(m.dn!==m.n?' 중 '+m.dn+'건 계산':'')+' · 전체 '+m.sum.toLocaleString('ko-KR')+'일 소요 · 평균 1건당 '+(m.sum/m.dn).toFixed(1)+'일';
 }
 function fmtV(v,k){if(v==null)return '-';if(k==='km')return v.toFixed(3);if(k==='avg')return v.toFixed(1);return Math.round(v).toLocaleString('ko-KR');}
 function renderCalc(){
@@ -2885,6 +2898,11 @@ function renderCalc(){
       ((L.a&&L.a.col)||(L.b&&L.b.col)?'<div class="pk">'+pk(L.a)+pk(L.b)+'</div>':'')+'</div>';
   }).join('');
 }
+function renderResHead(){
+  const base=statRows(),m=stMetrics(base);
+  return '<div class="res head"><div class="rt">지금 조건</div><div class="rv">'+esc(brief(m))+'</div>'+
+    (m.dn?'<div class="rd">중앙값 '+m.med+'일 · 20일 이내 '+m.le20+'건('+Math.round(m.le20/m.dn*100)+'%) · 초과 '+m.gt20+'건</div>':'')+'</div>';
+}
 function runCalc(){
   const base=statRows();const out=[];
   STCALC.forEach((L,i)=>{
@@ -2893,16 +2911,20 @@ function runCalc(){
     const la=itemLabel(L.a)+' '+ST_METRIC[ka],lb=itemLabel(L.b)+' '+ST_METRIC[kb];
     let val='',unit='',bad=false,det='';
     if(A.v==null||B.v==null){bad=true;val='계산 불가';det='소요일수가 계산된 건이 없어 값을 낼 수 없습니다.';}
+    else if(L.op==='div'){
+      if(B.v===0){bad=true;val='계산 불가';det=lb+' 가 0 이라 나눌 수 없습니다.';}
+      else{val=(A.v/B.v).toFixed(1);unit=(ua===ub?'':ua+'/'+ub);det=fmtV(A.v,ka)+ua+' ÷ '+fmtV(B.v,kb)+ub+' = 1'+ub+'당 '+val+(ua===ub?'':ua);}
+    }
+    else if(ua!==ub){bad=true;val='계산 불가';det='두 항목의 단위가 달라('+ua+' / '+ub+') 계산할 수 없습니다. 같은 계산값끼리 고르거나 「평균(A÷B)」을 쓰세요.';}
     else if(L.op==='ratio'){
       if(B.v===0){bad=true;val='계산 불가';det=lb+' 가 0 이라 나눌 수 없습니다.';}
-      else{val=(A.v/B.v*100).toFixed(1);unit='%';det=la+' '+fmtV(A.v,ka)+ua+'  ÷  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+'%';
-        if(ka!==kb)det+='\n※ 두 항목의 계산값이 달라(단위 '+ua+'/'+ub+') 참고용입니다.';}
-    }else if(L.op==='sub'){val=fmtV(A.v-B.v,ka);unit=ua;det=la+' '+fmtV(A.v,ka)+ua+'  −  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+unit;}
-    else{val=fmtV(A.v+B.v,ka);unit=ua;det=la+' '+fmtV(A.v,ka)+ua+'  +  '+lb+' '+fmtV(B.v,kb)+ub+'\n= '+val+unit;}
-    det+='\n(A '+A.rows.length+'건 · B '+B.rows.length+'건 · 조건 전체 '+base.length+'건)';
+      else{val=(A.v/B.v*100).toFixed(1);unit='%';det=fmtV(A.v,ka)+ua+' ÷ '+fmtV(B.v,kb)+ub+' = '+val+'%';}
+    }else if(L.op==='sub'){val=fmtV(A.v-B.v,ka);unit=ua;det=fmtV(A.v,ka)+ua+' − '+fmtV(B.v,kb)+ub+' = '+val+unit;}
+    else{val=fmtV(A.v+B.v,ka);unit=ua;det=fmtV(A.v,ka)+ua+' + '+fmtV(B.v,kb)+ub+' = '+val+unit;}
+    det+='\nA · '+brief(A.m)+'\nB · '+brief(B.m);
     out.push({i,val,unit,bad,det,title:itemLabel(L.a)+' '+ST_OP[L.op]+' '+itemLabel(L.b)});
   });
-  document.getElementById('stResB').innerHTML=out.map(r=>'<div class="res'+(r.bad?' bad':'')+'"><div class="rt">'+(r.i+1)+'. '+esc(r.title)+'</div><div class="rv">'+esc(r.val)+(r.unit?'<small>'+esc(r.unit)+'</small>':'')+'</div><div class="rd">'+esc(r.det)+'</div></div>').join('');
+  document.getElementById('stResB').innerHTML=renderResHead()+out.map(r=>'<div class="res'+(r.bad?' bad':'')+'"><div class="rt">'+(r.i+1)+'. '+esc(r.title)+'</div><div class="rv">'+esc(r.val)+(r.unit?'<small>'+esc(r.unit)+'</small>':'')+'</div><div class="rd">'+esc(r.det)+'</div></div>').join('');
 }
 document.getElementById('stCalcB').addEventListener('click',e=>{
   const b=e.target.closest('[data-item]');
