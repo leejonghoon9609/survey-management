@@ -642,6 +642,7 @@ td.left{text-align:left;}
         <span class="stat" id="stCondSum" style="font-weight:400;"></span>
         <select id="stCondSel" class="csel" style="--c:#0369A1;min-width:170px;" title="저장해 둔 조건"><option value="">조건 목록</option></select>
         <button class="btn tbtn" id="stCondSave" style="padding:6px 14px;--c:#EA002C">조건 저장</button>
+        <button class="btn tbtn hide" id="stCondUpd" style="padding:6px 14px;--c:#0369A1" title="조건 목록에서 고른 조건에 지금 세팅을 덮어씁니다">조건 수정</button>
         <button class="btn tbtn hide" id="stCondDel" style="padding:6px 10px;--c:#DC2626" title="고른 조건 삭제">삭제</button>
         <span style="flex:1"></span>
         <label class="stx">요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
@@ -799,8 +800,9 @@ td.left{text-align:left;}
    BUILD 47: 통계 리스트 정렬 — 분류 칩 가운데 / 리스트 머리글 / 독립 창 머리글 클릭 = 정렬 ▲▼
    BUILD 48: 독립 창 머리글에서도 칸 너비 조절 — 본 화면과 양방향 연동
    BUILD 49: 본 화면 리스트 머리글에도 ▾ 값 체크 (칩·창과 같은 값 필터)
+   BUILD 50: 「조건 수정」 — 조건 목록에서 고른 조건에 지금 세팅을 덮어쓰기
    ======================================================================== */
-const BUILD_NO='49';
+const BUILD_NO='50';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2816,11 +2818,13 @@ function renderCondSel(){
   sel.innerHTML='<option value="">조건 목록'+(arr.length?' ('+arr.length+')':'')+'</option>'+arr.map((o,i)=>'<option value="'+i+'">'+esc(o.name)+'</option>').join('');
   if(cur!==''&&arr[+cur])sel.value=cur;
   document.getElementById('stCondDel').classList.toggle('hide',sel.value==='');
+  document.getElementById('stCondUpd').classList.toggle('hide',sel.value==='');
   sel.classList.toggle('on',sel.value!=='');
 }
 document.getElementById('stCondSel').addEventListener('change',e=>{
   const i=e.target.value;const arr=stCondLoadAll();
   document.getElementById('stCondDel').classList.toggle('hide',i==='');
+  document.getElementById('stCondUpd').classList.toggle('hide',i==='');
   e.target.classList.toggle('on',i!=='');
   if(i==='')return;
   const o=arr[+i];if(!o)return;
@@ -2845,8 +2849,16 @@ document.getElementById('ssSave').addEventListener('click',()=>{
   if(i>=0)arr[i]=stCondObj(nm);else arr.push(stCondObj(nm));
   stCondSaveAll(arr);renderCondSel();
   document.getElementById('stCondSel').value=String(i>=0?i:arr.length-1);
-  document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondSel').classList.add('on');
+  document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondUpd').classList.remove('hide');document.getElementById('stCondSel').classList.add('on');
   closeSavePop();toast('"'+nm+'" 조건을 저장했습니다');
+});
+document.getElementById('stCondUpd').addEventListener('click',()=>{
+  const sel=document.getElementById('stCondSel');const i=sel.value;
+  if(i===''){toast('먼저 조건 목록에서 수정할 조건을 고르세요',true);return;}
+  const arr=stCondLoadAll();const o=arr[+i];if(!o){toast('조건을 찾지 못했습니다',true);renderCondSel();return;}
+  if(!confirm('"'+o.name+'" 조건을 지금 세팅으로 덮어씁니다.\n\n'+stCondText()+'\n\n계속할까요?'))return;
+  arr[+i]=stCondObj(o.name);stCondSaveAll(arr);renderCondSel();sel.value=String(i);
+  toast('"'+o.name+'" 조건을 지금 세팅으로 수정했습니다');
 });
 document.getElementById('stCondDel').addEventListener('click',()=>{
   const sel=document.getElementById('stCondSel');const i=sel.value;if(i==='')return;
