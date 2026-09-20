@@ -794,8 +794,9 @@ td.left{text-align:left;}
              + 「창 보기」 — 독립 리스트 창(크기 조절·이동), 조건 바꾸면 자동 갱신
    BUILD 46: 독립 창 머리글에도 ▾ 값 필터 — 창에서 고르면 본 화면 조건 설정에 바로 반영
    BUILD 47: 통계 리스트 정렬 — 분류 칩 가운데 / 리스트 머리글 / 독립 창 머리글 클릭 = 정렬 ▲▼
+   BUILD 48: 독립 창 머리글에서도 칸 너비 조절 — 본 화면과 양방향 연동
    ======================================================================== */
-const BUILD_NO='47';
+const BUILD_NO='48';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2772,8 +2773,7 @@ document.getElementById('stHead').addEventListener('mousedown',e=>{
   const l=rz.dataset.strz;const col=document.querySelector('#stTable colgroup col[data-l="'+CSS.escape(l)+'"]');if(!col)return;
   const th=rz.closest('th');let sw=STW[l]||defW(l);const thw=th?th.getBoundingClientRect().width:0;if(thw>0&&Math.abs(thw-sw)>1)sw=thw;
   const sx=e.clientX;document.body.style.userSelect='none';rz.classList.add('on');
-  function mv(ev){const w=Math.max(45,Math.round(sw+(ev.clientX-sx)));col.style.width=w+'px';STW[l]=w;
-    let t=46;stColsList().forEach(c=>{t+=STW[c.label]||defW(c.label);});document.getElementById('stTable').style.width=t+'px';}
+  function mv(ev){const w=Math.max(45,Math.round(sw+(ev.clientX-sx)));STW[l]=w;stApplyWidths();}
   function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';rz.classList.remove('on');stSaveW();}
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
 });
@@ -2851,11 +2851,11 @@ function popListHTML(rows,cols){
     if(isIssueCol(c.idx)){const sp=splitIssue(v);inner=(sp.tag?'<span class="isstag" style="--c:'+tagColor(sp.tag)+'">'+esc(sp.tag)+'</span> ':'')+esc(sp.rest);}
     else inner=cellInner(d,c);
     return '<td'+(cls&&cls!=='isscell'?' class="'+cls+'"':(cls==='isscell'?' class="left"':''))+' title="'+esc(cellVal(v,c.idx))+'">'+inner+'</td>';};
-  let cg='<col style="width:46px">';cols.forEach(c=>{cg+='<col style="width:'+(STW[c.label]||defW(c.label))+'px">';});
+  let cg='<col style="width:46px">';cols.forEach(c=>{cg+='<col data-l="'+esc(c.label)+'" style="width:'+(STW[c.label]||defW(c.label))+'px">';});
   const total=cols.reduce((a,c)=>a+(STW[c.label]||defW(c.label)),46);
   const CAP=2000;
   return '<table style="width:'+total+'px"><colgroup>'+cg+'</colgroup><thead><tr><th class="rn">#</th>'+cols.map(c=>{const on=STVF[c.idx]&&STVF[c.idx].size;
-      return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+' — 클릭=정렬 ▲▼'+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt" data-psort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></th>';}).join('')+'</tr></thead><tbody>'+
+      return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+' — 클릭=정렬 ▲▼'+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt" data-psort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button><span class="rsz" data-prz="'+esc(c.label)+'" title="끌어서 너비 조절"></span></th>';}).join('')+'</tr></thead><tbody>'+
     rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn">'+(i+1)+'</td>'+cols.map(c=>cell(d,c)).join('')+'</tr>').join('')+
     '</tbody></table>'+(rows.length>CAP?'<p class="note">앞 '+CAP+'건만 표시</p>':'');
 }
@@ -2869,7 +2869,9 @@ table{border-collapse:collapse;table-layout:fixed;min-width:0;}
 th,td{padding:6px 9px;text-align:center;border:1px solid #cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;}
 th{position:sticky;top:0;background:#fbeaed;color:#9f1239;font-weight:500;z-index:2;box-shadow:inset 0 -1px 0 #94a3b8;}
 th.rn,td.rn{position:sticky;left:0;z-index:3;width:46px;background:#fff;color:#94a3b8;font-size:12px;}th.rn{background:#fbeaed;z-index:4;}
-th .tt{display:inline-block;max-width:calc(100% - 22px);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:pointer;}th .tt:hover{color:#EA002C;text-decoration:underline;}
+th .tt{display:inline-block;max-width:calc(100% - 30px);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:pointer;}th .tt:hover{color:#EA002C;text-decoration:underline;}
+th .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}th .rsz:hover,th .rsz.on{background:#FFB400;}
+th{padding-right:14px;}
 th .dd{border:none;background:transparent;color:#c08;cursor:pointer;font-size:11px;padding:0 4px;line-height:1;border-radius:4px;vertical-align:middle;}
 th .dd:hover,th.open .dd{background:#2563EB;color:#fff;}
 th.vf{box-shadow:inset 0 -3px 0 #2563EB,inset 0 -1px 0 #94a3b8;}th.vf .dd{color:#2563EB;font-weight:700;}
@@ -2945,6 +2947,26 @@ function bindPopWin(doc){
     renderCols();renderVf();renderStats();      /* 본 화면 → 창 순서로 다시 그림 */
   });
   doc.addEventListener('keydown',e=>{if(e.key==='Escape'&&PVFCOL!==''){PVFCOL='';renderPopFilt();}});
+  /* 머리글 경계선 끌기 → 너비 (본 화면과 같은 STW 를 쓰므로 양쪽이 같이 바뀐다) */
+  doc.addEventListener('mousedown',e=>{
+    const rz=e.target&&e.target.closest?e.target.closest('[data-prz]'):null;if(!rz)return;e.preventDefault();e.stopPropagation();
+    const l=rz.dataset.prz;const th=rz.closest('th');
+    let sw=STW[l]||defW(l);const thw=th?th.getBoundingClientRect().width:0;if(thw>0&&Math.abs(thw-sw)>1)sw=thw;
+    const sx=e.clientX;rz.classList.add('on');doc.body.style.userSelect='none';
+    function mv(ev){const w=Math.max(45,Math.round(sw+(ev.clientX-sx)));STW[l]=w;stApplyWidths();}
+    function up(){doc.removeEventListener('mousemove',mv);doc.removeEventListener('mouseup',up);rz.classList.remove('on');doc.body.style.userSelect='';stSaveW();}
+    doc.addEventListener('mousemove',mv);doc.addEventListener('mouseup',up);
+  });
+}
+/* STW 를 본 화면 리스트와 독립 창 양쪽 colgroup 에 바로 적용 (다시 그리지 않고) */
+function stApplyWidths(){
+  const cols=stColsList();
+  const total=cols.reduce((a,c)=>a+(STW[c.label]||defW(c.label)),46);
+  const apply=(doc)=>{if(!doc)return;const t=doc.querySelector('#stTable')||doc.querySelector('.wrap table');if(!t)return;
+    cols.forEach(c=>{const col=t.querySelector('colgroup col[data-l="'+CSS.escape(c.label)+'"]');if(col)col.style.width=(STW[c.label]||defW(c.label))+'px';});
+    t.style.width=total+'px';};
+  apply(document);
+  if(STWIN&&!STWIN.closed)apply(STWIN.document);
 }
 function openPopWin(){
   if(STWIN&&!STWIN.closed){STWIN.focus();renderPopWin();return;}
