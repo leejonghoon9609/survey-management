@@ -789,8 +789,9 @@ td.left{text-align:left;}
              칸 체크바는 화면에 안 보이던 칸까지 전부 두 줄에 꽉 차게 자동 정렬
    BUILD 45: 조건 저장/불러오기(조건 목록 · 조건 저장 창)
              + 「창 보기」 — 독립 리스트 창(크기 조절·이동), 조건 바꾸면 자동 갱신
+   BUILD 46: 독립 창 머리글에도 ▾ 값 필터 — 창에서 고르면 본 화면 조건 설정에 바로 반영
    ======================================================================== */
-const BUILD_NO='45';
+const BUILD_NO='46';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2825,7 +2826,8 @@ function popListHTML(rows,cols){
   let cg='<col style="width:46px">';cols.forEach(c=>{cg+='<col style="width:'+(STW[c.label]||defW(c.label))+'px">';});
   const total=cols.reduce((a,c)=>a+(STW[c.label]||defW(c.label)),46);
   const CAP=2000;
-  return '<table style="width:'+total+'px"><colgroup>'+cg+'</colgroup><thead><tr><th class="rn">#</th>'+cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+
+  return '<table style="width:'+total+'px"><colgroup>'+cg+'</colgroup><thead><tr><th class="rn">#</th>'+cols.map(c=>{const on=STVF[c.idx]&&STVF[c.idx].size;
+      return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt">'+esc(c.label)+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></th>';}).join('')+'</tr></thead><tbody>'+
     rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn">'+(i+1)+'</td>'+cols.map(c=>cell(d,c)).join('')+'</tr>').join('')+
     '</tbody></table>'+(rows.length>CAP?'<p class="note">앞 '+CAP+'건만 표시</p>':'');
 }
@@ -2839,11 +2841,50 @@ table{border-collapse:collapse;table-layout:fixed;min-width:0;}
 th,td{padding:6px 9px;text-align:center;border:1px solid #cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;}
 th{position:sticky;top:0;background:#fbeaed;color:#9f1239;font-weight:500;z-index:2;box-shadow:inset 0 -1px 0 #94a3b8;}
 th.rn,td.rn{position:sticky;left:0;z-index:3;width:46px;background:#fff;color:#94a3b8;font-size:12px;}th.rn{background:#fbeaed;z-index:4;}
+th .tt{display:inline-block;max-width:calc(100% - 22px);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;}
+th .dd{border:none;background:transparent;color:#c08;cursor:pointer;font-size:11px;padding:0 4px;line-height:1;border-radius:4px;vertical-align:middle;}
+th .dd:hover,th.open .dd{background:#2563EB;color:#fff;}
+th.vf{box-shadow:inset 0 -3px 0 #2563EB,inset 0 -1px 0 #94a3b8;}th.vf .dd{color:#2563EB;font-weight:700;}
+#pfilt{position:fixed;z-index:50;background:#fff;border:1px solid #94a3b8;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.18);width:300px;max-height:360px;display:flex;flex-direction:column;overflow:hidden;font-size:12.5px;}
+#pfilt .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-weight:500;color:#2563EB;}
+#pfilt .ph .x{margin-left:auto;border:none;background:transparent;cursor:pointer;color:#64748b;font-size:14px;}
+#pfilt .pb{overflow:auto;padding:6px 8px;display:flex;flex-direction:column;gap:3px;}
+#pfilt .pb label{display:flex;align-items:center;gap:6px;padding:3px 5px;border-radius:6px;cursor:pointer;}
+#pfilt .pb label:hover{background:#f8fafc;}#pfilt .pb label.on{background:#eff6ff;}
+#pfilt .pb .n{margin-left:auto;color:#94a3b8;font-size:11px;}#pfilt .pb .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#pfilt .pf{display:flex;gap:6px;padding:7px 10px;border-top:1px solid #e2e8f0;}
+#pfilt button.b{border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:5px 12px;font-family:inherit;font-size:12.5px;cursor:pointer;}
+#pfilt button.b.p{background:#EA002C;border-color:#EA002C;color:#fff;font-weight:500;margin-left:auto;}
 td.num{text-align:right;font-variant-numeric:tabular-nums;}td.left{text-align:left;}
 tr.hasissue td{background:#fff8f8;}tr:hover td{background:#fff3cd;}
 .isstag{display:inline-block;background:var(--c,#64748b);color:#fff;border-radius:5px;padding:1px 7px;font-size:11.5px;font-weight:500;white-space:nowrap;}
 .m-real{color:#EA002C;font-weight:700;}.m-probe{color:#2563EB;font-weight:700;}
 .note{font-size:12px;color:#94a3b8;padding:8px 12px;}`;
+}
+let PVFCOL='';   /* 독립 창에서 ▾ 로 펼친 칸 idx */
+function renderPopFilt(){
+  if(!STWIN||STWIN.closed)return;
+  const doc=STWIN.document;let box=doc.getElementById('pfilt');
+  const clearOpen=()=>[...doc.querySelectorAll('th.open')].forEach(t=>t.classList.remove('open'));
+  if(PVFCOL===''){if(box)box.remove();clearOpen();return;}
+  const idx=+PVFCOL,c=DISP.find(x=>x.idx===idx);if(!c){if(box)box.remove();clearOpen();return;}
+  const base=statRows({skipVf:idx});
+  const cnt={};base.forEach(d=>{const v=stVal(d,idx);cnt[v]=(cnt[v]||0)+1;});
+  const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||String(a).localeCompare(String(b),'ko'));
+  const sel=STVF[idx]||new Set();const CAP=150;
+  if(!box){box=doc.createElement('div');box.id='pfilt';doc.body.appendChild(box);}
+  const st=box.querySelector('.pb')?box.querySelector('.pb').scrollTop:0;
+  box.innerHTML='<div class="ph">'+esc(c.label)+' <span style="font-weight:400;color:#64748b">· 값으로 추려내기</span><button class="x" data-pclose="1" title="닫기">✕</button></div>'+
+    '<div class="pb"><label'+(sel.size===0?' class="on"':'')+'><input type="checkbox" data-pvfall="1"'+(sel.size===0?' checked':'')+'><span class="t">(전체)</span><span class="n">'+base.length+'</span></label>'+
+    keys.slice(0,CAP).map(k=>'<label'+(sel.has(k)?' class="on"':'')+' title="'+esc(k)+'"><input type="checkbox" data-pvf="'+esc(k)+'"'+(sel.has(k)?' checked':'')+'><span class="t">'+esc(k)+'</span><span class="n">'+cnt[k]+'</span></label>').join('')+
+    (keys.length>CAP?'<div style="color:#94a3b8;padding:4px">… 외 '+(keys.length-CAP)+'개</div>':'')+'</div>'+
+    '<div class="pf"><button class="b" data-pclr="1">이 칸 필터 해제</button><button class="b p" data-pclose="1">닫기</button></div>';
+  if(box.querySelector('.pb'))box.querySelector('.pb').scrollTop=st;
+  const th=doc.querySelector('th[data-idx="'+idx+'"]');
+  [...doc.querySelectorAll('th.open')].forEach(t=>t.classList.remove('open'));
+  if(th){th.classList.add('open');const r=th.getBoundingClientRect();const W=300,H=Math.min(360,STWIN.innerHeight-16);
+    let left=r.left,top=r.bottom+4;if(left+W>STWIN.innerWidth-8)left=Math.max(8,STWIN.innerWidth-8-W);if(top+H>STWIN.innerHeight-8)top=Math.max(8,STWIN.innerHeight-8-H);
+    box.style.left=left+'px';box.style.top=top+'px';}
 }
 function renderPopWin(){
   if(!STWIN||STWIN.closed){STWIN=null;return;}
@@ -2853,6 +2894,27 @@ function renderPopWin(){
   if(c)c.textContent='조건: '+stCondText();
   if(n)n.textContent=rows.length.toLocaleString('ko-KR')+'건';
   if(wrap){const st=wrap.scrollTop,sl=wrap.scrollLeft;wrap.innerHTML=popListHTML(rows,cols);wrap.scrollTop=st;wrap.scrollLeft=sl;}
+  renderPopFilt();
+}
+/* 독립 창에서 고른 값 필터 → 본 화면 조건 설정에 그대로 반영 */
+function bindPopWin(doc){
+  doc.addEventListener('click',e=>{
+    const t=e.target;if(!t||typeof t.closest!=='function')return;
+    const dd=t.closest('[data-pdd]');
+    if(dd){e.preventDefault();PVFCOL=(String(PVFCOL)===dd.dataset.pdd)?'':dd.dataset.pdd;renderPopFilt();return;}
+    if(t.closest('[data-pclose]')){PVFCOL='';renderPopFilt();return;}
+    if(t.closest('[data-pclr]')){if(PVFCOL!=='')delete STVF[+PVFCOL];renderCols();renderVf();renderStats();return;}
+    const box=doc.getElementById('pfilt');
+    if(box&&!box.contains(t)){PVFCOL='';renderPopFilt();}
+  });
+  doc.addEventListener('change',e=>{
+    const t=e.target;if(PVFCOL==='')return;const idx=+PVFCOL;
+    if(t.dataset.pvfall!=null){delete STVF[idx];}
+    else if(t.dataset.pvf!=null){const set=STVF[idx]||(STVF[idx]=new Set());if(t.checked)set.add(t.dataset.pvf);else set.delete(t.dataset.pvf);if(!set.size)delete STVF[idx];}
+    else return;
+    renderCols();renderVf();renderStats();      /* 본 화면 → 창 순서로 다시 그림 */
+  });
+  doc.addEventListener('keydown',e=>{if(e.key==='Escape'&&PVFCOL!==''){PVFCOL='';renderPopFilt();}});
 }
 function openPopWin(){
   if(STWIN&&!STWIN.closed){STWIN.focus();renderPopWin();return;}
@@ -2862,11 +2924,12 @@ function openPopWin(){
   const doc=w.document;
   doc.open();
   doc.write('<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>조건 리스트</title><style>'+popListCSS()+'</style></head><body>'+
-    '<div class="top"><b>조건에 맞는 리스트</b><span class="c" id="cond"></span><span class="n" id="cnt"></span><span class="live">● 본 화면 조건과 연동</span></div>'+
+    '<div class="top"><b>조건에 맞는 리스트</b><span class="c" id="cond"></span><span class="n" id="cnt"></span><span class="live">● 본 화면 조건과 연동 · 머리글 ▾ 로 값 추려내기</span></div>'+
     '<div class="wrap" id="wrap"></div></body></html>');
   doc.close();
+  PVFCOL='';bindPopWin(doc);
   renderPopWin();
-  toast('리스트 창을 띄웠습니다 · 본 화면에서 조건을 바꾸면 창도 같이 바뀝니다');
+  toast('리스트 창을 띄웠습니다 · 창 머리글 ▾ 로 고른 값도 본 화면 조건에 반영됩니다');
 }
 document.getElementById('stPopWin').addEventListener('click',openPopWin);
 window.addEventListener('beforeunload',()=>{if(STWIN&&!STWIN.closed)STWIN.close();});
