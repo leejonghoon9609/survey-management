@@ -102,7 +102,9 @@ header .spacer{flex:1;}
 /* 표에 정해진 너비를 그대로 쓴다. (min-width:100% 때문에 한 칸을 줄이면
    남는 자리를 다른 칸이 나눠 가져 넓어지던 문제) */
 #mtable{table-layout:fixed;min-width:0;}
-#mtable thead th{position:relative;padding-right:14px;cursor:grab;}
+#mtable thead th{position:sticky;top:0;padding-right:14px;cursor:grab;}
+#mtable thead th.cb{left:0;z-index:15;cursor:default;padding-right:10px;}
+#mtable thead th.rn{left:36px;z-index:15;cursor:default;padding-right:10px;}
 #mtable thead th.dragsrc{opacity:.4;}
 #mtable thead th.dragsrc .thtxt{color:#EA002C;}
 .dropline{position:fixed;width:3px;background:#EA002C;z-index:350;pointer-events:none;border-radius:2px;}
@@ -214,7 +216,7 @@ th,td{padding:8px 10px;text-align:center;border:1px solid #94a3b8;white-space:no
 th{background:#fbeaed;color:#9f1239;font-weight:500;position:sticky;top:0;z-index:10;}
 th.cb,td.cb{position:sticky;left:0;z-index:5;width:36px;background:#fff;}
 th.cb{background:#fbeaed;z-index:15;}
-th.rn,td.rn{position:sticky;left:36px;z-index:5;width:46px;background:#fff;text-align:center;font-variant-numeric:tabular-nums;color:#94a3b8;font-size:12px;cursor:default;}
+th.rn,td.rn{position:sticky;left:36px;z-index:5;width:46px;background:#fff;text-align:center;font-variant-numeric:tabular-nums;color:#94a3b8;font-size:12px;cursor:default;box-shadow:inset -2px 0 0 #cbd5e1;}
 th.rn{background:#fbeaed;z-index:15;color:#9f1239;}
 tr.hasissue td.rn{background:#fff8f8;}
 tr.rowsel td.rn{background:#fff3cd;}
@@ -616,8 +618,10 @@ td.left{text-align:left;}
    BUILD 33: 화면 아래에 늘 붙어 있는 가로 스크롤바
    BUILD 34: 탭을 바꿔 들어오면 가로 막대가 안 보이던 문제 수정
    BUILD 35: 칸 너비를 끌 때 그 칸만 정확히 늘고 줄게 (시작 폭을 잘못 재던 문제)
+   BUILD 36: 머리글 순번(#) 칸이 오른쪽으로 밀려 시행시기와 겹치던 문제
+             + 머리글이 세로 스크롤에 고정되지 않던 문제 + 가로 막대 항상 표시
    ======================================================================== */
-const BUILD_NO='35';
+const BUILD_NO='36';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2462,7 +2466,7 @@ function syncHbar(){
   const tw=tbl?(parseFloat(tbl.style.width)||tbl.offsetWidth||0):0;
   hin.style.width=tw+'px';
   if(wrap.clientWidth===0)return;          /* 다른 탭에 가려져 있으면 나중에 다시 판정 */
-  const need=tw>0&&tw>wrap.clientWidth+2;
+  const need=tw>0&&DATA.length>0;          /* 목록이 있으면 늘 보이게 (넓지 않아도) */
   hb.classList.toggle('hide',!need);
   col.classList.toggle('hasbar',need);
   if(need&&hb.scrollLeft!==wrap.scrollLeft)hb.scrollLeft=wrap.scrollLeft;
