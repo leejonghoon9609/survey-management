@@ -55,8 +55,22 @@ header .spacer{flex:1;}
 .sttbl .bf{height:100%;background:#EA002C;border-radius:5px;}
 .sttbl tr.tot td{font-weight:700;color:#9f1239;border-top:1.5px solid #9f1239;background:#fbeaed;}
 .stlist{min-height:120px;}
-.stdate{padding:6px 8px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;}
-#stCond label{display:flex;align-items:center;gap:5px;font-size:13px;color:#475569;}
+.stdate{padding:5px 7px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:12.5px;}
+.stx{display:flex;align-items:center;gap:5px;font-size:12.5px;color:#475569;font-weight:400;}
+.lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.lvl{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+.lvl-h{display:flex;align-items:center;gap:8px;padding:6px 9px;border-bottom:2px solid var(--c);background:#fff;}
+.lvl-t{font-size:12.5px;font-weight:700;color:var(--c);white-space:nowrap;}
+.lvl-col{flex:1;padding:5px 8px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;min-width:0;}
+.lvl-v{padding:6px 8px;max-height:132px;overflow:auto;display:flex;flex-wrap:wrap;gap:4px 6px;align-content:flex-start;}
+.lvl-v .vchk{display:inline-flex;align-items:center;gap:4px;border:1px solid #e2e8f0;border-radius:7px;padding:3px 8px;font-size:12.5px;color:#334155;cursor:pointer;background:#fff;white-space:nowrap;max-width:100%;}
+.lvl-v .vchk input{margin:0;accent-color:#EA002C;}
+.lvl-v .vchk.on{border-color:#EA002C;background:#fff1f2;}
+.lvl-v .vchk .n{color:#94a3b8;font-size:11px;}
+.lvl-v .vchk .t{overflow:hidden;text-overflow:ellipsis;max-width:180px;}
+.lvl-v .vall{border-style:dashed;color:#64748b;}
+.lvl-v .vnone{color:#94a3b8;font-size:12.5px;padding:4px 2px;}
+@media(max-width:900px){.lvls{grid-template-columns:1fr;}}
 .stempty{color:#94a3b8;font-size:13px;padding:14px 4px;}
 .topcard{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 12px;}
 .topdiv{width:1px;align-self:stretch;background:#e2e8f0;margin:2px 2px;}
@@ -577,28 +591,20 @@ td.left{text-align:left;}
       </div>
     </div>
 
-    <!-- ② 조건 설정 -->
+    <!-- ② 조건 설정 : 칸을 고르면 그 칸의 값이 체크바로 나온다 (3단계) -->
     <div class="card" id="stCondCard">
-      <div class="proc-h">조건 설정</div>
-      <div class="controls" id="stCond">
-        <div class="fbtns" id="stBaal">
-          <button class="fbtn on" data-b="" style="--c:#64748b">전체</button><button class="fbtn" data-b="SKT" style="--c:#EA002C">SKT</button>
-          <button class="fbtn" data-b="SKB" style="--c:#2563EB">SKB</button><button class="fbtn" data-b="원인자" style="--c:#B45309">원인자</button>
-        </div>
-        <select id="stJisa" class="csel" style="--c:#0D9488"><option value="">지사 전체</option></select>
-        <select id="stPeriod" class="csel" style="--c:#4F46E5"><option value="">시행시기 전체</option></select>
-        <select id="stMethod" class="csel" style="--c:#7C3AED"><option value="">측량구분 전체</option><option value="탐사">탐사</option><option value="실시간">실시간</option></select>
-        <select id="stJeong" class="csel" style="--c:#9333EA"><option value="">정산상황 전체</option></select>
-        <select id="stProg" class="csel" style="--c:#0369A1"><option value="">진행상황 전체</option></select>
-        <span style="width:1px;height:22px;background:#e2e8f0;"></span>
-        <label>요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
-        <select id="stChk" class="csel" style="--c:#BE185D"><option value="">이슈 체크 전체</option><option value="1">체크한 건만</option><option value="0">체크 안 한 건만</option></select>
-        <select id="stTag" class="csel" style="--c:#D97706"><option value="">이슈 사유 전체</option></select>
-        <select id="stDays" class="csel" style="--c:#065F46"><option value="">소요일수 전체</option><option value="has">계산된 건만</option><option value="le20">20일 이내</option><option value="gt20">20일 초과</option><option value="gt30">30일 초과</option></select>
+      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">조건 설정
+        <span class="stat" id="stCondSum" style="font-weight:400;"></span>
         <span style="flex:1"></span>
-        <button class="btn tbtn" id="stReset" style="padding:7px 14px;--c:#64748b">조건 초기화</button>
+        <label class="stx">요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
+        <select id="stDays" class="csel" style="--c:#065F46"><option value="">소요일수 전체</option><option value="has">계산된 건만</option><option value="le20">20일 이내</option><option value="gt20">20일 초과</option><option value="gt30">30일 초과</option></select>
+        <button class="btn tbtn" id="stReset" style="padding:6px 14px;--c:#64748b">조건 초기화</button>
       </div>
-
+      <div class="lvls" id="stLvls">
+        <div class="lvl" data-l="0"><div class="lvl-h" style="--c:#EAB308"><span class="lvl-t">조건대상</span><select class="lvl-col" data-l="0"></select></div><div class="lvl-v" data-l="0"></div></div>
+        <div class="lvl" data-l="1"><div class="lvl-h" style="--c:#EA002C"><span class="lvl-t">분류</span><select class="lvl-col" data-l="1"></select></div><div class="lvl-v" data-l="1"></div></div>
+        <div class="lvl" data-l="2"><div class="lvl-h" style="--c:#2563EB"><span class="lvl-t">세부 분류</span><select class="lvl-col" data-l="2"></select></div><div class="lvl-v" data-l="2"></div></div>
+      </div>
     </div>
 
     <!-- ③ 조건에 맞는 리스트 -->
@@ -712,8 +718,10 @@ td.left{text-align:left;}
    BUILD 39: 통계 화면 1차 — 조건 설정 / 조건에 맞는 통계 / 조건에 맞는 리스트
    BUILD 40: 통계 화면을 한 페이지 세 구간으로 고정 (구간별 스크롤)
              + 분류 기준을 직접 고르기, 리스트는 남는 높이를 채우고 안에서 스크롤
+   BUILD 41: 조건 설정을 3단계(조건대상 → 분류 → 세부 분류)로 재구성
+             칸을 고르면 그 칸의 값이 체크바로 나오고, 체크한 값만 리스트에 남음
    ======================================================================== */
-const BUILD_NO='40';
+const BUILD_NO='41';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2342,7 +2350,110 @@ function exportRowsToExcel(rows,cols,nameTag){
 
 /* ======================= 통계 =======================
    조건 설정 → 조건에 맞는 건만 골라 통계와 리스트를 그린다. 저장하지 않는 화면 상태. */
-const SF={baal:'',jisa:'',period:'',method:'',jeong:'',prog:'',from:'',to:'',chk:'',tag:'',days:''};
+/* 조건은 3단계. 각 단계에서 칸(field)을 고르면 그 칸의 값들이 체크바로 나온다.
+   체크한 값만 남기고(하나도 안 고르면 전부), 다음 단계의 값은 앞 단계로 걸러진 범위에서만 나온다. */
+const SF={from:'',to:'',days:''};
+const SFL=[{f:'baal',v:new Set()},{f:'',v:new Set()},{f:'',v:new Set()}];
+const ST_FIELDS=[
+  {k:'baal',  label:'발주처',      get:d=>d.baal||'(없음)',       sort:'n'},
+  {k:'jisa',  label:'지사',        get:d=>d.jisa||'(빈칸)',       sort:'n'},
+  {k:'period',label:'시행시기',    get:d=>d.시행||'(빈칸)',       sort:'key'},
+  {k:'method',label:'측량구분',    get:d=>d.mKey||'(미분류)',     sort:'n'},
+  {k:'prog',  label:'진행상황',    get:d=>d.jin||'(빈칸)',        sort:'n'},
+  {k:'jeong', label:'정산상황',    get:d=>d.jeongKey||'(빈칸)',   sort:'n'},
+  {k:'tag',   label:'이슈 사유',   get:d=>splitIssue(d.row[COL.이슈]).tag||(d._chk?'(사유 없음)':'(이슈 아님)'),sort:'n'},
+  {k:'chk',   label:'이슈 체크',   get:d=>d._chk?'체크':'미체크',  sort:'n'},
+  {k:'month', label:'요청 월',     get:d=>{const q=parseDate(d.req);return q?(q.getFullYear()+'-'+String(q.getMonth()+1).padStart(2,'0')):'(날짜 아님)';},sort:'key'},
+  {k:'dbk',   label:'소요일수 구간',get:d=>d.days==null?'(계산 안 됨)':(d.days<=20?'20일 이내':(d.days<=30?'21~30일':(d.days<=60?'31~60일':'60일 초과'))),sort:'fixed',
+              order:['20일 이내','21~30일','31~60일','60일 초과','(계산 안 됨)']}
+];
+const ST_SKIP=/발주처\(자동\)|^구분$|소요일수|순번|공사명|공구명|Eng|공사코드|이슈사항|요청일|Tango|측량예정일|거리|금액|심사내역|연락처|비고|납품/;
+function stFieldList(){
+  const covered=new Set(['발주처(자동)','지역본부','지사','시행시기','측량방법','측량구분','측량예정일','진행상황','측량 정산완료','정산상황','이슈사항']);
+  const extra=DISP.filter(c=>!covered.has(c.label)&&!ST_SKIP.test(c.label)).map(c=>({k:'col:'+c.idx,label:c.label,get:d=>{const v=d.row[c.idx];return (v==null||v==='')?'(빈칸)':String(v).trim();},sort:'n'}));
+  return ST_FIELDS.concat(extra);
+}
+function stField(k){return stFieldList().find(f=>f.k===k)||null;}
+function stPassLevel(d,i){
+  const L=SFL[i];if(!L.f||!L.v.size)return true;
+  const F=stField(L.f);if(!F)return true;
+  return L.v.has(F.get(d));
+}
+function stExtra(d){
+  const f1=SF.from?parseDate(SF.from):null,f2=SF.to?parseDate(SF.to):null;
+  if(SF.days==='has'&&d.days==null)return false;
+  if(SF.days==='le20'&&!(d.days!=null&&d.days<=20))return false;
+  if(SF.days==='gt20'&&!(d.days!=null&&d.days>20))return false;
+  if(SF.days==='gt30'&&!(d.days!=null&&d.days>30))return false;
+  if(f1||f2){const q=parseDate(d.req);if(!q)return false;if(f1&&q<f1)return false;if(f2&&q>f2)return false;}
+  return true;
+}
+function statRows(upto){   /* upto = 이 단계 앞까지만 적용 (값 목록 계산용) */
+  const n=(upto==null)?SFL.length:upto;
+  return DATA.filter(d=>{
+    if(!stExtra(d))return false;
+    for(let i=0;i<n;i++)if(!stPassLevel(d,i))return false;
+    return true;
+  });
+}
+function stFillSelects(){
+  const fl=stFieldList();
+  [...document.querySelectorAll('.lvl-col')].forEach(sel=>{
+    const i=+sel.dataset.l;
+    sel.innerHTML='<option value="">(칸 선택)</option>'+fl.map(f=>'<option value="'+esc(f.k)+'"'+(SFL[i].f===f.k?' selected':'')+'>'+esc(f.label)+'</option>').join('');
+  });
+}
+function renderLevels(){
+  for(let i=0;i<SFL.length;i++){
+    const box=document.querySelector('.lvl-v[data-l="'+i+'"]'),L=SFL[i],F=L.f?stField(L.f):null;
+    if(!F){box.innerHTML='<div class="vnone">위에서 칸을 고르면 그 칸의 값이 여기에 체크바로 나옵니다.</div>';continue;}
+    const base=statRows(i);
+    const cnt={};base.forEach(d=>{const v=F.get(d);cnt[v]=(cnt[v]||0)+1;});
+    let keys=Object.keys(cnt);
+    if(F.sort==='fixed')keys=F.order.filter(k=>cnt[k]!=null);
+    else if(F.sort==='key')keys.sort((a,b)=>String(a).localeCompare(String(b),'ko'));
+    else keys.sort((a,b)=>cnt[b]-cnt[a]||String(a).localeCompare(String(b),'ko'));
+    /* 앞 단계가 바뀌어 사라진 값은 선택에서 제거 */
+    [...L.v].forEach(v=>{if(cnt[v]==null)L.v.delete(v);});
+    const CAP=80;
+    box.innerHTML='<label class="vchk vall" title="체크 모두 해제 = 전부 포함"><input type="checkbox" data-all="'+i+'"'+(L.v.size===0?' checked':'')+'>전체 <span class="n">'+base.length+'</span></label>'+
+      keys.slice(0,CAP).map(k=>'<label class="vchk'+(L.v.has(k)?' on':'')+'" title="'+esc(k)+'"><input type="checkbox" data-l="'+i+'" data-v="'+esc(k)+'"'+(L.v.has(k)?' checked':'')+'><span class="t">'+esc(k)+'</span><span class="n">'+cnt[k]+'</span></label>').join('')+
+      (keys.length>CAP?'<span class="vnone">… 외 '+(keys.length-CAP)+'개</span>':'');
+  }
+}
+function stCondText(){
+  const a=[];
+  SFL.forEach((L,i)=>{if(!L.f)return;const F=stField(L.f);if(!F)return;
+    a.push(F.label+(L.v.size?': '+[...L.v].slice(0,4).join(', ')+(L.v.size>4?' 외 '+(L.v.size-4):''):' 전체'));});
+  if(SF.from||SF.to)a.push('요청일 '+(SF.from||'')+'~'+(SF.to||''));
+  if(SF.days)a.push({has:'소요일수 계산됨',le20:'20일 이내',gt20:'20일 초과',gt30:'30일 초과'}[SF.days]);
+  return a.length?a.join(' · '):'전체';
+}
+document.getElementById('stLvls').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.classList.contains('lvl-col')){
+    const i=+t.dataset.l;SFL[i]={f:t.value,v:new Set()};
+    for(let j=i+1;j<SFL.length;j++)SFL[j].v=new Set();      /* 뒤 단계 선택은 초기화 */
+    renderLevels();renderStats();return;
+  }
+  if(t.dataset.all!=null){const i=+t.dataset.all;SFL[i].v=new Set();for(let j=i+1;j<SFL.length;j++)SFL[j].v=new Set();renderLevels();renderStats();return;}
+  if(t.dataset.v!=null){
+    const i=+t.dataset.l,v=t.dataset.v;
+    if(t.checked)SFL[i].v.add(v);else SFL[i].v.delete(v);
+    for(let j=i+1;j<SFL.length;j++)SFL[j].v=new Set();
+    renderLevels();renderStats();
+  }
+});
+[['stFrom','from'],['stTo','to'],['stDays','days']].forEach(([id,k])=>{
+  document.getElementById(id).addEventListener('change',e=>{SF[k]=e.target.value;e.target.classList.toggle('on',!!e.target.value);renderLevels();renderStats();});
+});
+document.getElementById('stReset').addEventListener('click',()=>{
+  SF.from='';SF.to='';SF.days='';
+  SFL[0]={f:'baal',v:new Set()};SFL[1]={f:'',v:new Set()};SFL[2]={f:'',v:new Set()};
+  ['stFrom','stTo','stDays'].forEach(id=>{const e=document.getElementById(id);e.value='';e.classList.remove('on');});
+  stFillSelects();renderLevels();renderStats();toast('조건을 초기화했습니다');
+});
+/* ---- 통계 분류 기준 (직접 고르기, 선택 저장) ---- */
 const LS_STG='gongjeong_statgroups_v1';
 const ST_GROUPS={
   baal:  {label:'발주처별',   key:d=>d.baal,                sort:'n'},
@@ -2366,45 +2477,6 @@ document.getElementById('stGroups').addEventListener('click',e=>{
   try{localStorage.setItem(LS_STG,JSON.stringify(STG));}catch(x){}
   syncGroupBtns();renderStats();
 });
-function statRows(){
-  const f1=SF.from?parseDate(SF.from):null,f2=SF.to?parseDate(SF.to):null;
-  return DATA.filter(d=>{
-    if(SF.baal&&d.baal!==SF.baal)return false;
-    if(SF.jisa&&d.jisa!==SF.jisa)return false;
-    if(SF.period&&d.시행!==SF.period)return false;
-    if(SF.method&&d.mKey!==SF.method)return false;
-    if(SF.jeong&&d.jeongKey!==SF.jeong)return false;
-    if(SF.prog&&d.jin!==SF.prog)return false;
-    if(SF.chk==='1'&&!d._chk)return false;
-    if(SF.chk==='0'&&d._chk)return false;
-    if(SF.tag){const t=splitIssue(d.row[COL.이슈]).tag;if(t!==SF.tag)return false;}
-    if(SF.days==='has'&&d.days==null)return false;
-    if(SF.days==='le20'&&!(d.days!=null&&d.days<=20))return false;
-    if(SF.days==='gt20'&&!(d.days!=null&&d.days>20))return false;
-    if(SF.days==='gt30'&&!(d.days!=null&&d.days>30))return false;
-    if(f1||f2){const q=parseDate(d.req);if(!q)return false;if(f1&&q<f1)return false;if(f2&&q>f2)return false;}
-    return true;
-  });
-}
-function stFillSelects(){
-  const uniq=k=>[...new Set(DATA.map(d=>d[k]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
-  const opt=(ph,arr,cur)=>'<option value="">'+ph+'</option>'+arr.map(v=>'<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(v)+'</option>').join('');
-  document.getElementById('stJisa').innerHTML=opt('지사 전체',uniq('jisa'),SF.jisa);
-  document.getElementById('stPeriod').innerHTML=opt('시행시기 전체',uniq('시행'),SF.period);
-  document.getElementById('stJeong').innerHTML=opt('정산상황 전체',uniq('jeongKey'),SF.jeong);
-  document.getElementById('stProg').innerHTML=opt('진행상황 전체',uniq('jin'),SF.prog);
-  document.getElementById('stTag').innerHTML=opt('이슈 사유 전체',ISSUE_TAGS,SF.tag);
-}
-function stCondText(){
-  const a=[];
-  if(SF.baal)a.push(SF.baal);if(SF.jisa)a.push(SF.jisa);if(SF.period)a.push(SF.period);if(SF.method)a.push(SF.method);
-  if(SF.jeong)a.push(SF.jeong);if(SF.prog)a.push(SF.prog);
-  if(SF.from||SF.to)a.push('요청일 '+(SF.from||'')+'~'+(SF.to||''));
-  if(SF.chk==='1')a.push('이슈 체크');if(SF.chk==='0')a.push('이슈 미체크');
-  if(SF.tag)a.push(SF.tag);
-  if(SF.days)a.push({has:'소요일수 계산됨',le20:'20일 이내',gt20:'20일 초과',gt30:'30일 초과'}[SF.days]);
-  return a.length?a.join(' · '):'전체';
-}
 function stGroup(rows,keyFn,label){
   const g={};
   rows.forEach(d=>{const k=keyFn(d)||'(없음)';const o=g[k]||(g[k]={n:0,km:0,days:[],chk:0});o.n++;
@@ -2426,6 +2498,7 @@ function renderStats(){
   if(!document.getElementById('p-stats'))return;
   const rows=statRows();
   document.getElementById('stTitle').textContent='조건: '+stCondText();
+  const sum=document.getElementById('stCondSum');if(sum)sum.textContent='→ '+rows.length.toLocaleString('ko-KR')+'건';
   const n=rows.length;
   const km=rows.reduce((a,d)=>a+(typeof d.tango==='number'?d.tango:0),0);
   const ds=rows.filter(d=>d.days!=null).map(d=>d.days).sort((a,b)=>a-b);
@@ -2462,16 +2535,6 @@ function renderStatList(rows){
   document.getElementById('stListStat').textContent=rows.length?('· '+rows.length.toLocaleString('ko-KR')+'건'+(rows.length>CAP?' (앞 '+CAP+'건 표시)':'')):'· 0건';
   document.getElementById('stExcel').disabled=!rows.length;
 }
-document.getElementById('stBaal').addEventListener('click',e=>{if(e.target.dataset.b===undefined)return;SF.baal=e.target.dataset.b;[...document.querySelectorAll('#stBaal .fbtn')].forEach(b=>b.classList.toggle('on',b===e.target));renderStats();});
-[['stJisa','jisa'],['stPeriod','period'],['stMethod','method'],['stJeong','jeong'],['stProg','prog'],['stChk','chk'],['stTag','tag'],['stDays','days'],['stFrom','from'],['stTo','to']].forEach(([id,k])=>{
-  document.getElementById(id).addEventListener('change',e=>{SF[k]=e.target.value;e.target.classList.toggle('on',!!e.target.value);renderStats();});
-});
-document.getElementById('stReset').addEventListener('click',()=>{
-  Object.keys(SF).forEach(k=>SF[k]='');
-  [...document.querySelectorAll('#stBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===''));
-  ['stJisa','stPeriod','stMethod','stJeong','stProg','stChk','stTag','stDays','stFrom','stTo'].forEach(id=>{const e=document.getElementById(id);e.value='';e.classList.remove('on');});
-  renderStats();toast('조건을 초기화했습니다');
-});
 document.getElementById('stExcel').addEventListener('click',()=>{
   const rows=statRows();if(!rows.length){toast('내보낼 건이 없습니다',true);return;}
   exportRowsToExcel(rows,DISP.filter(c=>c.vis),'통계_'+stCondText().replace(/[^\w가-힣]+/g,'_').slice(0,40));
@@ -2482,7 +2545,7 @@ function fitStats(){
   pg.style.height=Math.max(480,Math.floor(window.innerHeight-top-14))+'px';
 }
 window.addEventListener('resize',fitStats);
-function openStats(){stFillSelects();syncGroupBtns();renderStats();requestAnimationFrame(fitStats);}
+function openStats(){stFillSelects();syncGroupBtns();renderLevels();renderStats();requestAnimationFrame(fitStats);}
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
    예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
