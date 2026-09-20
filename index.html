@@ -112,7 +112,7 @@ body.coldrag *{cursor:grabbing !important;}
 .thin{display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;}
 #mtable .thtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;}
 .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
-.rsz:hover{background:#FFB400;}
+.rsz:hover,.rsz.on{background:#FFB400;}
 #colFilterPop{position:fixed;z-index:300;background:#fff;border:1px solid #94a3b8;border-radius:8px;padding:8px;width:260px;font-size:13px;}
 #colFilterPop.hide{display:none;}
 .cf-head{font-weight:500;color:#EA002C;padding:2px 4px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:6px;}
@@ -615,8 +615,9 @@ td.left{text-align:left;}
              + 원인자 리스트 양식 대응, 발주처 일괄 지정
    BUILD 33: 화면 아래에 늘 붙어 있는 가로 스크롤바
    BUILD 34: 탭을 바꿔 들어오면 가로 막대가 안 보이던 문제 수정
+   BUILD 35: 칸 너비를 끌 때 그 칸만 정확히 늘고 줄게 (시작 폭을 잘못 재던 문제)
    ======================================================================== */
-const BUILD_NO='34';
+const BUILD_NO='35';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2102,10 +2103,17 @@ function recalcW(){
 }
 document.getElementById('head').addEventListener('mousedown',e=>{
   const rz=e.target.closest('[data-rz]');if(!rz)return;e.preventDefault();
-  const ci=+rz.dataset.rz;const col=document.querySelector('#mtable colgroup col[data-ci="'+ci+'"]');if(!col)return;
-  const sx=e.clientX,sw=col.getBoundingClientRect().width;document.body.style.userSelect='none';
-  function mv(ev){const w=Math.max(45,sw+(ev.clientX-sx));col.style.width=w+'px';colWidth[DISP[ci].idx]=w;recalcW();}
-  function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';markDirty();}
+  const ci=+rz.dataset.rz;const col=document.querySelector('#mtable colgroup col[data-ci="'+ci+'"]');if(!col||!DISP[ci])return;
+  /* 시작 폭은 정해 둔 값에서 읽는다. <col> 은 그려진 상자가 없어 브라우저가 0을 돌려주고,
+     그러면 끌기 시작하자마자 최소폭으로 줄었다가 커져 옆 칸들이 튀었다. */
+  const th=rz.closest('th');
+  let sw=colWidth[DISP[ci].idx]||defW(DISP[ci].label);
+  const thw=th?th.getBoundingClientRect().width:0;
+  if(thw>0&&Math.abs(thw-sw)>1)sw=thw;            /* 실제 그려진 폭이 있으면 그것을 기준으로 */
+  const sx=e.clientX;document.body.style.userSelect='none';
+  rz.classList.add('on');
+  function mv(ev){const w=Math.max(45,Math.round(sw+(ev.clientX-sx)));col.style.width=w+'px';colWidth[DISP[ci].idx]=w;recalcW();}
+  function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);document.body.style.userSelect='';rz.classList.remove('on');markDirty();}
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
 });
 /* ---- 툴바 활성 상태(고유색 채우기) 동기화 ---- */
