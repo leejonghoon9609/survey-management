@@ -139,6 +139,8 @@ header .spacer{flex:1;}
 #stVfPop .pb .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #stVfPop .pf{display:flex;gap:6px;padding:7px 10px;border-top:1px solid #e2e8f0;}
 #stTable{table-layout:fixed;min-width:0;}
+#stTable tfoot td{position:sticky;bottom:0;z-index:12;background:#fbeaed;border-top:1.5px solid #9f1239;color:#9f1239;font-weight:700;font-variant-numeric:tabular-nums;padding:7px 10px;white-space:nowrap;}
+#stTable tfoot td.rn{z-index:16;left:0;background:#fbeaed;}#stTable tfoot .unit{font-size:11px;font-weight:400;color:#c08;margin-left:2px;}
 #stHead th{position:sticky;top:0;padding-right:14px;cursor:pointer;}
 #stHead th:hover .thtxt{color:#EA002C;}
 #stHead th .dd{border:none;background:transparent;color:#c08;cursor:pointer;font-size:11px;padding:0 4px;line-height:1;border-radius:4px;vertical-align:middle;margin-left:2px;}
@@ -721,7 +723,8 @@ td.left{text-align:left;}
         <span class="stat" id="stCondSum" style="font-weight:400;"></span>
         <select id="stCondSel" class="csel" style="--c:#0369A1;min-width:170px;" title="저장해 둔 조건"><option value="">조건 목록</option></select>
         <button class="btn tbtn" id="stCondSave" style="padding:6px 14px;--c:#EA002C">조건 저장</button>
-        <button class="btn tbtn hide" id="stCondUpd" style="padding:6px 14px;--c:#0369A1" title="조건 목록에서 고른 조건에 지금 세팅을 덮어씁니다">조건 수정</button>
+        <button class="btn tbtn hide" id="stCondUpd" style="padding:6px 14px;--c:#0369A1" title="고른 조건의 이름을 바꾸거나 지금 세팅으로 덮어씁니다">조건 수정</button>
+        <button class="btn tbtn" id="stCondNew" style="padding:6px 14px;--c:#059669" title="이름을 정해 새 조건을 등록합니다">조건 추가</button>
         <button class="btn tbtn hide" id="stCondDel" style="padding:6px 10px;--c:#DC2626" title="고른 조건 삭제">삭제</button>
         <span style="flex:1"></span>
         <label class="stx">요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
@@ -893,8 +896,10 @@ td.left{text-align:left;}
              + 계산값에 「소요일수 합계」 추가, 단위가 다른 대비는 계산 불가로
    BUILD 54: 연산에 「평균(A÷B)」 추가 — 예) 소요일수 합계 ÷ 건수 = 1건당 며칠
    BUILD 55: 항목 여러 개(+) · 항목 ✕ 삭제 · 결과를 "조건별 평균 1사업당 며칠" 로
+   BUILD 56: 「조건 추가」(새 조건 등록) · 「조건 저장」은 고른 조건에 바로 저장
+   BUILD 57: 독립 창·통계 리스트에 합계 줄 + 이슈사항 체크바 (사유 태그 있는 건은 자동 체크)
    ======================================================================== */
-const BUILD_NO='55';
+const BUILD_NO='57';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3048,9 +3053,11 @@ function renderStatList(rows){
   document.getElementById('stRows').innerHTML=rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn" style="left:0;">'+(i+1)+'</td>'+vis.map(c=>{
     const v=d.row[c.idx];const cls=cellCls(d,c);
     let inner;
-    if(isIssueCol(c.idx)){const sp=splitIssue(v);inner=(sp.tag?'<span class="isstag" style="--c:'+tagColor(sp.tag)+'">'+esc(sp.tag)+'</span> ':'')+esc(sp.rest);}
+    if(isIssueCol(c.idx))inner=stIssueCell(d,v);
     else inner=cellInner(d,c);
     return '<td'+(cls&&cls!=='isscell'?' class="'+cls+'"':(cls==='isscell'?' class="left"':''))+' title="'+esc(cellVal(v,c.idx))+'">'+inner+'</td>';}).join('')+'</tr>').join('');
+  const tf=document.getElementById('stTable').querySelector('tfoot');if(tf)tf.remove();
+  document.getElementById('stTable').insertAdjacentHTML('beforeend',stFootHTML(rows,vis));
   document.getElementById('stListStat').textContent=rows.length?('· '+rows.length.toLocaleString('ko-KR')+'건'+(rows.length>CAP?' (앞 '+CAP+'건 표시)':'')):'· 0건';
   document.getElementById('stExcel').disabled=!rows.length;
 }
@@ -3065,6 +3072,11 @@ function fitStats(){
   pg.style.height=Math.max(480,Math.floor(window.innerHeight-top-14))+'px';
 }
 window.addEventListener('resize',fitStats);
+document.getElementById('stRows').addEventListener('change',e=>{
+  const t=e.target;if(!t.classList.contains('stchk'))return;
+  const d=DATA.find(x=>String(x._id)===t.dataset.id);if(!d)return;
+  d._chk=t.checked;renderValidate();render(true);markDirty();renderStats();
+});
 document.getElementById('stHead').addEventListener('click',e=>{
   if(e.target.closest('[data-strz]'))return;
   const dd=e.target.closest('[data-hdd]');
@@ -3128,14 +3140,21 @@ let SS={mode:'new',idx:-1};
 function openSavePop(mode,idx){
   SS={mode:mode,idx:(idx==null?-1:idx)};
   const arr=stCondLoadAll();const cur=(mode==='edit'&&arr[idx])?arr[idx]:null;
-  document.getElementById('ssTitle').textContent=mode==='edit'?'조건 수정':'조건 저장';
-  document.getElementById('ssSave').textContent=mode==='edit'?'수정':'저장';
+  document.getElementById('ssTitle').textContent=mode==='edit'?'조건 수정':(mode==='add'?'조건 추가':'조건 저장');
+  document.getElementById('ssSave').textContent=mode==='edit'?'수정':(mode==='add'?'등록':'저장');
   document.getElementById('ssName').value=cur?cur.name:'';
-  document.getElementById('ssWhat').textContent=(mode==='edit'?'이름을 바꿀 수 있고, 이 조건을 지금 세팅으로 덮어씁니다.\n':'')+'저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 정렬 / 통계 계산 줄';
+  document.getElementById('ssWhat').textContent=(mode==='edit'?'이름을 바꿀 수 있고, 이 조건을 지금 세팅으로 덮어씁니다.\n':(mode==='add'?'지금 세팅으로 새 조건을 등록합니다. 등록 뒤 조건을 바꾸고 「조건 저장」을 누르면 이 조건에 저장됩니다.\n':''))+'저장되는 것: '+stCondText()+' / 리스트에 보일 칸·순서 / 정렬 / 통계 계산 줄';
   document.getElementById('stSavePop').classList.remove('hide');
   setTimeout(()=>{const e=document.getElementById('ssName');e.focus();if(cur)e.select();},0);
 }
-document.getElementById('stCondSave').addEventListener('click',()=>openSavePop('new'));
+document.getElementById('stCondSave').addEventListener('click',()=>{
+  const sel=document.getElementById('stCondSel');const i=sel.value;
+  if(i===''){openSavePop('new');return;}
+  const arr=stCondLoadAll();const o=arr[+i];if(!o){openSavePop('new');return;}
+  arr[+i]=stCondObj(o.name);stCondSaveAll(arr);renderCondSel();sel.value=String(i);
+  toast('"'+o.name+'" 조건에 지금 세팅을 저장했습니다');
+});
+document.getElementById('stCondNew').addEventListener('click',()=>openSavePop('add'));
 function closeSavePop(){document.getElementById('stSavePop').classList.add('hide');}
 document.getElementById('ssX').addEventListener('click',closeSavePop);
 document.getElementById('ssClose').addEventListener('click',closeSavePop);
@@ -3153,6 +3172,13 @@ document.getElementById('ssSave').addEventListener('click',()=>{
     const sel=document.getElementById('stCondSel');sel.value=String(idx);sel.classList.add('on');
     document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondUpd').classList.remove('hide');
     closeSavePop();toast((old!==nm?'"'+old+'" → "'+nm+'" 이름 변경 · ':'"'+nm+'" ')+'지금 세팅으로 수정했습니다');return;
+  }
+  if(SS.mode==='add'){
+    if(arr.some(o=>o.name===nm)){toast('"'+nm+'" 이름의 조건이 이미 있어요',true);document.getElementById('ssName').focus();return;}
+    arr.push(stCondObj(nm));stCondSaveAll(arr);renderCondSel();
+    const sel=document.getElementById('stCondSel');sel.value=String(arr.length-1);sel.classList.add('on');
+    document.getElementById('stCondDel').classList.remove('hide');document.getElementById('stCondUpd').classList.remove('hide');
+    closeSavePop();toast('"'+nm+'" 조건을 등록했습니다 · 조건을 바꾸고 「조건 저장」을 누르면 여기에 저장됩니다');return;
   }
   const i=arr.findIndex(o=>o.name===nm);
   const __go=()=>{
@@ -3184,9 +3210,31 @@ document.getElementById('stCondDel').addEventListener('click',()=>{
 
 /* ======== 독립 리스트 창 ======== */
 let STWIN=null;
+/* 통계 리스트·독립 창 공용 합계 줄 */
+function stFootHTML(rows,cols,lead){
+  let any=false;
+  let h='<td class="rn" style="text-align:center;font-size:12px;">합계</td>';
+  cols.forEach(c=>{
+    let sum=0,n=0;rows.forEach(d=>{const v=d.row[c.idx];if(typeof v==='number'&&isFinite(v)){sum+=v;n++;}});
+    let txt='',tip='';
+    if(n){any=true;tip=n+'건 합산';
+      if(isDistCol(c.label))txt=sum.toFixed(3)+'<span class="unit">km</span>';
+      else if(isMoneyCol(c.label))txt=Math.round(sum).toLocaleString('ko-KR');
+      else if(c.idx===COL.소요일수){txt=Math.round(sum).toLocaleString('ko-KR');tip+=' · 평균 '+(sum/n).toFixed(1)+'일';}
+      else txt=(Math.abs(sum-Math.round(sum))<1e-9)?Math.round(sum).toLocaleString('ko-KR'):sum.toFixed(3);}
+    h+='<td'+(n?' class="num"':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+txt+'</td>';
+  });
+  return any?'<tfoot><tr class="tot">'+h+'</tr></tfoot>':'';
+}
+/* 이슈사항 칸: 체크바 + 사유 배지 + 글 */
+function stIssueCell(d,v){
+  const sp=splitIssue(v);
+  return '<label class="isswrap" title="이슈로 표시"><input type="checkbox" class="stchk" data-id="'+d._id+'"'+(d._chk?' checked':'')+'></label>'+
+         (sp.tag?'<span class="isstag" style="--c:'+tagColor(sp.tag)+'">'+esc(sp.tag)+'</span> ':'')+esc(sp.rest);
+}
 function popListHTML(rows,cols){
   const cell=(d,c)=>{const v=d.row[c.idx];const cls=cellCls(d,c);let inner;
-    if(isIssueCol(c.idx)){const sp=splitIssue(v);inner=(sp.tag?'<span class="isstag" style="--c:'+tagColor(sp.tag)+'">'+esc(sp.tag)+'</span> ':'')+esc(sp.rest);}
+    if(isIssueCol(c.idx))inner=stIssueCell(d,v);
     else inner=cellInner(d,c);
     return '<td'+(cls&&cls!=='isscell'?' class="'+cls+'"':(cls==='isscell'?' class="left"':''))+' title="'+esc(cellVal(v,c.idx))+'">'+inner+'</td>';};
   let cg='<col style="width:46px">';cols.forEach(c=>{cg+='<col data-l="'+esc(c.label)+'" style="width:'+(STW[c.label]||defW(c.label))+'px">';});
@@ -3195,7 +3243,7 @@ function popListHTML(rows,cols){
   return '<table style="width:'+total+'px"><colgroup>'+cg+'</colgroup><thead><tr><th class="rn">#</th>'+cols.map(c=>{const on=STVF[c.idx]&&STVF[c.idx].size;
       return '<th data-idx="'+c.idx+'"'+(on?' class="vf"':'')+' title="'+esc(c.label)+' — 클릭=정렬 ▲▼'+(on?' · 값 필터 '+STVF[c.idx].size+'개':'')+'"><span class="tt" data-psort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><button class="dd" data-pdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button><span class="rsz" data-prz="'+esc(c.label)+'" title="끌어서 너비 조절"></span></th>';}).join('')+'</tr></thead><tbody>'+
     rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn">'+(i+1)+'</td>'+cols.map(c=>cell(d,c)).join('')+'</tr>').join('')+
-    '</tbody></table>'+(rows.length>CAP?'<p class="note">앞 '+CAP+'건만 표시</p>':'');
+    '</tbody>'+stFootHTML(rows,cols)+'</table>'+(rows.length>CAP?'<p class="note">앞 '+CAP+'건만 표시</p>':'');
 }
 function popListCSS(){
   return `*{box-sizing:border-box}body{margin:0;font-family:'Pretendard',-apple-system,'Segoe UI','Malgun Gothic',sans-serif;font-size:13px;color:#1e293b;background:#fff;display:flex;flex-direction:column;height:100vh;}
@@ -3225,6 +3273,10 @@ th.vf{box-shadow:inset 0 -3px 0 #2563EB,inset 0 -1px 0 #94a3b8;}th.vf .dd{color:
 #pfilt button.b.p{background:#EA002C;border-color:#EA002C;color:#fff;font-weight:500;margin-left:auto;}
 td.num{text-align:right;font-variant-numeric:tabular-nums;}td.left{text-align:left;}
 tr.hasissue td{background:#fff8f8;}tr:hover td{background:#fff3cd;}
+tfoot td{position:sticky;bottom:0;z-index:5;background:#fbeaed;border-top:1.5px solid #9f1239;color:#9f1239;font-weight:700;font-variant-numeric:tabular-nums;}
+tfoot td.rn{z-index:6;background:#fbeaed;}tfoot .unit{font-size:11px;font-weight:400;color:#c08;margin-left:2px;}
+td.left{text-align:left;}.isswrap{display:inline-flex;align-items:center;vertical-align:middle;margin-right:6px;cursor:pointer;}
+.isswrap input{cursor:pointer;margin:0;width:14px;height:14px;accent-color:#EA002C;}
 .isstag{display:inline-block;background:var(--c,#64748b);color:#fff;border-radius:5px;padding:1px 7px;font-size:11.5px;font-weight:500;white-space:nowrap;}
 .m-real{color:#EA002C;font-weight:700;}.m-probe{color:#2563EB;font-weight:700;}
 .note{font-size:12px;color:#94a3b8;padding:8px 12px;}`;
@@ -3285,6 +3337,12 @@ function bindPopWin(doc){
     renderCols();renderVf();renderStats();      /* 본 화면 → 창 순서로 다시 그림 */
   });
   doc.addEventListener('keydown',e=>{if(e.key==='Escape'&&PVFCOL!==''){PVFCOL='';renderPopFilt();}});
+  /* 이슈 체크바 → 본 화면 데이터에 반영 */
+  doc.addEventListener('change',e=>{
+    const t=e.target;if(!t||!t.classList||!t.classList.contains('stchk'))return;
+    const d=DATA.find(x=>String(x._id)===t.dataset.id);if(!d)return;
+    d._chk=t.checked;renderValidate();render(true);markDirty();renderStats();
+  });
   /* 머리글 경계선 끌기 → 너비 (본 화면과 같은 STW 를 쓰므로 양쪽이 같이 바뀐다) */
   doc.addEventListener('mousedown',e=>{
     const rz=e.target&&e.target.closest?e.target.closest('[data-prz]'):null;if(!rz)return;e.preventDefault();e.stopPropagation();
@@ -3324,7 +3382,14 @@ function openPopWin(){
 document.getElementById('stPopWin').addEventListener('click',openPopWin);
 window.addEventListener('beforeunload',()=>{if(STWIN&&!STWIN.closed)STWIN.close();});
 
-function openStats(){stFillSelects();renderCondSel();renderLevels();renderStats();requestAnimationFrame(fitStats);}
+/* 이슈사항에 사유 태그(코드지연 등)가 적혀 있는데 체크가 안 된 건은 체크로 맞춘다 */
+function autoCheckTagged(){
+  if(!(COL.이슈>=0))return 0;let n=0;
+  DATA.forEach(d=>{if(!d._chk&&splitIssue(d.row[COL.이슈]).tag){d._chk=true;n++;}});
+  if(n){renderValidate();render(true);markDirty();}
+  return n;
+}
+function openStats(){const n=autoCheckTagged();stFillSelects();renderCondSel();renderLevels();renderStats();requestAnimationFrame(fitStats);if(n)toast('사유가 적힌 '+n+'건을 이슈 체크로 맞췄습니다');}
 
 /* ---- 저장된 목록을 불러올 때 칸 연결을 다시 맞춘다 ----
    예전 버전에서 저장한 목록에는 요청일·Tango업로드·소요일수 같은
