@@ -70,7 +70,18 @@ header .spacer{flex:1;}
 .stat{font-size:13px;color:#64748b;}.stat b{color:#1e293b;}
 .tblwrap{overflow:auto;max-height:calc(100vh - 300px);min-height:280px;border:1px solid #64748b;border-radius:10px;background:#fff;}
 .mgr{display:flex;gap:12px;align-items:flex-start;}
-.mgr .tblwrap{flex:1;min-width:0;}
+.tblcol{flex:1;min-width:0;display:flex;flex-direction:column;}
+.mgr .tblwrap{min-width:0;}
+/* 표 아래에 늘 붙어 있는 가로 스크롤바 — 맨 밑까지 내려가지 않아도 옆으로 밀 수 있게 */
+.hbar{overflow-x:auto;overflow-y:hidden;height:15px;position:sticky;bottom:0;z-index:30;background:#f1f5f9;border:1px solid #64748b;border-top:none;border-radius:0 0 10px 10px;}
+.hbar>div{height:1px;}
+.hbar::-webkit-scrollbar{height:13px;}
+.hbar::-webkit-scrollbar-track{background:#f1f5f9;}
+.hbar::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:7px;border:3px solid #f1f5f9;}
+.hbar::-webkit-scrollbar-thumb:hover{background:#EA002C;}
+.tblcol.hasbar .tblwrap{border-radius:10px 10px 0 0;border-bottom:none;}
+/* 표 자체의 가로 막대는 감춰 두 개가 겹쳐 보이지 않게 (세로는 그대로) */
+.tblwrap::-webkit-scrollbar:horizontal{height:0;}
 .tblwrap:focus{outline:2px solid #FFB400;outline-offset:-2px;}
 .colpanel{width:230px;flex:none;border:1px solid #94a3b8;border-radius:10px;background:#fff;max-height:calc(100vh - 300px);overflow:auto;padding:8px;}
 .colpanel.hide{display:none;}
@@ -444,7 +455,10 @@ td.left{text-align:left;}
       </div>
       <div class="mgr">
         <div id="colPanel" class="colpanel hide"></div>
-        <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody><tfoot id="foot" class="hide"><tr id="footrow"></tr></tfoot></table></div>
+        <div class="tblcol" id="tblcol">
+          <div class="tblwrap"><table id="mtable"><thead><tr id="head"></tr></thead><tbody id="rows"></tbody><tfoot id="foot" class="hide"><tr id="footrow"></tr></tfoot></table></div>
+          <div class="hbar hide" id="hbar" title="가로로 밀어 보세요"><div id="hbarIn"></div></div>
+        </div>
       </div>
       <p class="note"><b>칸을 더블클릭하면 수정 창이 열립니다</b> (Enter=저장, Shift+Enter=줄바꿈, Esc=취소, "저장 후 다음 줄 ↓"로 같은 칸을 연달아 입력). 빈 칸을 한 번 클릭하면 그 줄 전체가 펼쳐지고, 글자를 한 번 클릭하면 전체 내용 팝업이 뜹니다. 머리글은 <b>클릭=정렬(▲▼)</b>, <b>끌면 컬럼 순서 이동</b>, ▾=값 필터, 오른쪽 경계선 드래그=너비 조절. <b>이슈사항 칸 앞 체크바</b>를 켜면 그 줄이 이슈로 집계되고(위 "이슈 체크"), 줄 왼쪽에 빨간 선이 붙습니다. 표 맨 아래 <b>합계 줄</b>은 지금 걸린 필터 기준으로 숫자 칸을 더한 값이에요.</p>
     </div>
@@ -599,8 +613,9 @@ td.left{text-align:left;}
    BUILD 31: 강우일수·비 온 날 기능 전체 제거 (BUILD 28 되돌림)
    BUILD 32: 같은 건 갱신 + 없어진 건 표시 (재업로드 동기화)
              + 원인자 리스트 양식 대응, 발주처 일괄 지정
+   BUILD 33: 화면 아래에 늘 붙어 있는 가로 스크롤바
    ======================================================================== */
-const BUILD_NO='32';
+const BUILD_NO='33';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1460,6 +1475,7 @@ function buildHead(){
   vis.forEach(o=>{const ar=sortCI===o.i?(sortDir>0?' ▲':' ▼'):'';const fon=colFilter[o.c.idx]?' fon':'';h+='<th data-ci="'+o.i+'"><span class="thin"><span class="thtxt" title="클릭=정렬 · 끌면 순서 이동">'+esc(o.c.label)+ar+'</span><span class="thf'+fon+'" data-fi="'+o.i+'" title="값 필터">▾</span></span><span class="rsz" data-rz="'+o.i+'"></span></th>';});
   const tbl=document.getElementById('mtable');const old=tbl.querySelector('colgroup');if(old)old.remove();tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
   document.getElementById('head').innerHTML=h;
+  syncHbar();
 }
 function buildColPanel(){document.getElementById('colPanel').innerHTML='<div class="cp-title"><span class="t">표시할 칸 · 순서</span><button data-cpv title="보기 저장·불러오기">보기 설정</button><button class="x" data-cpx title="칸 목록 닫기">✕</button></div><label class="cp-all"><input type="checkbox" id="cpAll"'+(DISP.length&&DISP.every(c=>c.vis)?' checked':'')+'>전체선택 / 해제</label>'+DISP.map((c,i)=>'<div class="cp-row"><label><input type="checkbox" data-v="'+i+'"'+(c.vis?' checked':'')+'>'+esc(c.label)+'</label><span class="cp-mv"><button data-mv="'+i+'" data-d="-1" aria-label="위로">↑</button><button data-mv="'+i+'" data-d="1" aria-label="아래로">↓</button><button data-cx="'+i+'" aria-label="칸 삭제" title="이 칸을 목록에서 삭제" style="color:#dc2626;">✕</button></span></div>').join('');}
 /* 「컬럼 설정」 = 표 왼쪽 칸 목록 + 보기 설정 창을 함께 연다.
@@ -1767,7 +1783,7 @@ function render(keep){
   }else{
     document.getElementById('rows').innerHTML=mRows.slice(0,mShown).map((d,i)=>rowHTML(d,i)).join('');
   }
-  buildFoot();updateSelUI();syncToolbar();
+  buildFoot();updateSelUI();syncToolbar();syncHbar();
   if(keep&&wrap)wrap.scrollTop=st;
 }
 function moreRows(){if(mShown>=mRows.length)return;const next=Math.min(mShown+M_PAGE,mRows.length);document.getElementById('rows').insertAdjacentHTML('beforeend',mRows.slice(mShown,next).map((d,i)=>rowHTML(d,mShown+i)).join(''));mShown=next;updateSelUI();}
@@ -2080,6 +2096,7 @@ function recalcW(){
   let t=36+46;
   DISP.forEach(c=>{if(c.vis)t+=(colWidth[c.idx]||defW(c.label));});
   document.getElementById('mtable').style.width=t+'px';
+  syncHbar();
 }
 document.getElementById('head').addEventListener('mousedown',e=>{
   const rz=e.target.closest('[data-rz]');if(!rz)return;e.preventDefault();
@@ -2426,6 +2443,27 @@ document.getElementById('rows').addEventListener('change',e=>{
 })();
 document.querySelectorAll('.tblwrap').forEach(w=>{w.tabIndex=0;w.addEventListener('keydown',ev=>{const hh=150,vv=80;if(ev.key==='ArrowRight'){w.scrollLeft+=hh;ev.preventDefault();}else if(ev.key==='ArrowLeft'){w.scrollLeft-=hh;ev.preventDefault();}else if(ev.key==='ArrowDown'){w.scrollTop+=vv;ev.preventDefault();}else if(ev.key==='ArrowUp'){w.scrollTop-=vv;ev.preventDefault();}});});
 (function(){const mw=document.querySelector('.mgr .tblwrap');if(mw)mw.addEventListener('scroll',()=>{if(mw.scrollTop+mw.clientHeight>=mw.scrollHeight-400)moreRows();});})();
+
+/* ---- 표 아래 가로 스크롤바 : 표와 서로 따라 움직인다 ---- */
+function syncHbar(){
+  const wrap=document.querySelector('.mgr .tblwrap'),hb=document.getElementById('hbar'),
+        hin=document.getElementById('hbarIn'),col=document.getElementById('tblcol'),tbl=document.getElementById('mtable');
+  if(!wrap||!hb||!hin||!col)return;
+  const tw=tbl?(parseFloat(tbl.style.width)||tbl.offsetWidth||0):0;
+  hin.style.width=tw+'px';
+  const need=tw>0&&wrap.clientWidth>0&&tw>wrap.clientWidth+2;
+  hb.classList.toggle('hide',!need);
+  col.classList.toggle('hasbar',need);
+  if(need&&hb.scrollLeft!==wrap.scrollLeft)hb.scrollLeft=wrap.scrollLeft;
+}
+(function(){
+  const wrap=document.querySelector('.mgr .tblwrap'),hb=document.getElementById('hbar');
+  if(!wrap||!hb)return;
+  let lock=false;
+  wrap.addEventListener('scroll',()=>{if(lock)return;lock=true;hb.scrollLeft=wrap.scrollLeft;lock=false;});
+  hb.addEventListener('scroll',()=>{if(lock)return;lock=true;wrap.scrollLeft=hb.scrollLeft;lock=false;});
+  window.addEventListener('resize',syncHbar);
+})();
 ['fJisa','fJin','fJeong'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{render();markDirty();}));
 document.getElementById('fIssue').addEventListener('change',()=>{renderValidate();render();markDirty();});
 
@@ -2536,7 +2574,7 @@ document.getElementById('export').addEventListener('click',()=>{
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
-updateUpMode();showPrevBtn();syncToolbar();
+updateUpMode();showPrevBtn();syncToolbar();syncHbar();
 document.getElementById('mapBox').innerHTML='';
 </script>
 </body>
