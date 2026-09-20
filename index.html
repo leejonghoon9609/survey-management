@@ -90,6 +90,9 @@ header .spacer{flex:1;}
 #stTable{table-layout:fixed;min-width:0;}
 #stHead th{position:sticky;top:0;padding-right:14px;cursor:pointer;}
 #stHead th:hover .thtxt{color:#EA002C;}
+#stHead th .dd{border:none;background:transparent;color:#c08;cursor:pointer;font-size:11px;padding:0 4px;line-height:1;border-radius:4px;vertical-align:middle;margin-left:2px;}
+#stHead th .dd:hover,#stHead th.open .dd{background:#2563EB;color:#fff;}
+#stHead th.vf{box-shadow:inset 0 -3px 0 #2563EB,inset 0 -1px 0 #94a3b8;}#stHead th.vf .dd{color:#2563EB;font-weight:700;}
 #stHead th .rsz{position:absolute;right:0;top:0;height:100%;width:8px;cursor:col-resize;}
 #stHead th .rsz:hover{background:#FFB400;}
 .lvl{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
@@ -795,8 +798,9 @@ td.left{text-align:left;}
    BUILD 46: 독립 창 머리글에도 ▾ 값 필터 — 창에서 고르면 본 화면 조건 설정에 바로 반영
    BUILD 47: 통계 리스트 정렬 — 분류 칩 가운데 / 리스트 머리글 / 독립 창 머리글 클릭 = 정렬 ▲▼
    BUILD 48: 독립 창 머리글에서도 칸 너비 조절 — 본 화면과 양방향 연동
+   BUILD 49: 본 화면 리스트 머리글에도 ▾ 값 체크 (칩·창과 같은 값 필터)
    ======================================================================== */
-const BUILD_NO='48';
+const BUILD_NO='49';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2451,6 +2455,7 @@ function stToggleSort(label){
 }
 const stSortMark=l=>STSORT.label===l?(STSORT.dir>0?' ▲':' ▼'):'';
 let STVFCOL='';                                  /* 지금 ▾ 로 펼친 칸 idx */
+let STVFFROM='chip';                             /* 어디서 펼쳤나: chip(분류 칩) / head(리스트 머리글) */
 const LS_STORD='gongjeong_statorder_v1',LS_STW='gongjeong_statwidth_v1';
 let STORD=null;                                  /* 리스트 칸 순서 (라벨 배열). null = DISP 순서 */
 let STW={};                                      /* 리스트 칸 너비 {라벨: px} */
@@ -2528,7 +2533,7 @@ function renderCols(){
   const on=new Set(stColsList().map(c=>c.label));
   box.innerHTML=DISP.length?stOrdered().map(c=>{
     const vf=STVF[c.idx]&&STVF[c.idx].size;
-    return '<span class="cchip'+(on.has(c.label)?' on':'')+(vf?' vf':'')+(STSORT.label===c.label?' sorted':'')+(String(c.idx)===String(STVFCOL)?' open':'')+'" draggable="true" data-chip="'+esc(c.label)+'" title="'+esc(c.label)+(vf?' · 값 필터 '+STVF[c.idx].size+'개':'')+' — 끌어서 순서 이동">'+
+    return '<span class="cchip'+(on.has(c.label)?' on':'')+(vf?' vf':'')+(STSORT.label===c.label?' sorted':'')+(STVFFROM==='chip'&&String(c.idx)===String(STVFCOL)?' open':'')+'" draggable="true" data-chip="'+esc(c.label)+'" title="'+esc(c.label)+(vf?' · 값 필터 '+STVF[c.idx].size+'개':'')+' — 끌어서 순서 이동">'+
       '<input type="checkbox" data-col="'+esc(c.label)+'"'+(on.has(c.label)?' checked':'')+'><span class="t" data-sort="'+esc(c.label)+'" title="'+esc(c.label)+' — 누르면 정렬 ▲▼">'+esc(c.label)+esc(stSortMark(c.label))+'</span>'+
       '<button class="dd" data-dd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button></span>';}).join('')
     :'<div class="vnone">목록을 먼저 불러와 주세요.</div>';
@@ -2551,8 +2556,8 @@ function renderVf(){
     (keys.length>CAP?'<div class="vnone">… 외 '+(keys.length-CAP)+'개</div>':'')+'</div>'+
     '<div class="pf"><button class="btn" data-vfclr="1" style="padding:5px 12px;">이 칸 필터 해제</button><span style="flex:1"></span><button class="btn btn-primary" data-vfclose="1" style="padding:5px 14px;">닫기</button></div>';
   pop.classList.remove('hide');
-  /* 칩 아래에 붙인다 */
-  const chip=document.querySelector('.cchip[data-chip="'+CSS.escape(c.label)+'"]');
+  /* 펼친 곳(칩 또는 리스트 머리글) 아래에 붙인다 */
+  const chip=(STVFFROM==='head'?document.querySelector('#stHead th[data-l="'+CSS.escape(c.label)+'"]'):null)||document.querySelector('.cchip[data-chip="'+CSS.escape(c.label)+'"]');
   if(chip){const r=chip.getBoundingClientRect();let left=r.left,top=r.bottom+4;
     const W=300,H=Math.min(340,window.innerHeight-20);
     if(left+W>window.innerWidth-8)left=Math.max(8,window.innerWidth-8-W);
@@ -2602,7 +2607,7 @@ document.getElementById('stColsSync').addEventListener('click',()=>{STCOLS=null;
 /* ▾ 값 팝업 */
 document.getElementById('stColsV').addEventListener('click',e=>{
   const b=e.target.closest('[data-dd]');
-  if(b){e.preventDefault();STVFCOL=(String(STVFCOL)===b.dataset.dd)?'':b.dataset.dd;renderCols();renderVf();return;}
+  if(b){e.preventDefault();const same=(String(STVFCOL)===b.dataset.dd&&STVFFROM==='chip');STVFCOL=same?'':b.dataset.dd;STVFFROM='chip';renderCols();renderVf();renderStats();return;}
   const t=e.target.closest('[data-sort]');
   if(t){e.preventDefault();stToggleSort(t.dataset.sort);}
 });
@@ -2620,7 +2625,7 @@ document.addEventListener('mousedown',e=>{
   const pop=document.getElementById('stVfPop');
   if(!pop||pop.classList.contains('hide'))return;
   const t=e.target;
-  if(t&&typeof t.closest==='function'&&(pop.contains(t)||t.closest('[data-dd]')))return;
+  if(t&&typeof t.closest==='function'&&(pop.contains(t)||t.closest('[data-dd]')||t.closest('[data-hdd]')))return;
   closeVfPop();
 });
 /* 칸 끌어서 순서 이동 */
@@ -2741,7 +2746,8 @@ function renderStatList(rows){
   let total=46,cg='<col style="width:46px">';
   vis.forEach(c=>{const w=STW[c.label]||defW(c.label);total+=w;cg+='<col data-l="'+esc(c.label)+'" style="width:'+w+'px">';});
   tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');tbl.style.width=total+'px';
-  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>'<th data-l="'+esc(c.label)+'" title="'+esc(c.label)+' — 클릭=정렬 ▲▼ · 오른쪽 경계선을 끌면 너비 조절"><span class="thtxt" data-stsort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><span class="rsz" data-strz="'+esc(c.label)+'"></span></th>').join('');
+  document.getElementById('stHead').innerHTML='<th class="rn" style="left:0;">#</th>'+vis.map(c=>{const vf=STVF[c.idx]&&STVF[c.idx].size;
+    return '<th data-l="'+esc(c.label)+'"'+(vf?' class="vf':'')+(vf&&STVFFROM==='head'&&String(c.idx)===String(STVFCOL)?' open"':(vf?'"':''))+(!vf&&STVFFROM==='head'&&String(c.idx)===String(STVFCOL)?' class="open"':'')+' title="'+esc(c.label)+' — 클릭=정렬 ▲▼ · ▾=값 체크 · 오른쪽 경계선을 끌면 너비 조절"><span class="thtxt" data-stsort="'+esc(c.label)+'">'+esc(c.label)+esc(stSortMark(c.label))+'</span><button class="dd" data-hdd="'+c.idx+'" title="이 칸의 값으로 추려내기">▾</button><span class="rsz" data-strz="'+esc(c.label)+'"></span></th>';}).join('');
   const CAP=300;
   document.getElementById('stRows').innerHTML=rows.slice(0,CAP).map((d,i)=>'<tr'+(d._chk?' class="hasissue"':'')+'><td class="rn" style="left:0;">'+(i+1)+'</td>'+vis.map(c=>{
     const v=d.row[c.idx];const cls=cellCls(d,c);
@@ -2765,6 +2771,11 @@ function fitStats(){
 window.addEventListener('resize',fitStats);
 document.getElementById('stHead').addEventListener('click',e=>{
   if(e.target.closest('[data-strz]'))return;
+  const dd=e.target.closest('[data-hdd]');
+  if(dd){e.preventDefault();e.stopPropagation();
+    const same=(String(STVFCOL)===dd.dataset.hdd&&STVFFROM==='head');
+    STVFCOL=same?'':dd.dataset.hdd;STVFFROM='head';
+    renderCols();renderVf();renderStats();return;}
   const th=e.target.closest('th[data-l]');if(!th)return;
   stToggleSort(th.dataset.l);
 });
