@@ -904,8 +904,13 @@ td.left{text-align:left;}
    BUILD 57: 독립 창·통계 리스트에 합계 줄 + 이슈사항 체크바 (사유 태그 있는 건은 자동 체크)
    BUILD 58: 확인창·조건 저장창·항목 설정창이 통계 탭 안에 들어가 있어
              다른 탭에서 열리지 않던 문제 — 창들을 페이지 밖으로 이동
+   BUILD 59: 원인자 리스트(관리번호 양식)를 기본 양식으로
+             · 같은 건은 관리번호로 가림 (공사명이 바뀌어도 같은 건으로 갱신)
+             · 파일 안에서 관리번호가 겹쳐도 줄이 사라지지 않게
+             · 업로드 검수 : 파일 건수 = 목록 반영 건수 확인, 건너뛴 줄 표시
+             · 이번 파일에 없는 기존 건은 표시만 하고 미리 체크하지 않음
    ======================================================================== */
-const BUILD_NO='58';
+const BUILD_NO='59';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1177,7 +1182,10 @@ function renderPDetail(g){g=g||pGroups();const s=g[pStage]&&g[pStage].subs[pSub]
 document.getElementById('pLeft').addEventListener('click',e=>{const st=e.target.closest('[data-pst]');if(st){pStage=st.dataset.pst;pSub='';pBaal='';renderProcess();return;}const su=e.target.closest('[data-psub]');if(su){pSub=su.dataset.psub;pBaal='';renderProcess();return;}const b=e.target.closest('[data-pbaal]');if(b){pBaal=(pBaal===b.dataset.pbaal)?'':b.dataset.pbaal;const g=pGroups();renderPCounts(g);renderPDetail(g);return;}});
 
 /* ======================= 컬럼 매핑 ======================= */
-const DEF=['순번','시행시기','발주처','구분','사업구분','공사협력사','행정구역','공구명','실측거리(km)','측량구분','Eng 번호','탱고 업로딩 거리','지사','진행상황','정산상황','정산금액','비고'];
+/* 기본 양식 = 원인자 리스트 (관리번호 양식). 뒤에 구분·소요일수는 앱이 쓰는 칸 */
+const DEF=['관리번호','시행시기','지역본부','담당Manager','사업유형','공사협력사','행정구역','공사명','도면거리','굴착 작업일정','측량방법','비고',
+  '대표사업자','사업자 (정산 업체)','협력사 연락처','요청일','Eng 번호','측량작업자 이름/연락처','측량예정일','납품완료유무','실측거리 (정산거리)','Tango업로드','업로딩거리','이슈사항',
+  '성과심사신청','성과심사 사업명','측량비 정산예정금액(원)','성과심사비 정산예정금액','측량 정산완료','성과심사 결과서 확인','비고 2','기성 남음금액','구분','소요일수'];
 /* req: 1 = 금액/정산에 꼭 필요한 컬럼
    ex = 정확·우선 매칭, lo = 느슨 매칭. 헤더는 공백 제거 후 비교.
    SKT/SKB 측량공정진행현황 양식 머리글도 함께 인식 */
@@ -1244,7 +1252,14 @@ function uniqLabels(H){
   return out;
 }
 const HEADWORD=new Set(['공사명','공구명','측량거리(km)','측량거리','년도','연도','행정구역','협력사명','공사협력사','시행시기']);
-function setupDefault(){DISP=DEF.map((l,i)=>({idx:i,label:l,vis:true}));COL={순번:0,시행:1,발주처:2,구분:3,사업구분:4,협력사:5,행정:6,공구명:7,실측:8,측량구분:9,eng:10,탱고거리:11,지사:12,진행:13,정산상황:14,정산금액:15};COLREP=[];loaded=true;}
+function setupDefault(){
+  DISP=DEF.map((l,i)=>({idx:i,label:l,vis:true}));
+  const m=mapCols(DEF);COL=m.col;COLREP=m.rep;
+  /* 소요일수는 Tango업로드 바로 뒤에 */
+  const from=DISP.findIndex(c=>c.label==='소요일수'),to=DISP.findIndex(c=>c.label==='Tango업로드');
+  if(from>=0&&to>=0){const it=DISP.splice(from,1)[0];DISP.splice(to<from?to+1:to,0,it);}
+  loaded=true;
+}
 
 /* ======================= 업로드 ======================= */
 const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
@@ -1319,7 +1334,7 @@ function updateUpMode(){
       (m==='merge'
         ? '같은 건은 <b>새 파일 값으로 갱신</b>하고, 없던 건은 뒤에 <b>추가</b>합니다. 파일에서 빈 칸은 건드리지 않아 직접 넣으신 값(이슈사항·구분 등)은 그대로 남습니다.'
         : '같은 건은 <b>그대로 두고</b>, 없던 건만 뒤에 <b>추가</b>합니다.')+
-      ' 같은 건인지는 <b>공사코드</b>(없으면 관리번호)와 공사명으로 가립니다.'+
+      ' 같은 건인지는 <b>관리번호</b>로 가립니다 (관리번호가 없으면 공사코드+공사명).'+
       (dup?' · 공사코드만 같은 건이 <b>'+dup+'건</b> 있어요 — 오른쪽 <b>중복 제외</b>로 정리할 수 있습니다.':'')+'</div>'
     : '';
 }
@@ -1399,19 +1414,21 @@ function scanSheet(name,aoa){
   const m=mapCols(labels);
   if(m.col.공구명<0){out.why='공사명(공구명) 칸이 없음';return out;}
   out.hr=det.row;out.labels=labels;out.col=m.col;out.rep=m.rep;
-  out.rows=extractRows(aoa,det.row,m.col);
+  out.skipped=[];
+  out.rows=extractRows(aoa,det.row,m.col,out.skipped);
   out.count=out.rows.length;out.pick=out.count>0;
   if(!out.count)out.why='데이터 줄 없음';
   return out;
 }
-function extractRows(aoa,hr,col){
+function extractRows(aoa,hr,col,skipped){
   const g=(x,k)=>(col[k]!=null&&col[k]>=0)?x[col[k]]:undefined;
   const out=[];
+  const skip=(r,x,why)=>{if(!skipped)return;if(!x.some(v=>v!=null&&String(v).trim()!==''))return;skipped.push({r:r+1,seq:g(x,'순번'),work:g(x,'공구명'),why});};
   for(let r=hr+1;r<aoa.length;r++){
     const x=(aoa[r]||[]).map(cleanCell);
     const work=String(g(x,'공구명')==null?'':g(x,'공구명')).trim();
-    if(work.length<3)continue;
-    if(HEADWORD.has(nh(work)))continue;              /* 안내용 예시 줄 제거 */
+    if(work.length<3){skip(r,x,'공사명 없음');continue;}
+    if(HEADWORD.has(nh(work))){skip(r,x,'안내용 예시 줄');continue;}
     const eng=String(g(x,'eng')==null?'':g(x,'eng')).trim();
     const meth=String(g(x,'측량구분')==null?'':g(x,'측량구분')).trim();
     const jisa=String(g(x,'지사')==null?'':g(x,'지사')).trim();
@@ -1422,7 +1439,7 @@ function extractRows(aoa,hr,col){
     if(col.측량구분>=0)sig.push(meth);
     if(col.지사>=0)sig.push(jisa);
     if(col.탱고거리>=0)sig.push((dist==null||dist==='')?'':'1');
-    if(sig.length&&!sig.some(Boolean))continue;
+    if(sig.length&&!sig.some(Boolean)){skip(r,x,'공사코드·측량구분·지사·거리 모두 빈 줄(합계 줄?)');continue;}
     out.push(x);
   }
   return out;
@@ -1431,13 +1448,15 @@ const BAALSET=new Set(['SKT','SKB','원인자']);
 /* 같은 건인지 가리는 열쇠. 공사코드가 있으면 그것을, 없으면 관리번호(순번)를 쓴다.
    (원인자 리스트는 Eng 번호가 거의 비어 있고 관리번호가 고유함) */
 function keyVals(eng,seq,work){
+  /* ① 관리번호(1-4, 3-135 처럼 생긴 것)가 있으면 그것만으로 가린다.
+        → 공사명이 조금 바뀌어도 같은 건으로 보고 갱신한다 (BUILD 59)
+     ② 없으면 공사코드+공사명, ③ 그것도 없으면 공사명만.
+        1,2,3 같은 단순 일련번호는 파일마다 밀릴 수 있어 열쇠로 안 쓴다. */
+  const n=String(seq==null?'':seq).replace(/\s/g,'').toLowerCase();
+  if(n&&/[^0-9]/.test(n)&&n!=='직접')return 'n|'+n;
   const e=String(eng==null?'':eng).trim().toLowerCase();
   const w=String(work==null?'':work).replace(/\s+/g,' ').trim().toLowerCase();
   if(e)return 'e|'+e+'|'+w;
-  const n=String(seq==null?'':seq).trim().toLowerCase();
-  /* 관리번호처럼 생긴 것(1-4, 3-135)만 열쇠로 쓴다.
-     1,2,3 같은 단순 일련번호는 파일마다 밀릴 수 있어 공사명으로만 가린다. */
-  if(n&&/[^0-9]/.test(n))return 'n|'+n+'|'+w;
   return 'w|'+w;
 }
 /* '발주처(자동)'을 뺀, 원본 발주처/사업자 칸의 위치 */
@@ -1483,7 +1502,7 @@ function renderSheetPicker(fname,sheets){
        '<span class="note" style="margin:0;" id="upBaalNote"></span>'+
        '<span style="flex:1"></span>'+
        '<button class="btn btn-primary" id="doImport">선택한 시트 불러오기</button></div>';
-    h+='<p class="note">여러 시트를 골라도 공사코드+공사명이 같은 건은 자동으로 한 번만 들어갑니다. 시트마다 칸 구성이 달라도 머리글 이름으로 합쳐집니다.</p>';
+    h+='<p class="note">같은 건인지는 <b>관리번호</b>로 가립니다 (없으면 공사코드+공사명). 파일에 새 관리번호가 있으면 한 줄 추가되고, 파일에 없는 기존 건은 그대로 둡니다. 불러온 뒤 <b>업로드 검수</b>에서 파일 건수와 목록 반영 건수를 확인하세요.</p>';
   }
   box.innerHTML=h;box.classList.remove('hide');
   const btn=document.getElementById('doImport');if(btn)btn.addEventListener('click',importSelected);
@@ -1531,16 +1550,23 @@ function importSelected(){
   const keyOf=(r,c)=>keyVals(pick(r,c,'eng'),pick(r,c,'순번'),pick(r,c,'공구명'));
 
   const startLen=rows.length;
-  const where=new Map();
-  rows.forEach((r,i)=>{const k=keyOf(r,baseCol);if(!where.has(k))where.set(k,i);});
-  const seen=new Set();
+  /* 같은 열쇠가 두 번 나오면 #2, #3 을 붙여 각각 따로 가린다 → 줄이 합쳐져 사라지지 않는다 (BUILD 59) */
+  const where=new Map();const occ={};
+  rows.forEach((r,i)=>{const k=keyOf(r,baseCol);occ[k]=(occ[k]||0)+1;where.set(k+(occ[k]>1?'#'+occ[k]:''),i);});
+  const seen=new Set();const dupInFile=[];
+  const audit={fileRows:0,skipped:[],dupInFile};
 
   let added=0,updated=0,same=0;const bySheet=[];
   sel.forEach(sh=>{
     const map=sh.labels.map(l=>l?ensure(l):-1);
     let a=0,u=0,k=0;
+    audit.fileRows+=sh.rows.length;
+    (sh.skipped||[]).forEach(z=>audit.skipped.push(Object.assign({sheet:sh.name},z)));
+    const focc={};   /* 같은 시트 안에서 겹친 열쇠만 따로 센다 — 다른 시트에 또 나오는 같은 건은 예전처럼 한 번만 */
     sh.rows.forEach(x=>{
-      const key=keyOf(x,sh.col);
+      let key=keyOf(x,sh.col);
+      focc[key]=(focc[key]||0)+1;
+      if(focc[key]>1){dupInFile.push({sheet:sh.name,seq:pick(x,sh.col,'순번'),work:pick(x,sh.col,'공구명'),n:focc[key]});key+='#'+focc[key];}
       seen.add(key);
       const at=where.get(key);
       if(at!=null){
@@ -1608,20 +1634,26 @@ function importSelected(){
   DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false,_chk:meta[i]?!!meta[i].x:false};deriveItem(d);return d;});
   loaded=true;markDup();lastUpload=DATA.slice();
 
-  /* 이번 파일에 없던 기존 건 — 이번에 들어온 발주처와 같은 건만 비교한다 */
-  let gone=0;
+  /* 이번 파일에 없던 기존 건 — 이번에 들어온 발주처와 같은 건만 비교한다.
+     표시만 하고 미리 체크하지는 않는다 (있는 건만 반영, 나머지는 그대로 둔다 — BUILD 59) */
+  let gone=0,inFile=0;const occ2={};
   DATA.forEach((d,i)=>{
     d._gone=false;
+    const k0=keyVals(d.eng,d.seq,d.work);occ2[k0]=(occ2[k0]||0)+1;
+    const k=k0+(occ2[k0]>1?'#'+occ2[k0]:'');
+    if(seen.has(k)){inFile++;return;}
     if(i>=startLen)return;
     if(!fileBaal||d.baal!==fileBaal)return;   /* 이 파일의 발주처와 같은 건만 견준다 */
-    if(seen.has(keyVals(d.eng,d.seq,d.work)))return;
-    d._gone=true;d._msel=true;gone++;
+    d._gone=true;gone++;
   });
+  audit.added=added;audit.updated=updated;audit.same=same;audit.gone=gone;audit.inFile=inFile;audit.fileKeys=seen.size;
+  audit.total=DATA.length;audit.other=DATA.length-inFile-gone;
+  UP_AUDIT=audit;
 
   const noBaal=DATA.filter(d=>!d.baal).length;
   resetUpResult();
   document.getElementById('upMsg').textContent='전체 '+DATA.length+'건 · 새로 추가 '+added+'건'+(updated?' · 갱신 '+updated+'건':'')+(same?' · 변화 없음 '+same+'건':'')+(gone?' · 이번 파일에 없는 기존 건 '+gone+'건':'');
-  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun,madeDays,gone);
+  renderMapBox(COLREP,0,append,noBaal,fileBaal,madeGubun,madeDays,gone,audit);
   renderCheckBox();
   document.getElementById('upResult').classList.remove('hide');
   renderPreview();
@@ -1641,10 +1673,31 @@ function parseMaster(aoa){
 }
 
 /* 헤더 인식 결과 */
-function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays,gone){
+let UP_AUDIT=null;
+/* 업로드 검수 : 파일에서 읽은 건수가 목록에 빠짐없이 반영됐는지 (BUILD 59) */
+function auditHTML(a){
+  if(!a)return '';
+  const reflected=a.added+a.updated+a.same;
+  const ok=reflected===a.fileRows&&a.inFile===a.fileKeys;
+  const overlap=a.fileRows-a.fileKeys;   /* 여러 시트에 같은 건이 겹쳐 나온 줄 수 */
+  let h='<div class="warn'+(ok?'':' bad')+'" style="'+(ok?'background:#f0fdf4;border-color:#bbf7d0;color:#166534;':'')+'">'+
+    '<b>업로드 검수 '+(ok?'✔ 파일 건수와 목록 반영 건수가 같습니다':'✖ 파일 건수와 목록 반영 건수가 다릅니다')+'</b><br>'+
+    '· 파일에서 읽은 줄 <b>'+a.fileRows+'</b>줄'+(overlap>0?' (시트끼리 겹친 '+overlap+'줄 빼면 <b>'+a.fileKeys+'</b>건)':'')+' → 목록 반영 <b>'+reflected+'</b>줄 (추가 '+a.added+' · 갱신 '+a.updated+' · 그대로 '+a.same+')<br>'+
+    '· 목록 전체 '+a.total+'건 = 이번 파일 건 '+a.inFile+(a.gone?' + 이번 파일에 없는 기존 건 '+a.gone:'')+(a.other?' + 다른 발주처 등 '+a.other:'')+'</div>';
+  if(a.dupInFile.length){
+    h+='<div class="warn"><b>파일 안에서 관리번호(열쇠)가 겹친 건 '+a.dupInFile.length+'건</b> — 합치지 않고 각각 따로 넣었어요. 파일에서 번호를 확인해 주세요.<br>'+
+      a.dupInFile.slice(0,15).map(z=>'· '+esc(String(z.seq==null?'':z.seq))+' '+esc(String(z.work==null?'':z.work))+' ('+z.n+'번째)').join('<br>')+(a.dupInFile.length>15?'<br>… 외 '+(a.dupInFile.length-15)+'건':'')+'</div>';
+  }
+  if(a.skipped.length){
+    h+='<div class="warn"><b>파일에서 건너뛴 줄 '+a.skipped.length+'줄</b> — 공사명이 없거나 합계·빈 줄로 보여 목록에 넣지 않았어요. 실제 사업이면 파일을 고쳐 다시 올려주세요.<br>'+
+      a.skipped.slice(0,15).map(z=>'· '+z.r+'행 '+esc(String(z.seq==null?'':z.seq))+' '+esc(String(z.work==null?'':z.work)).slice(0,40)+' — '+esc(z.why)).join('<br>')+(a.skipped.length>15?'<br>… 외 '+(a.skipped.length-15)+'줄':'')+'</div>';
+  }
+  return h;
+}
+function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays,gone,audit){
   const box=document.getElementById('mapBox');
   const no=rep.filter(x=>x.st==='no'),noReq=no.filter(x=>x.req),lo=rep.filter(x=>x.st==='lo');
-  let h='';
+  let h=auditHTML(audit);
   if(noBaal)h+='<div class="warn bad"><b>발주처를 못 정한 건 '+noBaal+'건</b><br>'+(fileBaal?'파일 발주처("'+esc(fileBaal)+'")로도 채워지지 않았어요. ':'시트 선택 화면에서 이 파일의 발주처를 고르면 채워집니다. ')+'리스트관리에서 직접 입력할 수도 있어요.</div>';
   if(noReq.length)h+='<div class="warn bad"><b>필수 컬럼을 못 찾았어요 — 금액이 틀릴 수 있습니다</b><br>'+noReq.map(x=>'· '+esc(x.label)).join('<br>')+'<br>엑셀 머리글 이름을 확인하거나, 리스트관리에서 값을 직접 채워주세요.</div>';
   else h+='<div class="warn" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;"><b>필수 컬럼 모두 인식됨</b> (발주처·공구명·측량구분·탱고거리·지사)</div>';
@@ -1655,7 +1708,7 @@ function renderMapBox(rep,dropped,append,noBaal,fileBaal,madeGubun,madeDays,gone
     const neg=DATA.filter(d=>d.days!=null&&d.days<0).length;
     h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;"><b>소요일수</b> (요청일 → Tango업로드) '+ok+'건 계산'+(no?' · 날짜가 없거나 글자라 계산 못 한 건 '+no+'건':'')+(neg?' · <span style="color:#b91c1c">업로드가 요청일보다 빠른 건 '+neg+'건</span>':'')+'</div>';
   }
-  if(gone)h+='<div class="warn"><b>이번 파일에 없는 기존 건 '+gone+'건</b><br>같은 발주처인데 이번 파일에는 안 들어온 건입니다. 줄을 미리 체크해 뒀으니, 리스트관리에서 점검 필터 <b>「이번 파일에 없던 건」</b>으로 확인하고 정말 빠진 게 맞으면 <b>선택 삭제</b> 하세요.</div>';
+  if(gone)h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;"><b>이번 파일에 없는 기존 건 '+gone+'건</b><br>같은 발주처인데 이번 파일에는 안 들어온 건입니다. 목록에는 그대로 두었어요. 정말 빠진 건이면 리스트관리 점검 필터 <b>「이번 파일에 없던 건」</b>으로 골라 <b>선택 삭제</b> 하세요.</div>';
   if(append)h+='<div class="warn" style="background:#f8fafc;border-color:#e2e8f0;color:#475569;">기존 목록에 이어 붙였습니다. 새로 들어온 칸은 뒤에 추가됐어요.</div>';
   h+='<div style="margin-top:8px;"><button class="linkish" onclick="document.getElementById(\'mapDetail\').classList.toggle(\'on\')">인식 결과 전체 보기</button></div>';
   h+='<div class="maprow" id="mapDetail">'+mapTable(rep)+'</div>';
