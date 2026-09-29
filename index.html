@@ -687,7 +687,69 @@ td.left{text-align:left;}
       </div>
     </div>
 
-    <!-- 항목 설정창 -->
+
+
+    <!-- ② 조건 설정 : 칸을 고르면 그 칸의 값이 체크바로 나온다 (3단계) -->
+    <div class="card" id="stCondCard">
+      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">조건 설정
+        <span class="stat" id="stCondSum" style="font-weight:400;"></span>
+        <select id="stCondSel" class="csel" style="--c:#0369A1;min-width:170px;" title="저장해 둔 조건"><option value="">조건 목록</option></select>
+        <button class="btn tbtn" id="stCondSave" style="padding:6px 14px;--c:#EA002C">조건 저장</button>
+        <button class="btn tbtn hide" id="stCondUpd" style="padding:6px 14px;--c:#0369A1" title="고른 조건의 이름을 바꾸거나 지금 세팅으로 덮어씁니다">조건 수정</button>
+        <button class="btn tbtn" id="stCondNew" style="padding:6px 14px;--c:#059669" title="이름을 정해 새 조건을 등록합니다">조건 추가</button>
+        <button class="btn tbtn hide" id="stCondDel" style="padding:6px 10px;--c:#DC2626" title="고른 조건 삭제">삭제</button>
+        <span style="flex:1"></span>
+        <label class="stx">요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
+        <select id="stDays" class="csel" style="--c:#065F46"><option value="">소요일수 전체</option><option value="has">계산된 건만</option><option value="le20">20일 이내</option><option value="gt20">20일 초과</option><option value="gt30">30일 초과</option></select>
+        <button class="btn tbtn" id="stReset" style="padding:6px 14px;--c:#64748b">조건 초기화</button>
+      </div>
+      <div class="stline" id="stLvls">
+        <span class="lvl-t" style="--c:#EAB308">조건대상</span>
+        <div class="lvl-v inline" data-l="0" style="flex:none;"></div>
+        <span style="flex:1"></span>
+        <span class="lvl-t" style="--c:#EA002C">분류</span>
+        <span class="stat" style="font-weight:400;white-space:nowrap;">리스트에 보일 칸</span>
+        <button class="lvl-mini" id="stColsAll">전체</button><button class="lvl-mini" id="stColsNone">해제</button><button class="lvl-mini" id="stColsSync">리스트관리와 같게</button>
+      </div>
+      <div class="stline" style="padding-top:4px;">
+        <div class="stcols" id="stColsV"></div>
+      </div>
+    </div>
+
+
+
+
+    <!-- ③ 조건에 맞는 리스트 -->
+    <div class="card" id="stListCard">
+      <div class="proc-h" style="display:flex;align-items:center;gap:10px;">조건에 맞는 리스트 <span class="stat" id="stListStat" style="font-weight:400;"></span><span style="flex:1"></span>
+        <button class="btn tbtn" id="stPopWin" style="padding:6px 14px;--c:#0369A1" title="따로 창을 띄워 봅니다 (크기 조절·이동 가능, 조건 바꾸면 자동 갱신)">창 보기</button>
+        <button class="btn tbtn" id="stExcel" style="padding:6px 14px;--c:#EA580C">엑셀 내보내기</button></div>
+      <div class="tblwrap stlist" id="stListWrap"><table id="stTable"><thead><tr id="stHead"></tr></thead><tbody id="stRows"></tbody></table></div>
+
+    </div>
+
+  </div>
+
+</div>
+<div id="stVfPop" class="hide"></div>
+<div id="askPop" class="hide"><div class="view-card ask-card">
+  <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
+  <div class="ask-b" id="askMsg"></div>
+  <div class="ask-f"><button class="btn" id="askNo" style="padding:8px 18px;">취소</button><button class="btn btn-primary" id="askOk" style="padding:8px 22px;">확인</button></div>
+</div></div>
+<div id="stSavePop" class="hide"><div class="view-card" style="max-width:420px;">
+  <div class="cell-h"><b id="ssTitle">조건 저장</b><span class="cell-x" id="ssX">✕</span></div>
+  <div class="view-b">
+    <div class="vp-sec">조건 이름</div>
+    <input type="text" id="ssName" placeholder="예) SKT 26년 20일 초과" maxlength="30" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;">
+    <p class="note" id="ssWhat" style="margin-top:8px;"></p>
+    <div class="vp-save" style="margin-top:14px;justify-content:flex-end;">
+      <button class="btn" id="ssClose" style="padding:7px 16px;">닫기</button>
+      <button class="btn btn-primary" id="ssSave" style="padding:7px 22px;">저장</button>
+    </div>
+  </div>
+</div></div>
+<!-- 항목 설정창 -->
     <div id="stItemPop" class="hide"><div class="view-card" style="max-width:560px;">
       <div class="cell-h"><b id="ipTitle">항목 설정</b><span class="cell-x" id="ipX">✕</span></div>
       <div class="view-b">
@@ -716,64 +778,6 @@ td.left{text-align:left;}
         </div>
       </div>
     </div></div>
-
-    <!-- ② 조건 설정 : 칸을 고르면 그 칸의 값이 체크바로 나온다 (3단계) -->
-    <div class="card" id="stCondCard">
-      <div class="proc-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">조건 설정
-        <span class="stat" id="stCondSum" style="font-weight:400;"></span>
-        <select id="stCondSel" class="csel" style="--c:#0369A1;min-width:170px;" title="저장해 둔 조건"><option value="">조건 목록</option></select>
-        <button class="btn tbtn" id="stCondSave" style="padding:6px 14px;--c:#EA002C">조건 저장</button>
-        <button class="btn tbtn hide" id="stCondUpd" style="padding:6px 14px;--c:#0369A1" title="고른 조건의 이름을 바꾸거나 지금 세팅으로 덮어씁니다">조건 수정</button>
-        <button class="btn tbtn" id="stCondNew" style="padding:6px 14px;--c:#059669" title="이름을 정해 새 조건을 등록합니다">조건 추가</button>
-        <button class="btn tbtn hide" id="stCondDel" style="padding:6px 10px;--c:#DC2626" title="고른 조건 삭제">삭제</button>
-        <span style="flex:1"></span>
-        <label class="stx">요청일 <input type="date" id="stFrom" class="stdate"> ~ <input type="date" id="stTo" class="stdate"></label>
-        <select id="stDays" class="csel" style="--c:#065F46"><option value="">소요일수 전체</option><option value="has">계산된 건만</option><option value="le20">20일 이내</option><option value="gt20">20일 초과</option><option value="gt30">30일 초과</option></select>
-        <button class="btn tbtn" id="stReset" style="padding:6px 14px;--c:#64748b">조건 초기화</button>
-      </div>
-      <div class="stline" id="stLvls">
-        <span class="lvl-t" style="--c:#EAB308">조건대상</span>
-        <div class="lvl-v inline" data-l="0" style="flex:none;"></div>
-        <span style="flex:1"></span>
-        <span class="lvl-t" style="--c:#EA002C">분류</span>
-        <span class="stat" style="font-weight:400;white-space:nowrap;">리스트에 보일 칸</span>
-        <button class="lvl-mini" id="stColsAll">전체</button><button class="lvl-mini" id="stColsNone">해제</button><button class="lvl-mini" id="stColsSync">리스트관리와 같게</button>
-      </div>
-      <div class="stline" style="padding-top:4px;">
-        <div class="stcols" id="stColsV"></div>
-      </div>
-    </div>
-    <div id="stVfPop" class="hide"></div>
-<div id="askPop" class="hide"><div class="view-card ask-card">
-  <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
-  <div class="ask-b" id="askMsg"></div>
-  <div class="ask-f"><button class="btn" id="askNo" style="padding:8px 18px;">취소</button><button class="btn btn-primary" id="askOk" style="padding:8px 22px;">확인</button></div>
-</div></div>
-<div id="stSavePop" class="hide"><div class="view-card" style="max-width:420px;">
-  <div class="cell-h"><b id="ssTitle">조건 저장</b><span class="cell-x" id="ssX">✕</span></div>
-  <div class="view-b">
-    <div class="vp-sec">조건 이름</div>
-    <input type="text" id="ssName" placeholder="예) SKT 26년 20일 초과" maxlength="30" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;">
-    <p class="note" id="ssWhat" style="margin-top:8px;"></p>
-    <div class="vp-save" style="margin-top:14px;justify-content:flex-end;">
-      <button class="btn" id="ssClose" style="padding:7px 16px;">닫기</button>
-      <button class="btn btn-primary" id="ssSave" style="padding:7px 22px;">저장</button>
-    </div>
-  </div>
-</div></div>
-
-    <!-- ③ 조건에 맞는 리스트 -->
-    <div class="card" id="stListCard">
-      <div class="proc-h" style="display:flex;align-items:center;gap:10px;">조건에 맞는 리스트 <span class="stat" id="stListStat" style="font-weight:400;"></span><span style="flex:1"></span>
-        <button class="btn tbtn" id="stPopWin" style="padding:6px 14px;--c:#0369A1" title="따로 창을 띄워 봅니다 (크기 조절·이동 가능, 조건 바꾸면 자동 갱신)">창 보기</button>
-        <button class="btn tbtn" id="stExcel" style="padding:6px 14px;--c:#EA580C">엑셀 내보내기</button></div>
-      <div class="tblwrap stlist" id="stListWrap"><table id="stTable"><thead><tr id="stHead"></tr></thead><tbody id="stRows"></tbody></table></div>
-
-    </div>
-
-  </div>
-
-</div>
 <div id="colFilterPop" class="hide"></div>
 <div id="viewPop" class="hide"><div class="view-card">
   <div class="cell-h"><b>보기 설정</b><span class="cell-x" id="vpX">✕</span></div>
@@ -898,8 +902,10 @@ td.left{text-align:left;}
    BUILD 55: 항목 여러 개(+) · 항목 ✕ 삭제 · 결과를 "조건별 평균 1사업당 며칠" 로
    BUILD 56: 「조건 추가」(새 조건 등록) · 「조건 저장」은 고른 조건에 바로 저장
    BUILD 57: 독립 창·통계 리스트에 합계 줄 + 이슈사항 체크바 (사유 태그 있는 건은 자동 체크)
+   BUILD 58: 확인창·조건 저장창·항목 설정창이 통계 탭 안에 들어가 있어
+             다른 탭에서 열리지 않던 문제 — 창들을 페이지 밖으로 이동
    ======================================================================== */
-const BUILD_NO='57';
+const BUILD_NO='58';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
