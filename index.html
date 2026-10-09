@@ -263,9 +263,9 @@ header .spacer{flex:1;}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff !important;}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff;}
 .gsub{display:none;}
-.per{--pc:#be185d;border:2px solid var(--pc);border-radius:10px;margin:0;display:flex;flex-direction:column;background:#fff;overflow:hidden;flex:1 1 0;min-height:0;}
+.per{--pc:#be185d;--pbg:#fff;--phd:#fff;border:2px solid var(--pc);border-radius:10px;margin:0;display:flex;flex-direction:column;background:var(--pbg);overflow:hidden;flex:1 1 0;min-height:0;}
 #pBody{display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:8px 10px;}
-.per-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 10px;flex:none;background:color-mix(in srgb,var(--pc) 10%,#fff);}
+.per-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 10px;flex:none;background:var(--phd);}
 .per-h .pn{font-size:15px;font-weight:800;color:var(--pc);min-width:34px;}
 .per-h .nav2,.pw-h .nav2{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:#475569;font-variant-numeric:tabular-nums;}
 .per-h .nav2 button,.pw-h .nav2 button{border:1px solid #e2e8f0;background:#fff;border-radius:6px;width:24px;height:24px;cursor:pointer;font-family:inherit;color:#475569;}
@@ -274,8 +274,8 @@ header .spacer{flex:1;}
 .pk3 b{font-size:15px;font-variant-numeric:tabular-nums;}
 .pk3.on{background:var(--c);color:#fff;}
 .per-b{display:grid;grid-template-columns:minmax(0,1fr) 150px;grid-template-rows:minmax(0,1fr);gap:0;flex:1 1 0;min-height:0;border-top:2px solid color-mix(in srgb,var(--pc) 35%,#fff);}
-.per-list{overflow-y:scroll;overflow-x:hidden;min-height:0;scrollbar-width:auto;scrollbar-color:color-mix(in srgb,var(--pc) 60%,#fff) #eef2f7;padding:8px 6px 2px 8px;background:#F8FAFC;border-right:2px solid color-mix(in srgb,var(--pc) 25%,#fff);}
-.per-st{padding:8px 10px;overflow:auto;background:color-mix(in srgb,var(--pc) 5%,#fff);}
+.per-list{overflow-y:scroll;overflow-x:hidden;min-height:0;scrollbar-width:auto;scrollbar-color:color-mix(in srgb,var(--pc) 60%,#fff) #eef2f7;padding:8px 6px 2px 8px;background:var(--pbg);border-right:2px solid color-mix(in srgb,var(--pc) 25%,#fff);}
+.per-st{padding:8px 10px;overflow:auto;background:var(--pbg);}
 .per-st .hd{font-size:12px;font-weight:700;color:var(--pc);margin-bottom:6px;}
 .pwbtn{margin-left:auto;border:2px solid #059669;background:#ECFDF5;color:#047857;border-radius:7px;padding:3px 10px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;}
 .pwbtn:hover{background:#059669;color:#fff;}
@@ -306,11 +306,11 @@ body.perwin #perWin{display:block;padding:14px 18px;}
 .per-list::-webkit-scrollbar-thumb:hover{background:var(--pc);}
 .prow .km{font-size:12px;font-weight:700;color:#334155;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
 .prow .km.z{color:#cbd5e1;font-weight:500;}
-.plh{display:grid;grid-template-columns:62px minmax(0,1fr) 78px 84px;gap:8px;padding:2px 8px 4px 14px;font-size:11px;font-weight:700;color:#64748b;position:sticky;top:-8px;background:#F8FAFC;z-index:1;}
+.plh{display:grid;grid-template-columns:62px minmax(0,1fr) 78px 84px;gap:8px;padding:2px 8px 4px 14px;font-size:11px;font-weight:700;color:#64748b;position:sticky;top:-8px;background:var(--pbg);z-index:1;}
 .plh span:nth-child(3){text-align:right;}
 .plh span:nth-child(4){text-align:center;}
 .prow>.turn{justify-self:center;}
-.pfoot{flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 10px;border-top:2px solid color-mix(in srgb,var(--pc) 30%,#fff);background:color-mix(in srgb,var(--pc) 6%,#fff);font-size:12.5px;font-variant-numeric:tabular-nums;}
+.pfoot{flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 10px;border-top:2px solid color-mix(in srgb,var(--pc) 30%,#fff);background:var(--phd);font-size:12.5px;font-variant-numeric:tabular-nums;}
 .pfoot .lb{font-weight:800;color:var(--pc);}
 .pfoot .it{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:8px;background:#fff;border:1.5px solid var(--c);}
 .pfoot .it i{font-style:normal;font-weight:700;color:var(--c);}
@@ -1161,8 +1161,9 @@ td.left{text-align:left;}
    BUILD 73: 일별·주간·월간 목록에 거리(km) 칸 · 목록마다 세로 스크롤바
    BUILD 74: 일별·주간·월간마다 「목록 창 ↗」 — 그 기간 목록을 별도 창으로 (다른 모니터로 이동, 자동 동기화)
    BUILD 75: 일별·주간·월간 한 화면에 3등분 · 목록 아래 실적(진행중/완료 건수·km) · 목록 칸 머리 + 세로 줄 맞춤
+   BUILD 76: 일별(연분홍)·주간(연크림)·월간(연보라) 칸마다 다른 연한 배경색
    ======================================================================== */
-const BUILD_NO='75';
+const BUILD_NO='76';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2806,7 +2807,7 @@ function wsBadge(d){
 }
 
 /* ---- 추가사업 현황 : 일별·주간·월간 ---- */
-const PERS=[{k:'d',name:'일별',c:'#F43F5E'},{k:'w',name:'주간',c:'#EA002C'},{k:'m',name:'월간',c:'#9F1239'}];
+const PERS=[{k:'d',name:'일별',c:'#F43F5E',bg:'#FFFAFB',hd:'#FFF0F3'},{k:'w',name:'주간',c:'#EA002C',bg:'#FFFCF5',hd:'#FFF5E1'},{k:'m',name:'월간',c:'#9F1239',bg:'#FBFAFF',hd:'#F2EEFF'}];
 const PKIND=[{k:'add',name:'추가',c:'#EA002C'},{k:'start',name:'착수',c:'#059669'},{k:'done',name:'완료',c:'#2563EB'}];
 let PST={d:{off:0,kind:'add'},w:{off:0,kind:'add'},m:{off:0,kind:'add'}};
 const day0=dt=>new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());
@@ -2847,7 +2848,7 @@ function renderPeriods(){
     const st=PST[P.k],o=perRows(P.k),rows=o.sets[st.kind];
     const dfn={add:addedDate,start:startDate,done:doneDate}[st.kind];
     rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
-    h+='<div class="per" style="--pc:'+P.c+'"><div class="per-h"><span class="pn">'+P.name+'</span>'+
+    h+='<div class="per" style="--pc:'+P.c+';--pbg:'+P.bg+';--phd:'+P.hd+'"><div class="per-h"><span class="pn">'+P.name+'</span>'+
        '<span class="nav2"><button data-pm="'+P.k+'" data-dv="-1" aria-label="이전">◀</button><span>'+perLabel(P.k,o.r)+'</span><button data-pm="'+P.k+'" data-dv="1" aria-label="다음">▶</button>'+(st.off?'<button data-pm="'+P.k+'" data-dv="0" title="오늘로" style="width:auto;padding:0 6px;">오늘</button>':'')+'</span>'+
        PKIND.map(K=>'<button class="pk3'+(st.kind===K.k?' on':'')+'" data-pk="'+P.k+'" data-kind="'+K.k+'" style="--c:'+K.c+'">'+K.name+' <b>'+o.sets[K.k].length+'</b>건</button>').join('')+
        '<button class="pwbtn" data-pw="'+P.k+'" title="이 기간 목록을 별도 창으로 (다른 모니터로 옮길 수 있어요)">목록 창 ↗</button></div>';
