@@ -280,7 +280,7 @@ header .spacer{flex:1;}
 .prow .dt b{display:block;font-size:12px;color:#1e293b;}
 .prow .wk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .pempty{font-size:12.5px;color:#94a3b8;padding:14px 4px;text-align:center;}
-.stbar{display:grid;grid-template-columns:64px 1fr 26px;gap:5px;align-items:center;font-size:11.5px;margin-bottom:4px;}
+.stbar{display:grid;grid-template-columns:70px 1fr 26px;gap:5px;align-items:center;font-size:11.5px;margin-bottom:4px;}
 .stbar i{display:block;height:8px;border-radius:4px;background:var(--c);}
 .stbar b{text-align:right;font-variant-numeric:tabular-nums;}
 .lrow{--c:#94a3b8;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 9px 8px 11px;border:1.5px solid #94A3B8;border-left:6px solid var(--c);border-radius:8px;margin:0 0 8px;cursor:pointer;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.10);}
@@ -1111,8 +1111,9 @@ td.left{text-align:left;}
              리스트 카드 구분 진하게
    BUILD 68: 사업현황 노란 계열 · 추가사업 현황 빨강 계열 · 실시간/후측량/탱고/정산/완료 칸마다 연한 배경색
    BUILD 69: 단계 칸 배경을 더 연하게, 테두리를 그 색으로 진하게 · 숫자 진하게
+   BUILD 70: 추가사업 현황의 「진행현황」을 작업 단계로 — 실시간측량 · 결선 · 후측량 · 탱고 · 성과심사 · 완료
    ======================================================================== */
-const BUILD_NO='69';
+const BUILD_NO='70';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2713,6 +2714,33 @@ document.getElementById('gBody').addEventListener('click',e=>{
   if(c){const g=c.dataset.g;GSEL=(GSEL.g===g&&!GSEL.ph)?{g:'',ph:''}:{g,ph:''};renderDash();}
 });
 
+/* ---- 작업 단계 (BUILD 70) : 실시간측량 → 결선 → 후측량 → 탱고 → 성과심사 → 완료 ----
+   실시간측량 = 실시간 건, 아직 측량 전·진행중
+   결선       = 실시간 측량은 끝(실시간완료·1차 측량일), 후측량 전
+   후측량     = 후측량 진행중, 또는 탐사 건 측량 전
+   탱고       = 측량 끝, Tango 업로드 전
+   성과심사   = Tango 끝, 성과심사 필요·진행중
+   완료       = Tango·심사까지 끝 (정산완료·제외 포함) */
+const WSTAGES=[
+  {k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#D97706'},{k:'후측량',c:'#EA580C'},
+  {k:'탱고',c:'#2563EB'},{k:'성과심사',c:'#7C3AED'},{k:'완료',c:'#15803D'}
+];
+function workStage(d){
+  const jin=ns(d.jin),sim=ns(d.simsa),tupRaw=ns(d.tup),tupD=parseDate(d.tup);
+  const simLeft=(/필요/.test(sim)&&!/불필요/.test(sim))||/진행중/.test(sim);
+  if(d.turn==='완료'&&!simLeft)return '완료';
+  const rtDone=/실시간완료/.test(jin)||!!parseDate(colv(d,'측량1'));
+  const fullDone=/(측량|탐사)완료/.test(jin)||!!parseDate(colv(d,'측량2'))||!!tupD||(typeof d.tango==='number'&&d.tango>0);
+  if(!fullDone){
+    if(/후측량/.test(jin))return '후측량';
+    if(rtDone)return '결선';
+    return d.mKey==='실시간'?'실시간측량':'후측량';
+  }
+  if(!tupD&&!/불필요/.test(tupRaw))return '탱고';
+  if(simLeft)return '성과심사';
+  return '완료';
+}
+
 /* ---- 추가사업 현황 : 일별·주간·월간 ---- */
 const PERS=[{k:'d',name:'일별',c:'#F43F5E'},{k:'w',name:'주간',c:'#EA002C'},{k:'m',name:'월간',c:'#9F1239'}];
 const PKIND=[{k:'add',name:'추가',c:'#EA002C'},{k:'start',name:'착수',c:'#059669'},{k:'done',name:'완료',c:'#2563EB'}];
@@ -2763,9 +2791,9 @@ function renderPeriods(){
     rows.slice(0,200).forEach(d=>{const dt=dfn(d);
       h+='<div class="prow" data-card="'+d._id+'" style="--c:'+turnColor(d.turn)+'"><span class="dt"><b>'+(dt?(dt.getMonth()+1)+'/'+dt.getDate():'')+'</b>'+esc(d._grp||'')+'</span><span class="wk" title="'+esc(d.work)+'">'+esc(d.work)+'</span><span class="turn" style="--c:'+turnColor(d.turn)+'">'+esc(d.turn)+'</span></div>';});
     h+='</div><div class="per-st"><div class="hd">진행현황</div>';
-    const tc={};rows.forEach(d=>{tc[d.turn]=(tc[d.turn]||0)+1;});
+    const tc={};rows.forEach(d=>{const w=workStage(d);tc[w]=(tc[w]||0)+1;});
     const mx=Math.max(1,...Object.values(tc));
-    h+=rows.length?TURNS.map(T=>{const n=tc[T.k]||0;return '<div class="stbar" style="--c:'+T.c+'"><span>'+T.k+'</span><i style="width:'+(100*n/mx)+'%;opacity:'+(n?1:.15)+'"></i><b>'+n+'</b></div>';}).join(''):'<div class="pempty" style="padding:6px 0;">—</div>';
+    h+=rows.length?WSTAGES.map(T=>{const n=tc[T.k]||0;return '<div class="stbar" style="--c:'+T.c+'"><span style="color:'+T.c+';font-weight:700">'+T.k+'</span><i style="width:'+(100*n/mx)+'%;opacity:'+(n?1:.15)+'"></i><b>'+n+'</b></div>';}).join(''):'<div class="pempty" style="padding:6px 0;">—</div>';
     h+='</div></div></div>';
   });
   box.innerHTML=h;
