@@ -219,7 +219,7 @@ header .spacer{flex:1;}
 /* ---- 리스트관리 3분할 (BUILD 65) ---- */
 .mgdash{display:grid;grid-template-columns:minmax(250px,.9fr) minmax(430px,1.7fr) minmax(330px,1.15fr);gap:12px;height:calc(100vh - 150px);min-height:600px;}
 /* 전체를 조금 작게 : zoom 을 쓰면 높이도 같이 줄어드므로 높이는 나눠서 되돌린다 */
-@supports (zoom:1){.mgdash{zoom:.94;height:calc((100vh - 150px) / .94);min-height:calc(600px / .94);}}
+@supports (zoom:1){.mgdash{zoom:.9;height:calc((100vh - 150px) / .9);min-height:calc(600px / .9);}}
 .mgp{background:#fff;border:1px solid #e2e8f0;border-radius:12px;display:flex;flex-direction:column;min-height:0;min-width:0;}
 .mgp-h{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #eef2f7;flex:none;}
 .mgp-h .tt{font-size:16px;font-weight:800;color:#1e293b;}
@@ -1167,8 +1167,9 @@ td.left{text-align:left;}
    BUILD 77: 목록 창 표 머리글(칸 제목) 가운데 정렬
    BUILD 78: 월간 칸 배경 연한 초록
    BUILD 79: 리스트관리 3분할 화면 전체 글자·버튼을 조금 작게 (94%), 높이는 화면에 맞춤
+   BUILD 80: 조금 더 작게 (90%)
    ======================================================================== */
-const BUILD_NO='79';
+const BUILD_NO='80';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
