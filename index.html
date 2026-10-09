@@ -290,7 +290,7 @@ body.perwin #perWin{display:block;padding:14px 18px;}
 .pw-st span{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--c);color:var(--c);border-radius:8px;padding:3px 10px;font-size:12.5px;font-weight:700;background:#fff;}
 .pw-st span b{color:#0f172a;font-variant-numeric:tabular-nums;}
 .pw-t{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:13px;}
-.pw-t th{text-align:left;font-size:12px;color:#64748b;font-weight:700;padding:4px 8px;position:sticky;top:0;background:#fff;}
+.pw-t th,.pw-t th.num{text-align:center !important;font-size:12px;color:#64748b;font-weight:700;padding:4px 8px;position:sticky;top:0;background:#fff;}
 .pw-t td{background:#fff;border-top:1.5px solid #cbd5e1;border-bottom:1.5px solid #cbd5e1;padding:7px 8px;vertical-align:middle;}
 .pw-t td:first-child{border-left:5px solid var(--c);border-radius:7px 0 0 7px;}
 .pw-t td:last-child{border-right:1.5px solid #cbd5e1;border-radius:0 7px 7px 0;}
@@ -1162,8 +1162,9 @@ td.left{text-align:left;}
    BUILD 74: 일별·주간·월간마다 「목록 창 ↗」 — 그 기간 목록을 별도 창으로 (다른 모니터로 이동, 자동 동기화)
    BUILD 75: 일별·주간·월간 한 화면에 3등분 · 목록 아래 실적(진행중/완료 건수·km) · 목록 칸 머리 + 세로 줄 맞춤
    BUILD 76: 일별(연분홍)·주간(연크림)·월간(연보라) 칸마다 다른 연한 배경색
+   BUILD 77: 목록 창 표 머리글(칸 제목) 가운데 정렬
    ======================================================================== */
-const BUILD_NO='76';
+const BUILD_NO='77';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
