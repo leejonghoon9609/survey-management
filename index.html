@@ -272,11 +272,17 @@ header .spacer{flex:1;}
 .pk3{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--c);border-radius:7px;padding:3px 10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--c);background:#fff;cursor:pointer;}
 .pk3 b{font-size:15px;font-variant-numeric:tabular-nums;}
 .pk3.on{background:var(--c);color:#fff;}
-.per-b{display:grid;grid-template-columns:1fr 150px;gap:0;border-top:2px solid color-mix(in srgb,var(--pc) 35%,#fff);min-height:120px;max-height:230px;}
-.per-list{overflow:auto;padding:8px 8px 2px;background:#F8FAFC;border-right:2px solid color-mix(in srgb,var(--pc) 25%,#fff);}
+.per-b{display:grid;grid-template-columns:minmax(0,1fr) 150px;grid-template-rows:minmax(0,230px);gap:0;border-top:2px solid color-mix(in srgb,var(--pc) 35%,#fff);min-height:120px;max-height:230px;}
+.per-list{overflow-y:scroll;overflow-x:hidden;min-height:0;max-height:230px;scrollbar-width:auto;scrollbar-color:color-mix(in srgb,var(--pc) 60%,#fff) #eef2f7;padding:8px 6px 2px 8px;background:#F8FAFC;border-right:2px solid color-mix(in srgb,var(--pc) 25%,#fff);}
 .per-st{padding:8px 10px;overflow:auto;background:color-mix(in srgb,var(--pc) 5%,#fff);}
 .per-st .hd{font-size:12px;font-weight:700;color:var(--pc);margin-bottom:6px;}
-.prow{--c:#94a3b8;display:grid;grid-template-columns:74px 1fr auto;gap:8px;align-items:center;padding:5px 8px 5px 9px;margin:0 0 6px;border:1.5px solid #cbd5e1;border-left:5px solid var(--c);border-radius:7px;background:#fff;font-size:12.5px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.06);}
+.per-list::-webkit-scrollbar{width:12px;}
+.per-list::-webkit-scrollbar-track{background:#eef2f7;border-radius:6px;}
+.per-list::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--pc) 55%,#fff);border-radius:6px;border:2px solid #eef2f7;}
+.per-list::-webkit-scrollbar-thumb:hover{background:var(--pc);}
+.prow .km{font-size:12px;font-weight:700;color:#334155;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;min-width:58px;}
+.prow .km.z{color:#cbd5e1;font-weight:500;}
+.prow{--c:#94a3b8;display:grid;grid-template-columns:74px minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:5px 8px 5px 9px;margin:0 0 6px;border:1.5px solid #cbd5e1;border-left:5px solid var(--c);border-radius:7px;background:#fff;font-size:12.5px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.06);}
 .prow:hover{border-color:var(--pc);border-left-color:var(--c);background:color-mix(in srgb,var(--pc) 6%,#fff);}
 .prow .dt{color:#475569;font-variant-numeric:tabular-nums;font-size:11px;line-height:1.3;}
 .prow .dt b{display:block;font-size:12px;color:#1e293b;}
@@ -1118,8 +1124,9 @@ td.left{text-align:left;}
              · 사업현황 SKB를 탭 구성대로: SKB 전체 → SK TNS · 팬텍 · 유엔에이 · 사업자 확인필요
              · 공사취소·측량취소는 「취소」 배지 (단계 숫자는 완료에 포함)
    BUILD 72: 사업현황 단계 칸을 누르면 글자가 사라지던 문제 — 누른 칸은 그 색으로 채우고 글자 흰색
+   BUILD 73: 일별·주간·월간 목록에 거리(km) 칸 · 목록마다 세로 스크롤바
    ======================================================================== */
-const BUILD_NO='72';
+const BUILD_NO='73';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2749,6 +2756,13 @@ function workStage(d){
   if(simLeft)return '성과심사';
   return '완료';
 }
+/* 거리 : 정산거리(실측) → 없으면 측량 심사내역·도면거리 */
+function distOf(d){
+  if(typeof d.tango==='number'&&d.tango>0)return {v:d.tango,t:'정산거리'};
+  const x=toNum(colv(d,'실측'));if(typeof x==='number'&&x>0)return {v:x,t:'측량 심사내역·도면거리'};
+  return null;
+}
+function kmCell(d){const o=distOf(d);return o?'<span class="km" title="'+o.t+'">'+o.v.toFixed(3)+' km</span>':'<span class="km z" title="거리 없음">— km</span>';}
 function wsBadge(d){
   const k=d._ws||workStage(d);
   if(d._cancel)return '<span class="turn" style="--c:#94a3b8" title="'+esc(ns(d.jin)||'취소·제외')+' — 단계 숫자는 완료에 포함">취소</span>';
@@ -2803,7 +2817,7 @@ function renderPeriods(){
     h+='<div class="per-b"><div class="per-list">';
     if(!rows.length)h+='<div class="pempty">'+({add:'이 기간에 추가된 사업이 없어요',start:'이 기간에 착수한 사업이 없어요<br><span style="font-size:11.5px">착수일 = 굴착완료 통보일 또는 1차·2차 측량일</span>',done:'이 기간에 완료(Tango 업로드)된 사업이 없어요'}[st.kind])+'</div>';
     rows.slice(0,200).forEach(d=>{const dt=dfn(d);
-      h+='<div class="prow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><span class="dt"><b>'+(dt?(dt.getMonth()+1)+'/'+dt.getDate():'')+'</b>'+esc(d._grp||'')+'</span><span class="wk" title="'+esc(d.work)+'">'+esc(d.work)+'</span>'+wsBadge(d)+'</div>';});
+      h+='<div class="prow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><span class="dt"><b>'+(dt?(dt.getMonth()+1)+'/'+dt.getDate():'')+'</b>'+esc(d._grp||'')+'</span><span class="wk" title="'+esc(d.work)+'">'+esc(d.work)+'</span>'+kmCell(d)+wsBadge(d)+'</div>';});
     const kn=(PKIND.find(K=>K.k===st.kind)||{}).name||'';
     h+='</div><div class="per-st"><div class="hd">진행현황 <span style="font-weight:500;color:#64748b">'+kn+' '+rows.length+'건</span></div>';
     const tc={};rows.forEach(d=>{const w=d._ws||workStage(d);tc[w]=(tc[w]||0)+1;});
