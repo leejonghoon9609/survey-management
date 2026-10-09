@@ -1163,8 +1163,9 @@ td.left{text-align:left;}
    BUILD 75: 일별·주간·월간 한 화면에 3등분 · 목록 아래 실적(진행중/완료 건수·km) · 목록 칸 머리 + 세로 줄 맞춤
    BUILD 76: 일별(연분홍)·주간(연크림)·월간(연보라) 칸마다 다른 연한 배경색
    BUILD 77: 목록 창 표 머리글(칸 제목) 가운데 정렬
+   BUILD 78: 월간 칸 배경 연한 초록
    ======================================================================== */
-const BUILD_NO='77';
+const BUILD_NO='78';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2808,7 +2809,7 @@ function wsBadge(d){
 }
 
 /* ---- 추가사업 현황 : 일별·주간·월간 ---- */
-const PERS=[{k:'d',name:'일별',c:'#F43F5E',bg:'#FFFAFB',hd:'#FFF0F3'},{k:'w',name:'주간',c:'#EA002C',bg:'#FFFCF5',hd:'#FFF5E1'},{k:'m',name:'월간',c:'#9F1239',bg:'#FBFAFF',hd:'#F2EEFF'}];
+const PERS=[{k:'d',name:'일별',c:'#F43F5E',bg:'#FFFAFB',hd:'#FFF0F3'},{k:'w',name:'주간',c:'#EA002C',bg:'#FFFCF5',hd:'#FFF5E1'},{k:'m',name:'월간',c:'#9F1239',bg:'#F6FCF8',hd:'#E6F6EC'}];
 const PKIND=[{k:'add',name:'추가',c:'#EA002C'},{k:'start',name:'착수',c:'#059669'},{k:'done',name:'완료',c:'#2563EB'}];
 let PST={d:{off:0,kind:'add'},w:{off:0,kind:'add'},m:{off:0,kind:'add'}};
 const day0=dt=>new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());
