@@ -216,6 +216,44 @@ header .spacer{flex:1;}
 .dsub.on{background:#1e293b;border-color:#1e293b;color:#fff;}
 .dsub:hover:not(.on){border-color:#94a3b8;}
 .dhint{font-size:12px;color:#64748b;margin-left:auto;}
+.turn{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;border:1px solid var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 9%,#fff);font-family:inherit;}
+.turn:hover{background:color-mix(in srgb,var(--c) 18%,#fff);}
+.turn.solid{background:var(--c);color:#fff;}
+.kpis{display:flex;gap:8px;flex-wrap:wrap;}
+.kpi{--c:#334155;background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:7px 13px;min-width:132px;text-align:left;font-family:inherit;cursor:pointer;}
+.kpi .lab{font-size:11.5px;color:#64748b;}
+.kpi .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);line-height:1.3;}
+.kpi .val small{font-size:12px;font-weight:600;color:#64748b;margin-left:2px;}
+.kpi .sub{font-size:11.5px;color:#64748b;font-variant-numeric:tabular-nums;}
+.kpi.warn{border-color:color-mix(in srgb,var(--c) 45%,#fff);background:color-mix(in srgb,var(--c) 6%,#fff);}
+.kpi:hover{border-color:var(--c);}
+.dgrp{display:inline-flex;align-items:center;gap:6px;padding:3px;border-radius:12px;background:#f8fafc;}
+.dgrp .gl{font-size:11px;color:#94a3b8;font-weight:600;padding:0 4px 0 6px;}
+#cardPop{position:fixed;inset:0;background:rgba(15,23,42,.38);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+#cardPop .tc{background:#fff;border-radius:14px;width:min(760px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);}
+.tc-h{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 10px;border-bottom:1px solid #eef2f7;}
+.tc-h .t{font-size:15px;font-weight:800;line-height:1.35;}
+.tc-h .m{font-size:12px;color:#64748b;margin-top:3px;}
+.tc-b{padding:14px 18px 18px;display:grid;gap:14px;}
+.tc-now{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;}
+.tc-now b{font-size:14px;}
+.tl{position:relative;}
+.tl-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#eef2f7;}
+.tl-bar span{display:block;height:100%;}
+.tl-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
+.tl-step{font-size:11.5px;color:#64748b;line-height:1.35;}
+.tl-step b{display:block;font-size:12.5px;color:#1e293b;font-variant-numeric:tabular-nums;}
+.tl-step.miss b{color:#cbd5e1;font-weight:500;}
+.tl-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.tl-seg span{font-size:12px;padding:2px 8px;border-radius:10px;background:#f1f5f9;color:#334155;font-variant-numeric:tabular-nums;}
+.tc-box{border-radius:9px;padding:10px 12px;font-size:13px;line-height:1.55;}
+.tc-box.red{background:#FDE8EC;color:#7f1d1d;}
+.tc-box.grey{background:#f8fafc;color:#475569;}
+.tc-box.yel{background:#FFF4D6;color:#78350f;}
+.tc-box b{display:block;font-size:12.5px;margin-bottom:2px;}
+.tc-reply textarea{width:100%;box-sizing:border-box;min-height:150px;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;line-height:1.55;resize:vertical;}
+.tc-f{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;}
+@media (max-width:640px){.tl-steps{grid-template-columns:repeat(3,1fr);}}
 .elap{display:inline-block;padding:1px 7px;border-radius:10px;font-size:12px;font-weight:700;background:#f1f5f9;color:#475569;}
 .elap.warn{background:#FFF4D6;color:#92400E;}
 .elap.over{background:#FDE2E7;color:#B4001F;}
@@ -565,6 +603,8 @@ td.left{text-align:left;}
           <option value="hasdays">소요일수 있는 건만</option>
           <option value="gone">이번 파일에 없던 건</option>
           <option value="xlist">두 리스트에 같이 있는 건</option>
+          <option value="flags">오늘 고칠 것 (데이터 점검)</option>
+          <option value="over20">20일 넘긴 진행 건</option>
         </select>
         <input type="text" id="search" placeholder="공구명·공사코드 검색">
         <button class="btn tbtn" id="btnColPanel" onclick="toggleColPanel()" style="padding:7px 14px;--c:#334155">컬럼 설정</button>
@@ -797,6 +837,10 @@ td.left{text-align:left;}
         </div>
       </div>
     </div></div>
+<div id="cardPop" class="hide"><div class="tc" role="dialog" aria-modal="true" aria-labelledby="tcTitle">
+  <div class="tc-h"><div style="flex:1;min-width:0;"><div class="t" id="tcTitle"></div><div class="m" id="tcMeta"></div></div><span class="cell-x" id="tcX" title="닫기">✕</span></div>
+  <div class="tc-b" id="tcBody"></div>
+</div></div>
 <div id="colFilterPop" class="hide"></div>
 <div id="viewPop" class="hide"><div class="view-card">
   <div class="cell-h"><b>보기 설정</b><span class="cell-x" id="vpX">✕</span></div>
@@ -939,8 +983,12 @@ td.left{text-align:left;}
              · 두 리스트에 같이 있는 건(공사코드 같음) 검수에 표시 + 점검 필터
    BUILD 62: 「저장 지우기」 → 「전체 초기화」 — 목록·직전 목록·보기·통계 조건·서랍·요율까지
              이 브라우저에 저장된 것을 모두 지우고 처음 상태로 새로 시작
+   BUILD 63: 공정관리 1단계 큰 틀 — 「누구 차례」
+             · 건마다 지금 누가 처리할 차례인지 자동 판정 (시공사/우리 측량/우리 DB/심사기관/발주처/완료)
+             · 자동 칸 : 누구 차례 · 다음 할 일 · 경과일   입력 칸 : 굴착완료 통보일 · 성과심사 신청일
+             · 상단 지표 4개 · 데이터 점검(오늘 고칠 것) · 건별 타임라인 카드 + 회신 문구 복사
    ======================================================================== */
-const BUILD_NO='62';
+const BUILD_NO='63';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1254,8 +1302,39 @@ const COLSPEC=[
   {k:'이슈',   label:'이슈사항',          req:0, ex:h=>h==='이슈사항',        lo:h=>h.includes('이슈')},
   {k:'심사',   label:'성과심사신청',       req:0, ex:h=>h==='성과심사신청',     lo:h=>h.includes('성과심사')&&h.includes('신청')},
   {k:'굴착',   label:'굴착작업일정',       req:0, ex:h=>h==='굴착작업일정',     lo:h=>h.includes('굴착')},
-  {k:'납품',   label:'납품완료유무',       req:0, ex:h=>h==='납품완료유무',     lo:h=>h.includes('납품')}
+  {k:'납품',   label:'납품완료유무',       req:0, ex:h=>h==='납품완료유무',     lo:h=>h.includes('납품')},
+  {k:'결과서', label:'성과심사 결과서 확인', req:0, ex:h=>h==='성과심사결과서확인', lo:()=>false},
+  {k:'측량1',  label:'1차 측량 (실시간)',   req:0, ex:h=>h==='1차측량(실시간)',   lo:()=>false},
+  {k:'측량2',  label:'2차 측량 (사후)',     req:0, ex:h=>h==='2차측량(사후)',     lo:()=>false},
+  /* BUILD 63 : 앱이 만드는 칸 */
+  {k:'통보일', label:'굴착완료 통보일',     req:0, ex:h=>h==='굴착완료통보일',    lo:()=>false},
+  {k:'심사신청일',label:'성과심사 신청일',  req:0, ex:h=>h==='성과심사신청일',    lo:()=>false},
+  {k:'차례',   label:'누구 차례',          req:0, ex:h=>h==='누구차례',          lo:()=>false},
+  {k:'다음',   label:'다음 할 일',          req:0, ex:h=>h==='다음할일',          lo:()=>false},
+  {k:'경과',   label:'경과일',             req:0, ex:h=>h==='경과일',            lo:()=>false}
 ];
+/* 앱이 만들어 두는 칸 : at = 이 칸 뒤에 넣는다, auto = 자동 계산(수정 불가) */
+const AUTO_COLS=[
+  {k:'차례',      label:'누구 차례',       at:'공구명', auto:true},
+  {k:'다음',      label:'다음 할 일',       at:'차례',   auto:true},
+  {k:'경과',      label:'경과일',          at:'다음',   auto:true},
+  {k:'통보일',    label:'굴착완료 통보일',  at:'굴착',   auto:false},
+  {k:'심사신청일', label:'성과심사 신청일', at:'심사',   auto:false}
+];
+function isAutoIdx(idx){return AUTO_COLS.some(a=>a.auto&&COL[a.k]!=null&&COL[a.k]>=0&&COL[a.k]===idx)||(COL.소요일수>=0&&idx===COL.소요일수);}
+function ensureAutoCols(){
+  let made=[];
+  AUTO_COLS.forEach(a=>{
+    if(COL[a.k]!=null&&COL[a.k]>=0&&DISP.some(c=>c.idx===COL[a.k]))return;
+    const idx=nextColIdx(),label=uniqLabel(a.label);
+    let pos=DISP.length;
+    const ai=COL[a.at];
+    if(ai!=null&&ai>=0){const p=DISP.findIndex(c=>c.idx===ai);if(p>=0)pos=p+1;}
+    DISP.splice(pos,0,{idx:idx,label:label,vis:true});
+    COL[a.k]=idx;made.push(label);
+  });
+  return made;
+}
 const nh=h=>String(h==null?'':h).replace(/\s/g,'');
 function mapCols(H){
   const N=H.map(nh),col={},rep=[],used=new Set();
@@ -1299,6 +1378,7 @@ function setupDefault(){
   /* 소요일수는 Tango업로드 바로 뒤에 */
   const from=DISP.findIndex(c=>c.label==='소요일수'),to=DISP.findIndex(c=>c.label==='Tango업로드');
   if(from>=0&&to>=0){const it=DISP.splice(from,1)[0];DISP.splice(to<from?to+1:to,0,it);}
+  ensureAutoCols();
   loaded=true;
 }
 
@@ -1686,6 +1766,7 @@ function importSelected(){
     const e=COLREP.find(x=>x.k==='발주처');
     if(e){e.st='ok';e.h='발주처(자동)'+(srcIdx>=0?' ← '+labels[srcIdx]:'');}
   }
+  ensureAutoCols();
   colWidth={};colFilter={};sortCI=null;
   DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false,_chk:meta[i]?!!meta[i].x:false,_src:meta[i]?(meta[i].o||''):''};deriveItem(d);return d;});
   loaded=true;markDup();lastUpload=DATA.slice();
@@ -1847,42 +1928,84 @@ function deriveItem(d){
   /* 요청일 경과일 : Tango 업로드가 아직 없을 때 오늘까지 며칠째인지 (BUILD 60) */
   d.elapsed=(d.days==null&&parseDate(d.req))?daysBetween(d.req,new Date()):null;
   d.simsa=String((COL.심사!=null&&COL.심사>=0)?(x[COL.심사]==null?'':x[COL.심사]):'').trim();
-  d.stage=stageOf(d);
+  const t=turnOf(d);
+  d.turn=t.t;d.next=t.next;d.since=t.since;d.sinceFrom=t.from;
+  d.wait=(t.since?daysBetween(t.since,new Date()):null);
+  if(d.wait!=null&&d.wait<0)d.wait=null;
+  d.flags=flagsOf(d);
+  if(COL.차례!=null&&COL.차례>=0)x[COL.차례]=d.turn;
+  if(COL.다음!=null&&COL.다음>=0)x[COL.다음]=d.next||'';
+  if(COL.경과!=null&&COL.경과>=0)x[COL.경과]=(d.wait==null?'':d.wait);
 }
-/* ---- 상태 자동 판별 (BUILD 60) : 파일 칸만 보고 정한다, 따로 입력할 것 없음 ----
-   정산완료 / 정산제외            → 끝난 것
-   심사중 · 심사필요 · 정산대기    → 돈 받을 것 (측량은 끝났는데 돈이 안 들어옴)
-   측량중 · 견적 · 대기            → 움직이는 것 */
-const STAGES=[
-  {k:'견적',   g:'live', c:'#6366F1'},
-  {k:'측량중', g:'live', c:'#EA002C'},
-  {k:'대기',   g:'live', c:'#64748b'},
-  {k:'심사중', g:'money',c:'#7C3AED'},
-  {k:'심사필요',g:'money',c:'#B45309'},
-  {k:'정산대기',g:'money',c:'#D97706'},
-  {k:'정산완료',g:'done', c:'#059669'},
-  {k:'정산제외',g:'done', c:'#94a3b8'}
+/* ---- 누구 차례 (BUILD 63) : 파일 칸만 보고 지금 누가 처리할 차례인지 정한다 ----
+   규칙은 우리 업무에 맞게 계속 고친다. 판정 이유는 카드에 그대로 보여준다. */
+const TURNS=[
+  {k:'시공사',   g:'live',  c:'#B45309', hint:'굴착·착공·견적을 기다리는 건'},
+  {k:'우리 측량', g:'live',  c:'#EA002C', hint:'측량을 가야 하는 건 — 작업지시'},
+  {k:'우리 DB',  g:'money', c:'#BE123C', hint:'Tango 업로드·성과심사 신청이 남은 건'},
+  {k:'심사기관', g:'money', c:'#7C3AED', hint:'성과심사가 진행중인 건'},
+  {k:'발주처',   g:'money', c:'#2563EB', hint:'정산·입금을 기다리는 건'},
+  {k:'완료',     g:'done',  c:'#64748b', hint:'정산까지 끝났거나 측량 제외된 건'}
 ];
-const DRAWERS=[
-  {k:'live', name:'움직이는 것', c:'#EA002C', hint:'견적·측량 진행중 — 지금 챙길 건'},
-  {k:'money',name:'돈 받을 것',  c:'#B45309', hint:'측량은 끝났는데 심사·정산이 안 된 건'},
-  {k:'done', name:'끝난 것',     c:'#64748b', hint:'정산까지 끝난 건'},
-  {k:'',     name:'전체',        c:'#334155', hint:''}
+const TGROUPS=[
+  {k:'open',  name:'진행 전체',   c:'#1e293b', hint:'완료를 뺀 전체'},
+  {k:'live',  name:'살아있는 사업', c:'#EA002C', hint:'시공사 + 우리 측량'},
+  {k:'money', name:'돈 받을 것',   c:'#B45309', hint:'우리 DB + 심사기관 + 발주처'}
 ];
-function stageOf(d){
-  const jin=String(d.jin||'').replace(/\s/g,''),sim=String(d.simsa||'').replace(/\s/g,'');
-  const simNeed=/필요/.test(sim)&&!/불필요/.test(sim);   /* 성과심사가 아직 남은 건 (심사비도 돈이다) */
-  if(/진행중/.test(sim))return '심사중';
-  if(d.jeongKey==='정산완료')return simNeed?'심사필요':'정산완료';
-  if(d.jeongKey==='정산제외')return '정산제외';
-  if(/완료/.test(jin))return simNeed?'심사필요':'정산대기';
-  if(/견적/.test(jin)||(!jin&&/견적/.test(String(d.row[COL.굴착]||''))))return '견적';
-  if(/진행|탐사|중지|후측량/.test(jin))return '측량중';
-  if(!jin)return (typeof d.tango==='number'&&d.tango>0)?'정산대기':'대기';
-  return '대기';
+function turnColor(t){const x=TURNS.find(z=>z.k===t);return x?x.c:'#64748b';}
+function turnGroup(t){const x=TURNS.find(z=>z.k===t);return x?x.g:'live';}
+const ns=v=>(v==null?'':(isDateObj(v)?fmtDate(v):String(v))).replace(/\s/g,'');
+function colv(d,k){const i=COL[k];return (i!=null&&i>=0)?d.row[i]:undefined;}
+function surveyDate(d){return parseDate(colv(d,'측량2'))||parseDate(colv(d,'측량1'))||null;}
+function jeongDate(d){
+  const v=colv(d,'정산상황');const p=parseDate(v);if(p)return p;
+  const m=ns(v).match(/^(\d{2,4})년(\d{1,2})월$/);
+  if(m){let y=+m[1];if(y<100)y+=2000;return new Date(y,+m[2],0);}   /* 월만 있으면 그 달 말일 */
+  return null;
 }
-function stageGroup(st){const x=STAGES.find(z=>z.k===st);return x?x.g:'live';}
-function stageColor(st){const x=STAGES.find(z=>z.k===st);return x?x.c:'#64748b';}
+function turnOf(d){
+  const jin=ns(d.jin),gulRaw=colv(d,'굴착'),gul=ns(gulRaw),sim=ns(d.simsa),res=ns(colv(d,'결과서'));
+  const tupRaw=ns(d.tup),tupD=parseDate(d.tup),tongbo=parseDate(colv(d,'통보일')),simD=parseDate(colv(d,'심사신청일'));
+  const reqD=parseDate(d.req),svD=surveyDate(d);
+  const simNeed=/필요/.test(sim)&&!/불필요/.test(sim);
+  const both=jin+' '+gul;
+  if(d.jeongKey==='정산제외'||/측량취소|측량제외|측량불가/.test(both))
+    return {t:'완료',next:/측량불가/.test(both)?'측량불가 (확인)':'측량 제외·취소'};
+  if(/진행중/.test(sim))return {t:'심사기관',next:'성과심사 결과 확인',since:simD||tupD,from:simD?'심사 신청일':(tupD?'Tango 업로드일':'')};
+  const surveyed=/(측량|실시간|탐사)완료/.test(jin)||(typeof d.tango==='number'&&d.tango>0)||!!tupD||!!svD;
+  if(d.jeongKey==='정산완료'){
+    if(simNeed)return {t:'우리 DB',next:'성과심사 신청',since:tupD||svD,from:tupD?'Tango 업로드일':(svD?'측량일':'')};
+    if(/미결제|미지급/.test(res))return {t:'발주처',next:'성과심사비 청구',since:null};
+    return {t:'완료',next:''};
+  }
+  if(!surveyed){
+    const wait=/견적|미굴착|미진행|중지|본복구|완료후|착공시|탐사예정/.test(both);
+    const ready=!!tongbo||!!parseDate(gulRaw)||(/굴착완료|진행중/.test(both)&&!/미굴착/.test(both));
+    if(wait&&!ready&&!/진행중/.test(jin)){   /* 통보일·굴착 날짜를 적었으면 글자 상태보다 날짜가 우선 */
+      const nx=/견적/.test(both)?'견적 회신 대기':(/본복구/.test(both)?'본복구 완료 대기':(/착공시/.test(both)?'착공 일정 확인':'굴착 완료 통보 받기'));
+      return {t:'시공사',next:nx,since:reqD,from:reqD?'요청일':''};
+    }
+    if(ready||d.mKey==='탐사'||/탐사/.test(gul)){
+      return {t:'우리 측량',next:/진행중/.test(both)?'측량 진행중 · 완료 처리':'측량 배정',since:tongbo||reqD,from:tongbo?'굴착완료 통보일':(reqD?'요청일':'')};
+    }
+    return {t:'시공사',next:'굴착 완료 통보 받기',since:reqD,from:reqD?'요청일':''};
+  }
+  if(!tupD&&!/불필요/.test(tupRaw))return {t:'우리 DB',next:'Tango 업로드',since:svD,from:svD?'측량일':''};   /* 측량일이 없으면 경과일은 비워 둔다 */
+  if(simNeed&&!simD)return {t:'우리 DB',next:'성과심사 신청',since:tupD||svD,from:tupD?'Tango 업로드일':(svD?'측량일':'')};
+  if(simNeed&&simD)return {t:'심사기관',next:'성과심사 결과 확인',since:simD,from:'심사 신청일'};
+  return {t:'발주처',next:'정산 청구 · 입금 확인',since:tupD||svD,from:tupD?'Tango 업로드일':(svD?'측량일':'')};
+}
+/* 데이터 점검 : 완료가 아닌 건에서 자동 정리를 막는 칸 */
+function flagsOf(d){
+  if(d.turn==='완료')return [];
+  const f=[];
+  if(!parseDate(d.req))f.push(isBlank(d.req)?'요청일 없음':'요청일이 날짜가 아님');
+  const tupRaw=ns(d.tup);
+  if(tupRaw&&!parseDate(d.tup)&&!/불필요/.test(tupRaw))f.push('Tango 칸이 날짜가 아님');
+  if((d.turn==='우리 DB'||d.turn==='발주처'||d.turn==='심사기관')&&!(typeof d.tango==='number'&&d.tango>0))f.push('측량 끝났는데 거리 없음');
+  if(d._xlist)f.push('두 리스트에 같이 있음');
+  return f;
+}
 function markDup(){
   const srcs={};
   DATA.forEach(d=>{const k=(d.eng||'').toLowerCase();if(!k||!d._src)return;(srcs[k]=srcs[k]||new Set()).add(d._src);});
@@ -2003,7 +2126,7 @@ function viewObj(name){
   return {name:name,at:Date.now(),
     cols:DISP.map(c=>({l:c.label,v:!!c.vis})),
     widths:widths,
-    f:{baal:curBaal,drawer:curDrawer,stage:curStage,jisa:g('fJisa'),jin:g('fJin'),jeong:g('fJeong'),issue:g('fIssue'),q:g('search'),
+    f:{baal:curBaal,drawer:curDrawer,jisa:g('fJisa'),jin:g('fJin'),jeong:g('fJeong'),issue:g('fIssue'),q:g('search'),
        sort:(sortCI!=null&&DISP[sortCI])?DISP[sortCI].label:'',sortDir:sortDir,
        colFilter:Object.keys(colFilter).map(k=>{const c=DISP.find(x=>x.idx===+k);return c?[c.label,[...colFilter[k]]]:null;}).filter(Boolean)}};
 }
@@ -2021,7 +2144,7 @@ function applyView(v){
   colWidth={};
   if(v.widths)Object.keys(v.widths).forEach(l=>{const c=DISP.find(x=>x.label===l);if(c)colWidth[c.idx]=v.widths[l];});
   const f=v.f||{};
-  if(typeof f.drawer==='string'){curDrawer=f.drawer;curStage=f.stage||'';saveDrawer();}
+  if(typeof f.drawer==='string'){curDrawer=f.drawer==='done'?'완료':f.drawer;saveDrawer();}
   curBaal=f.baal||'';
   [...document.querySelectorAll('#fBaal .fbtn')].forEach(b=>b.classList.toggle('on',(b.dataset.b||'')===curBaal));
   const set=(id,val)=>{const e=document.getElementById(id);if(e)e.value=val||'';};
@@ -2101,15 +2224,27 @@ document.getElementById('colPanel').addEventListener('click',e=>{
 });
 
 function renderCards(){
-  const all=DATA.length,ableN=DATA.filter(able).length;
-  const done=DATA.filter(d=>d.jeongKey==='정산완료'),doneAmt=done.reduce((s,d)=>s+(d.amt||0),0);
-  const miss=DATA.filter(d=>d.jeongKey==='미정산'||d.jeongKey==='정산예정').length;
-  document.getElementById('cards').innerHTML=
-    '<div class="stat-c"><div class="lab">전체 사업</div><div class="val">'+all+'<span style="font-size:12px;color:#94a3b8">건</span></div></div>'+
-    '<div class="stat-c"><div class="lab">측량완료(정산가능)</div><div class="val blue">'+ableN+'<span style="font-size:12px;color:#94a3b8">건</span></div></div>'+
-    '<div class="stat-c"><div class="lab">정산완료</div><div class="val green">'+done.length+'<span style="font-size:12px;color:#94a3b8">건</span></div>'+(doneAmt?'<div class="sub2">'+won(doneAmt)+'</div>':'')+'</div>'+
-    '<div class="stat-c"><div class="lab">미정산</div><div class="val amber">'+miss+'<span style="font-size:12px;color:#94a3b8">건</span></div></div>';
+  const open=DATA.filter(d=>d.turn!=='완료'),live=open.filter(d=>turnGroup(d.turn)==='live'),money=open.filter(d=>turnGroup(d.turn)==='money');
+  const over=live.filter(d=>d.wait>20).length;
+  const amt=money.reduce((s,d)=>s+(d.amt||0),0),amtN=money.filter(d=>d.amt).length;
+  const flg=open.filter(d=>d.flags&&d.flags.length).length;
+  const k=(act,lab,val,sub,c,warn,tip)=>'<button class="kpi'+(warn?' warn':'')+'" data-kpi="'+act+'" style="--c:'+c+'" title="'+esc(tip)+'"><div class="lab">'+lab+'</div><div class="val">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</button>';
+  document.getElementById('cards').innerHTML='<div class="kpis">'+
+    k('open','진행 중',open.length+'<small>건</small>','전체 '+DATA.length+'건 중','#1e293b',false,'완료를 뺀 전체')+
+    k('live','살아있는 사업',live.length+'<small>건</small>','시공사 '+live.filter(d=>d.turn==='시공사').length+' · 우리 측량 '+live.filter(d=>d.turn==='우리 측량').length,'#EA002C',false,'시공사 + 우리 측량')+
+    k('over20','20일 넘긴 진행 건',over+'<small>건</small>','요청일(통보일)부터 오늘까지','#EA002C',over>0,'살아있는 사업 중 경과일 20일 초과')+
+    k('money','돈 받을 것',money.length+'<small>건</small>',amt?won(amt)+' (금액 적힌 '+amtN+'건)':'금액 칸 없음','#B45309',false,'우리 DB + 심사기관 + 발주처')+
+    k('flags','오늘 고칠 것',flg+'<small>건</small>','날짜·거리 칸 점검','#475569',flg>0,'자동 정리를 막는 칸이 있는 진행 건')+
+  '</div>';
 }
+document.getElementById('cards').addEventListener('click',e=>{
+  const b=e.target.closest('[data-kpi]');if(!b)return;
+  const a=b.dataset.kpi,fi=document.getElementById('fIssue');
+  if(a==='over20'){fi.value='over20';setDrawer('live');return;}
+  if(a==='flags'){fi.value='flags';setDrawer('open');return;}
+  if(fi.value==='over20'||fi.value==='flags')fi.value='';
+  setDrawer(a);
+});
 function buildFilters(){
   const uniq=k=>[...new Set(DATA.map(d=>d[k]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
   const opt=(ph,arr,cur)=>'<option value="">'+ph+'</option>'+arr.map(v=>'<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(v)+'</option>').join('');
@@ -2122,19 +2257,35 @@ function buildFilters(){
 }
 
 let curBaal='';
-/* ---- 서랍 상태 (BUILD 60) ---- */
+/* ---- 누구 차례 칩 (BUILD 63, 서랍 대신) ---- */
 const LS_DRAWER='gongjeong_drawer_v1';
-let curDrawer='live',curStage='';
-try{const r=JSON.parse(localStorage.getItem(LS_DRAWER)||'null');if(r&&typeof r.d==='string'){curDrawer=r.d;curStage=r.s||'';}}catch(e){}
-function saveDrawer(){try{localStorage.setItem(LS_DRAWER,JSON.stringify({d:curDrawer,s:curStage}));}catch(e){}}
-/* 서랍마다 보이는 칸 : k = 뜻으로 찾는 칸, l = 이름으로 찾는 칸 */
+let curDrawer='open',curStage='';
+try{const r=JSON.parse(localStorage.getItem(LS_DRAWER)||'null');if(r&&typeof r.d==='string'){curDrawer=r.d;}}catch(e){}
+if(curDrawer==='done')curDrawer='완료';                 /* BUILD 60 서랍 값 이어받기 */
+if(!['open','live','money',''].concat(TURNS.map(t=>t.k)).includes(curDrawer))curDrawer='open';
+function saveDrawer(){try{localStorage.setItem(LS_DRAWER,JSON.stringify({d:curDrawer,s:''}));}catch(e){}}
+function drawerMatch(d,k){
+  if(!k)return true;
+  if(k==='open')return d.turn!=='완료';
+  if(k==='live'||k==='money')return turnGroup(d.turn)===k;
+  return d.turn===k;
+}
+function colGroupOf(k){
+  if(k==='live'||k==='시공사'||k==='우리 측량')return 'live';
+  if(k==='money'||k==='우리 DB'||k==='심사기관'||k==='발주처')return 'money';
+  if(k==='완료')return 'done';
+  if(k==='open')return 'open';
+  return '';
+}
+/* 묶음마다 보이는 칸 : k = 뜻으로 찾는 칸, l = 이름으로 찾는 칸 */
 const DRAWER_COLS={
-  live:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'협력사'},{k:'행정'},{k:'측량구분'},{k:'굴착'},{k:'진행'},{k:'요청일'},{k:'탱고업로드'},{k:'소요일수'},{k:'이슈'}],
-  money:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'협력사'},{k:'측량구분'},{k:'진행'},{k:'탱고거리'},{k:'심사'},{l:'성과심사 사업명'},{k:'정산금액'},{l:'성과심사비 정산예정금액'},{k:'정산상황'},{l:'기성 남음금액'},{k:'이슈'}],
-  done:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'협력사'},{k:'측량구분'},{k:'탱고거리'},{k:'정산금액'},{l:'성과심사비 정산예정금액'},{k:'정산상황'},{l:'성과심사 결과서 확인'},{l:'비고 2'},{l:'기성 남음금액'}]
+  open:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'차례'},{k:'다음'},{k:'경과'},{k:'협력사'},{k:'측량구분'},{k:'굴착'},{k:'진행'},{k:'요청일'},{k:'탱고업로드'},{k:'심사'},{k:'이슈'}],
+  live:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'차례'},{k:'다음'},{k:'경과'},{k:'협력사'},{k:'행정'},{k:'측량구분'},{k:'굴착'},{k:'통보일'},{k:'진행'},{k:'요청일'},{k:'이슈'}],
+  money:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'차례'},{k:'다음'},{k:'경과'},{k:'협력사'},{k:'측량구분'},{k:'탱고거리'},{k:'탱고업로드'},{k:'심사'},{k:'심사신청일'},{l:'성과심사 사업명'},{k:'정산금액'},{l:'성과심사비 정산예정금액'},{k:'정산상황'},{l:'기성 남음금액'},{k:'이슈'}],
+  done:[{k:'순번'},{k:'시행'},{k:'발주처'},{k:'공구명'},{k:'차례'},{k:'협력사'},{k:'측량구분'},{k:'탱고거리'},{k:'정산금액'},{l:'성과심사비 정산예정금액'},{k:'정산상황'},{l:'성과심사 결과서 확인'},{l:'비고 2'},{l:'기성 남음금액'}]
 };
 function applyDrawerCols(k){
-  const spec=DRAWER_COLS[k];if(!spec||!DISP.length)return;
+  const spec=DRAWER_COLS[colGroupOf(k)];if(!spec||!DISP.length)return;
   const want=new Set();
   spec.forEach(it=>{
     if(it.k!=null){const i=COL[it.k];if(i!=null&&i>=0)want.add(i);}
@@ -2143,43 +2294,40 @@ function applyDrawerCols(k){
   if(want.size<4)return;   /* 이 양식에 맞는 칸이 거의 없으면 건드리지 않는다 */
   DISP.forEach(c=>{c.vis=want.has(c.idx);});
 }
-function setDrawer(k,st){
-  const changed=(k!==curDrawer);
-  curDrawer=k;curStage=st||'';
+function setDrawer(k){
+  const changed=colGroupOf(k)!==colGroupOf(curDrawer);
+  curDrawer=k;curStage='';
   if(changed)applyDrawerCols(k);
   saveDrawer();
-  buildColPanel();buildHead();render();markDirty();
+  buildColPanel();buildHead();render();renderCards();markDirty();
 }
 function renderDrawers(){
   const box=document.getElementById('drawers');if(!box)return;
   const base=visible({noDrawer:true});
-  const cnt={live:0,money:0,done:0,'':base.length};const sc={};
-  base.forEach(d=>{cnt[stageGroup(d.stage)]++;sc[d.stage]=(sc[d.stage]||0)+1;});
-  let h=DRAWERS.map(dr=>'<button class="drw'+(curDrawer===dr.k?' on':'')+'" data-drw="'+dr.k+'" style="--c:'+dr.c+'" title="'+esc(dr.hint)+'">'+esc(dr.name)+'<span class="n">'+cnt[dr.k]+'</span><span class="u">건</span></button>').join('');
-  const subs=STAGES.filter(z=>curDrawer===''||z.g===curDrawer);
-  if(curDrawer!==''){
-    h+='<span class="dsep"></span>';
-    h+=subs.map(z=>'<button class="dsub'+(curStage===z.k?' on':'')+'" data-stg="'+z.k+'"><span style="width:8px;height:8px;border-radius:50%;background:'+z.c+';display:inline-block;"></span>'+z.k+' <b>'+(sc[z.k]||0)+'</b></button>').join('');
-  }
-  const dr=DRAWERS.find(x=>x.k===curDrawer);
-  if(dr&&dr.hint)h+='<span class="dhint">'+esc(dr.hint)+(curDrawer==='live'?' · 소요일수 칸의 「N일째」는 요청일부터 오늘까지':'')+'</span>';
+  const tc={};base.forEach(d=>{tc[d.turn]=(tc[d.turn]||0)+1;});
+  const cnt=k=>base.filter(d=>drawerMatch(d,k)).length;
+  const btn=(k,name,c,hint,n,cls)=>'<button class="'+(cls||'dsub')+(curDrawer===k?' on':'')+'" data-drw="'+esc(k)+'" style="--c:'+c+'" title="'+esc(hint||'')+'">'+
+    (cls==='drw'?esc(name)+'<span class="n">'+n+'</span><span class="u">건</span>':'<span style="width:8px;height:8px;border-radius:50%;background:'+c+';display:inline-block;"></span>'+esc(name)+' <b>'+n+'</b>')+'</button>';
+  let h='<span class="dgrp"><span class="gl">누구 차례</span></span>';
+  h+=btn('open','진행 전체','#1e293b','완료를 뺀 전체',cnt('open'),'drw');
+  h+='<span class="dgrp"><span class="gl">현장</span>'+TURNS.filter(t=>t.g==='live').map(t=>btn(t.k,t.k,t.c,t.hint,tc[t.k]||0)).join('')+'</span>';
+  h+='<span class="dgrp"><span class="gl">돈</span>'+TURNS.filter(t=>t.g==='money').map(t=>btn(t.k,t.k,t.c,t.hint,tc[t.k]||0)).join('')+'</span>';
+  h+=btn('완료','완료','#64748b','정산까지 끝났거나 측량 제외된 건',tc['완료']||0);
+  h+=btn('','전체','#334155','',base.length);
+  const tg=TURNS.find(t=>t.k===curDrawer)||TGROUPS.find(t=>t.k===curDrawer);
+  if(tg&&tg.hint)h+='<span class="dhint">'+esc(tg.hint)+' · 「누구 차례」를 누르면 카드</span>';
   box.innerHTML=h;
 }
 document.getElementById('drawers').addEventListener('click',e=>{
   const b=e.target.closest('[data-drw]');
-  if(b){setDrawer(b.dataset.drw,'');return;}
-  const st=e.target.closest('[data-stg]');
-  if(st){curStage=(curStage===st.dataset.stg)?'':st.dataset.stg;saveDrawer();render();}
+  if(b){setDrawer(b.dataset.drw);return;}
 });
 function visible(opt){
   opt=opt||{};
   const q=document.getElementById('search').value.trim().toLowerCase();
   const fj=document.getElementById('fJisa').value,fjin=document.getElementById('fJin').value,fjeo=document.getElementById('fJeong').value,fis=document.getElementById('fIssue').value;
   return DATA.filter(d=>{
-    if(!opt.noDrawer){
-      if(curDrawer&&stageGroup(d.stage)!==curDrawer)return false;
-      if(curStage&&d.stage!==curStage)return false;
-    }
+    if(!opt.noDrawer&&!drawerMatch(d,curDrawer))return false;
     if(curBaal&&d.baal!==curBaal)return false;
     if(fj&&d.jisa!==fj)return false;
     if(fjin&&d.jin!==fjin)return false;
@@ -2187,6 +2335,8 @@ function visible(opt){
     if(fis==='hasdays'){if(d.days==null)return false;}
     else if(fis==='gone'){if(!d._gone)return false;}
     else if(fis==='xlist'){if(!d._xlist)return false;}
+    else if(fis==='flags'){if(!d.flags||!d.flags.length)return false;}
+    else if(fis==='over20'){if(turnGroup(d.turn)!=='live'||!(d.wait>20))return false;}
     else if(fis==='checked'){if(!d._chk)return false;}
     else if(fis){const is=issuesOf(d);if(fis==='any'){if(!is.length)return false;}else if(!is.includes(fis))return false;}
     if(q&&!(d.work.toLowerCase().includes(q)||d.eng.toLowerCase().includes(q)))return false;
@@ -2237,9 +2387,12 @@ function cellInner(d,c){
     return '<label class="isswrap" title="이슈로 표시 (통계에 반영)"><input type="checkbox" class="isschk" data-id="'+d._id+'"'+(d._chk?' checked':'')+'></label>'+
            '<span class="cv">'+tag+esc(sp.rest)+'</span>';
   }
-  if(c.idx===COL.소요일수&&txt===''&&d.elapsed!=null&&d.elapsed>=0&&stageGroup(d.stage)==='live'){
-    const cls=d.elapsed>20?' over':(d.elapsed>15?' warn':'');
-    return '<span class="elap'+cls+'" title="요청일부터 오늘까지 '+d.elapsed+'일 (Tango 업로드 전)">'+d.elapsed+'일째</span>';
+  if(COL.차례>=0&&c.idx===COL.차례)return '<button class="turn" data-card="'+d._id+'" style="--c:'+turnColor(d.turn)+'" title="눌러서 타임라인 카드 보기">'+esc(d.turn)+(d.flags&&d.flags.length?' <span title="데이터 점검 '+d.flags.length+'건" style="color:#b91c1c">●</span>':'')+'</button>';
+  if(COL.경과>=0&&c.idx===COL.경과){
+    if(d.wait==null)return '<span class="cv"></span>';
+    const live=turnGroup(d.turn)==='live';
+    const cls=live?(d.wait>20?' over':(d.wait>15?' warn':'')):'';
+    return '<span class="elap'+cls+'" title="'+esc(d.sinceFrom||'')+'부터 오늘까지 '+d.wait+'일">'+d.wait+'일</span>';
   }
   const mc=(c.idx===COL.측량구분||c.idx===COL.소요일수)?methodCls(d):'';
   return '<span class="cv'+(mc&&txt!==''?' '+mc:'')+'">'+txt+'</span>';
@@ -2319,7 +2472,7 @@ function render(keep){
     let h;
     if(!DATA.length)h='<b>목록이 비어 있어요.</b><br>사업추가 탭에서 엑셀을 올려주세요.';
     else if(anyFilterOn())h='<b>지금 걸린 필터에 맞는 줄이 없어요.</b><br>전체 '+DATA.length+'건은 그대로 있습니다.<br><button class="btn btn-primary" id="clrF" style="padding:8px 20px;">필터 모두 해제</button>';
-    else if(curDrawer||curStage)h='<b>이 서랍에 해당하는 건이 없어요.</b><br>위의 다른 서랍을 눌러보세요.';
+    else if(curDrawer)h='<b>이 차례에 해당하는 건이 없어요.</b><br>위의 다른 칩을 눌러보세요.';
     else h='<b>표시할 줄이 없습니다.</b>';
     document.getElementById('rows').innerHTML='<tr class="emptyrow"><td colspan="'+Math.max(1,span)+'">'+h+'</td></tr>';
     const cb=document.getElementById('clrF');if(cb)cb.addEventListener('click',clearAllFilters);
@@ -2371,12 +2524,103 @@ function restoreUpload(){
   markDirty();toast(DATA.length+'건으로 복원했습니다');
 }
 
+/* ======================= 타임라인 카드 (BUILD 63) ======================= */
+let CARD_ID=null;
+function fd(dt){return dt?fmtDate(dt):'';}
+function cardSteps(d){
+  const reqD=parseDate(d.req),gulD=parseDate(colv(d,'통보일'))||parseDate(colv(d,'굴착')),svD=surveyDate(d),tupD=parseDate(d.tup),simD=parseDate(colv(d,'심사신청일')),jD=jeongDate(d);
+  return [
+    {k:'요청',d:reqD,raw:ns(d.req),who:'시공사',c:'#B45309'},
+    {k:'굴착완료 통보',d:gulD,raw:ns(colv(d,'굴착')),who:'우리 측량',c:'#EA002C'},
+    {k:'측량',d:svD,raw:ns(d.jin),who:'우리 DB',c:'#FB7185'},
+    {k:'Tango',d:tupD,raw:ns(d.tup),who:'우리 DB',c:'#FB7185'},
+    {k:'심사 신청',d:simD,raw:ns(d.simsa),who:'심사기관',c:'#7C3AED'},
+    {k:'정산',d:jD,raw:ns(colv(d,'정산상황')),who:'',c:'#2563EB'}
+  ];
+}
+function cardSegments(d){
+  /* 날짜가 있는 점끼리 이어 구간을 만든다. 구간의 주인 = 앞 점의 who */
+  const st=cardSteps(d).filter(x=>x.d);
+  const now=new Date();const seg=[];
+  for(let i=0;i<st.length;i++){
+    const a=st[i],b=st[i+1];
+    const end=b?b.d:(d.turn==='완료'?null:now);if(!end)continue;
+    const n=daysBetween(a.d,end);if(n==null||n<0)continue;
+    seg.push({from:a.k,to:b?b.k:'오늘',n:n,who:b?a.who:d.turn,c:b?a.c:turnColor(d.turn)});
+  }
+  return seg;
+}
+function replyText(d){
+  const st=cardSteps(d);const L=[];
+  L.push('[대원항업 측량 진행 안내]');
+  L.push('공사명 : '+(d.work||''));
+  if(d.eng)L.push('공사코드 : '+d.eng);
+  if(d.seq)L.push('관리번호 : '+d.seq);
+  st.forEach(x=>{if(x.d)L.push(x.k+' : '+fd(x.d));});
+  const reqD=st[0].d,gD=st[1].d;
+  if(reqD&&gD){const a=daysBetween(reqD,gD);if(a!=null&&a>=0)L.push('※ 요청 후 굴착완료 통보까지 '+a+'일 (시공사 대기 기간)');}
+  L.push('현재 : '+d.turn+(d.next?' · '+d.next:'')+(d.wait!=null?' ('+d.wait+'일째)':''));
+  const tail={
+    '시공사':'굴착 완료(또는 착공) 일정을 알려주시면 바로 측량 일정을 잡겠습니다.',
+    '우리 측량':'측량 일정을 배정해 진행하겠습니다.',
+    '우리 DB':'성과 정리 후 Tango 업로드·성과심사 신청을 진행하겠습니다.',
+    '심사기관':'성과심사 결과가 나오는 대로 알려드리겠습니다.',
+    '발주처':'측량·성과 업무가 끝난 건으로, 정산 확인 부탁드립니다.',
+    '완료':''
+  }[d.turn]||'';
+  if(tail)L.push('',tail);
+  return L.join('\n');
+}
+function openCard(id){
+  const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;
+  CARD_ID=d._id;
+  document.getElementById('tcTitle').textContent=(d.seq?d.seq+' · ':'')+(d.eng?d.eng+' · ':'')+(d.work||'');
+  document.getElementById('tcMeta').textContent=[d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
+  const st=cardSteps(d),seg=cardSegments(d);
+  const tot=seg.reduce((s,x)=>s+x.n,0);
+  let h='<div class="tc-now"><span class="turn solid" style="--c:'+turnColor(d.turn)+';cursor:default">'+esc(d.turn)+'</span>'+
+        (d.next?'<b>'+esc(d.next)+'</b>':'')+(d.wait!=null?'<span class="elap'+(turnGroup(d.turn)==='live'&&d.wait>20?' over':'')+'">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
+  h+='<div class="tl">';
+  h+='<div class="tl-bar">'+(tot>0?seg.map(x=>'<span style="width:'+(100*x.n/tot)+'%;background:'+x.c+'" title="'+esc(x.from+' → '+x.to+' '+x.n+'일')+'"></span>').join(''):'')+'</div>';
+  h+='<div class="tl-steps">'+st.map(x=>'<div class="tl-step'+(x.d?'':' miss')+'">'+esc(x.k)+'<b>'+(x.d?fd(x.d):(x.raw?esc(x.raw.slice(0,10)):'—'))+'</b></div>').join('')+'</div>';
+  if(seg.length)h+='<div class="tl-seg">'+seg.map(x=>'<span style="box-shadow:inset 3px 0 0 '+x.c+'">'+esc(x.from)+' → '+esc(x.to)+' <b>'+x.n+'일</b></span>').join('')+'</div>';
+  h+='</div>';
+  /* 20일 판정 */
+  const reqD=st[0].d,gD=st[1].d,endD=st[3].d||st[2].d;
+  if(reqD){
+    const total=daysBetween(reqD,endD||new Date());
+    let msg='요청 후 '+(endD?(st[3].d?'Tango 업로드까지 ':'측량까지 '):'오늘까지 ')+total+'일.';
+    if(gD){const a=daysBetween(reqD,gD),b=daysBetween(gD,endD||new Date());msg+=' 그중 시공사 대기 '+a+'일, 우리 구간 '+b+'일.';}
+    else msg+=' 굴착완료 통보일이 없어 시공사 대기와 우리 구간을 나눌 수 없어요. 「굴착완료 통보일」 칸에 날짜를 적으면 나뉩니다.';
+    h+='<div class="tc-box '+(total>20?'red':'grey')+'"><b>20일 기한 판정</b>'+esc(msg)+'</div>';
+  }else{
+    h+='<div class="tc-box yel"><b>20일 기한 판정 불가</b>요청일이 날짜가 아니에요 ('+esc(ns(d.req)||'빈칸')+'). 날짜로 적으면 경과일과 구간이 계산됩니다.</div>';
+  }
+  const iss=String(colv(d,'이슈')==null?'':colv(d,'이슈')).trim();
+  h+='<div class="tc-box grey"><b>이슈사항</b>'+(iss?esc(iss):'없음')+'<div style="font-size:11.5px;color:#94a3b8;margin-top:4px;">표에서 이슈사항 칸을 더블클릭하면 고칠 수 있어요</div></div>';
+  if(d.flags&&d.flags.length)h+='<div class="tc-box yel"><b>데이터 점검 '+d.flags.length+'건</b>'+d.flags.map(esc).join(' · ')+'</div>';
+  h+='<div class="tc-reply"><div style="font-size:12.5px;font-weight:700;margin-bottom:4px;">회신 문구 (고쳐서 쓰세요)</div><textarea id="tcReply">'+esc(replyText(d))+'</textarea></div>';
+  h+='<div class="tc-f"><span class="stat" id="tcCopied"></span><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button><button class="btn btn-primary" id="tcCopy" style="padding:7px 18px;">회신 문구 복사</button></div>';
+  document.getElementById('tcBody').innerHTML=h;
+  document.getElementById('cardPop').classList.remove('hide');
+}
+function closeCard(){document.getElementById('cardPop').classList.add('hide');CARD_ID=null;}
+document.getElementById('cardPop').addEventListener('click',e=>{
+  if(e.target.id==='cardPop'||e.target.id==='tcX'||e.target.id==='tcClose'){closeCard();return;}
+  if(e.target.id==='tcCopy'){
+    const ta=document.getElementById('tcReply');const done=()=>{document.getElementById('tcCopied').textContent='복사했어요';};
+    try{navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand&&document.execCommand('copy');done();});}
+    catch(err){ta.select();try{document.execCommand('copy');}catch(e2){}done();}
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CARD_ID!=null)closeCard();});
+
 /* ======================= 편집 / 삭제 ======================= */
 function editFormHTML(d){
   const keyIdx=new Set([COL.측량구분,COL.탱고거리,COL.지사,COL.구분].filter(i=>i!=null&&i>=0));
   const fields=DISP.map(c=>{
     const v=d.row[c.idx];const val=esc(v==null?'':(isDateObj(v)?fmtDate(v):String(v)));
-    const auto=(COL.소요일수>=0&&c.idx===COL.소요일수);
+    const auto=isAutoIdx(c.idx);
     return '<label class="ef'+(keyIdx.has(c.idx)?' key':'')+'"><span>'+esc(c.label)+(auto?' (자동)':'')+'</span><input data-eidx="'+c.idx+'" value="'+val+'"'+(auto?' readonly style="background:#f1f5f9;color:#64748b;"':'')+'></label>';
   }).join('');
   const iss=issuesOf(d);
@@ -2397,6 +2641,8 @@ function toggleEditRow(tr){
   tr.after(er);
 }
 document.getElementById('rows').addEventListener('click',e=>{
+  const cb=e.target.closest('[data-card]');
+  if(cb){e.stopPropagation();cancelPendingClick();openCard(cb.dataset.card);return;}
   if(e.target.closest('td.cb')||e.target.closest('td.rn')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   const sv=e.target.closest('[data-esave]');
   if(sv){
@@ -2444,6 +2690,7 @@ document.getElementById('rows').addEventListener('click',e=>{
 let clickTmr=null;
 function cancelPendingClick(){if(clickTmr){clearTimeout(clickTmr);clickTmr=null;}}
 document.getElementById('rows').addEventListener('dblclick',e=>{
+  if(e.target.closest('[data-card]'))return;
   if(e.target.closest('td.cb')||e.target.closest('td.rn')||e.target.closest('tr.emptyrow')||e.target.closest('.isswrap'))return;
   cancelPendingClick();
   const td=e.target.closest('td'),tr=e.target.closest('tr');
@@ -2505,7 +2752,7 @@ document.getElementById('epVal').addEventListener('input',updatePrev);
 function openEditPop(tr,td){
   const d=DATA.find(x=>String(x._id)===String(tr.dataset.id));if(!d)return;
   const c=colOfTd(td);if(!c)return;
-  if(COL.소요일수>=0&&c.idx===COL.소요일수){toast('소요일수는 요청일과 Tango업로드로 자동 계산돼요',true);return;}
+  if(isAutoIdx(c.idx)){toast('「'+c.label+'」은 다른 칸을 보고 자동으로 정해져요',true);return;}
   const iss=isIssueCol(c.idx);
   EP={id:d._id,idx:c.idx,label:c.label,ci:td.cellIndex,iss:iss,tag:''};
   const v=d.row[c.idx];
@@ -3650,6 +3897,8 @@ function repairCols(){
   });
   /* 소요일수 칸이 아예 없으면 Tango업로드 뒤에 만들어 준다 */
   let made='';
+  const madeAuto=ensureAutoCols();
+  if(madeAuto.length)made=madeAuto.join('·');
   if(COL.소요일수<0&&COL.요청일>=0&&COL.탱고업로드>=0){
     const idx=nextColIdx(),label=uniqLabel('소요일수');
     const at=DISP.findIndex(c=>c.idx===COL.탱고업로드);
