@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>탱고 DB</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.20.9/dist/proj4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  .ptin::placeholder{color:#d2d2d2;opacity:1}
+  :root{--line:#e3e3e0;--ink:#1c1c1a;--muted:#6b6b66;--bg:#fafaf8;--ok:#2a9e50;--bad:#d32f2f;--accent:#1f6fd6}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid var(--line);background:#fff}
+  /* [1219] ?open= 사업 필터 칩: 헤더 끝으로 보내 기존 버튼 줄배치 보존 (realtime은 자체 규칙) */
+  #projFilterChip{order:99;max-width:170px}
+  header>button,header>select{padding:4px 7px;font-size:11.5px}
+  header h1{font-size:14px;font-weight:600;margin-right:6px}
+  #bpToggle.off{background:#f3f3f0;color:#999;opacity:.75}
+  select,input[type=text]{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .conn{font-size:12px;padding:4px 8px;border-radius:6px;margin-left:auto}
+  .conn.on{background:#eef6ef;color:var(--ok)} .conn.off{background:#f3f3f0;color:var(--muted)}
+  .subbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff;min-height:62px}
+  .sub-b{padding:11px 15px;font-size:14px;border-radius:8px}
+  .subhint{font-size:12px;color:var(--muted)}
+  .rail{width:205px;flex:none;border-right:1px solid var(--line);background:#fafaf8;padding:8px;display:flex;flex-direction:column;gap:7px;overflow-y:auto}
+  .rail button{justify-content:flex-start;width:100%;padding:11px 12px;font-size:14px}
+  .rail button.on{background:#eef6ef;border-color:var(--ok);color:var(--ok);font-weight:600}
+  .rail .sep{height:1px;background:var(--line);margin:3px 1px}
+  .hk-badge{margin-left:auto;display:inline-block;background:transparent;color:#c0392b;border:1.5px solid #c0392b;font-size:10px;font-weight:800;padding:0 5px;border-radius:4px;min-width:16px;text-align:center;line-height:1.6}
+  .sub-b .hk-badge{margin-left:6px}
+  .hk-overlay{position:fixed;inset:0;background:rgba(20,20,18,.38);z-index:1000;display:flex;align-items:center;justify-content:center}
+  .hk-card{background:#fff;border-radius:13px;width:520px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden}
+  .hk-card h3{font-size:15px;font-weight:700;padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  .hk-body{overflow:auto;padding:8px 10px}
+  .hk-grp{font-size:11px;font-weight:700;color:var(--muted);padding:9px 8px 4px}
+  .hk-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px}
+  .hk-row:hover{background:#fafaf8}
+  .hk-row .nm{flex:1;font-size:13px;color:var(--ink)}
+  .hk-row .keyb{min-width:52px;text-align:center;font-size:12px;font-weight:700;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;color:var(--ink)}
+  .hk-row .keyb.cap{border-color:var(--accent);color:var(--accent);background:#eef4fc}
+  .hk-row .keyb.set{border-color:#c0392b;color:#c0392b}
+  .hk-row .clr{font-size:12px;color:#bbb;cursor:pointer;padding:2px 6px;border:1px solid var(--line);border-radius:5px;background:#fff}
+  .hk-row .clr:hover{color:var(--bad);border-color:var(--bad)}
+  .hk-foot{padding:11px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+  button.soon{color:#b0b0b0;border-style:dashed}
+  .viewgrp{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .hgbtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .hgbtns .subhint{margin:0 2px}
+  .zoomwrap2{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .zoomwrap2 button{border:none;border-right:1px solid var(--line);border-radius:0}
+  .zoomwrap2 button:last-child{border-right:none}
+  button{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:5px;transition:.12s;white-space:nowrap}
+  button:hover{background:#f2f2ef}
+  button.on{border-color:var(--ink);background:#f2f2ef;font-weight:600}
+  button.on-ok{border-color:var(--ok);color:var(--ok);background:#eef6ef;font-weight:600}
+  button.on-bad{border-color:var(--bad);color:var(--bad);background:#fbeeee;font-weight:600}
+  button.pri{border-color:var(--accent);color:var(--accent)}
+  button.dgr{border-color:var(--bad);color:var(--bad)}
+  /* 사업 등록 모달 */
+  .regwrap{position:fixed;inset:0;background:rgba(28,28,26,.42);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+  .regbox{background:#fff;border-radius:14px;width:min(1060px,96vw);box-shadow:0 12px 48px rgba(0,0,0,.22);overflow:hidden}
+  .reghd{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .reghd .regt{font-size:17px;font-weight:800}
+  .regxbtn{margin-left:auto;border:none;background:none;font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px}
+  .regname{display:flex;align-items:center;gap:14px;padding:18px 20px 8px}
+  .regname label{font-size:14px;font-weight:700;white-space:nowrap}
+  .regname input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;outline:none}
+  .regname input:focus{border-color:var(--accent)}
+  .reginfo{display:flex;gap:12px;flex-wrap:wrap;padding:2px 20px 8px}
+  .reginfo label{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;font-size:12.5px;font-weight:700;color:#444}
+  .reginfo input,.reginfo select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;outline:none;font-weight:400;background:#fff}
+  .reginfo input:focus,.reginfo select:focus{border-color:var(--accent)}
+  .regcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;padding:14px 20px 6px}
+  .regcard{border:1px solid var(--line);border-top:3px solid var(--rc,#ccc);border-radius:11px;padding:14px 13px;display:flex;flex-direction:column;min-height:212px;background:#fcfcfb}
+  .regcard.csv{--rc:#1f6fd6}
+  .regcard.pho{--rc:#2a9e50}
+  .regcard.crs{--rc:#7a52e0}
+  .regcard.dxf{--rc:#d98200}
+  .regcard.tamsa{--rc:#0a9a7a;display:none}
+  .regbox.tamsa-on .regcard.tamsa{display:flex}
+  .regbox.tamsa-on .regcard.csv,.regbox.tamsa-on #regAftCard,.regbox.tamsa-on .regcard.pho{display:none}
+  .regbox.tamsa-on #regNightRow{display:none}
+  .reg-real{margin-left:14px;border:1.5px solid #16a34a;background:#fff;color:#15803d;font-weight:800;font-size:15px;border-radius:9px;padding:8px 18px;cursor:pointer}.reg-real:hover{background:#d5f0dd}.reg-real.on{background:#16a34a;border-color:#16a34a;color:#fff}.reg-tamsa{margin-left:8px;border:1.5px solid #d92b2b;background:#fff;color:#c0392b;font-weight:800;font-size:15px;border-radius:9px;padding:8px 18px;cursor:pointer}
+  .reg-tamsa:hover{background:#fbdcdc}
+  .reg-tamsa.on{background:#d92b2b;border-color:#d92b2b;color:#fff}
+  .rc-t{font-size:14px;font-weight:800;text-align:center;margin-bottom:10px;color:var(--rc)}
+  .rc-drop{flex:1;border:1.5px dashed #d2d2cc;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px;text-align:center;cursor:pointer;transition:.15s;margin-bottom:11px}
+  .rc-drop:hover{background:#f6f8fb}
+  .rc-drop.over{border-color:var(--rc);border-width:2px;background:#f2f6fc}
+  .rc-dico{font-size:21px;color:var(--rc);opacity:.7;line-height:1}
+  .rc-st{font-size:12px;color:var(--muted);line-height:1.35}
+  .rc-st.done{color:var(--ok);font-weight:800}
+  .rc-hint{font-size:10.5px;color:#b3b3ad}
+  .rc-btn{align-self:center;padding:8px 24px;border:1px solid var(--rc);color:var(--rc);background:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+  .rc-btn:hover{background:#f6f8fb}
+  .rc-crs{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:4px 2px;margin-bottom:8px}
+  .rc-crs label{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;border:1px solid var(--line);border-radius:7px;padding:6px 9px;cursor:pointer}
+  .rc-crs label:hover{border-color:var(--rc)}
+  .rc-crs input{accent-color:var(--rc)}
+  .rc-crsout{font-size:11px;color:var(--ok);font-weight:700;text-align:center;line-height:1.45;min-height:14px;margin-top:8px}
+  .rc-maplink{display:block;text-align:center;font-size:11px;color:#7a52e0;font-weight:700;margin-top:5px;text-decoration:none}
+  .rc-maplink:hover{text-decoration:underline}
+  .rc-note{font-size:10px;color:#b3b3ad;text-align:center;line-height:1.3}
+  .regfoot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 18px}
+  .rf-cancel{padding:9px 22px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+  .rf-ok{padding:9px 26px;border:1px solid var(--ok);background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
+  .rf-ok:hover{background:#258a45}
+  @media (max-width:720px){.regcards{grid-template-columns:1fr 1fr}}
+  /* 지도 배경 레이어 (도면 자리에 깔림) */
+  .maplayer{position:absolute;inset:0;z-index:8;background:#fff;display:flex;flex-direction:column}
+  .maptop{display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .maptop .mapt{font-size:14px;font-weight:800}
+  .maptop .mapinfo{font-size:12px;color:var(--muted)}
+  .maptop #rvModeBtn{margin-left:auto}
+  .maptop #rvModeBtn.on{background:#1f6fd6;color:#fff;border-color:#1f6fd6}
+  .mapbtn2{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600}
+  .mapbtn2:hover{background:#f3f3f0}
+  .mapbody{flex:1;display:flex;min-height:0}
+  #kmap{flex:1;min-width:0}
+  #krvpane{width:0;min-width:0;border-left:1px solid var(--line);position:relative;display:flex;flex-direction:column;transition:width .18s}
+  .maplayer.rv-on #krvpane{width:46%}
+  #kroadview{flex:1;min-height:0}
+  .krvhd{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .krvhd b{font-size:13px}
+  .krvhd #krvpt{font-size:12px;color:var(--muted)}
+  .krvhd .mapbtn2{margin-left:auto}
+  #krvmsg{display:none;position:absolute;inset:40px 0 0 0;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--muted);font-size:13px;background:#f7f7f5;text-align:center;padding:20px}
+  .stage{flex:1;display:flex;min-height:0;position:relative}
+  .maincol{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+  .canvas-wrap{flex:1;position:relative;background:#fff;min-width:0;overflow:hidden}
+  .kmapbg{position:absolute;top:-30%;left:-30%;width:160%;height:160%;z-index:1;transform-origin:center center}
+  svg#cv{width:100%;height:100%;display:block;position:relative;z-index:2;touch-action:none;cursor:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='80'%20height='80'%3E%3Cg%20stroke='%23000'%20stroke-width='1'%20fill='none'%3E%3Crect%20x='34'%20y='34'%20width='12'%20height='12'/%3E%3Cline%20x1='0'%20y1='40'%20x2='30'%20y2='40'/%3E%3Cline%20x1='50'%20y1='40'%20x2='80'%20y2='40'/%3E%3Cline%20x1='40'%20y1='0'%20x2='40'%20y2='30'/%3E%3Cline%20x1='40'%20y1='50'%20x2='40'%20y2='80'/%3E%3C/g%3E%3C/svg%3E") 40 40, crosshair}
+  .panel{width:240px;border-left:1px solid var(--line);background:#fff;display:none;flex-direction:column}
+  .panel h2{font-size:11px;font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);color:var(--muted);display:flex;justify-content:space-between}
+  .recs{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .rec{display:flex;align-items:center;gap:7px;font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:7px}
+  .dot{width:11px;height:11px;flex:none}.dot.box{border-radius:2px}.dot.cir{border-radius:50%}
+  .rec .del{padding:2px 7px;font-size:12px;line-height:1;color:#999;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer}
+  .rec .del:hover{color:var(--bad);border-color:var(--bad);background:#fbeeee}
+  .empty{font-size:12px;color:var(--muted);padding:8px}
+  .meta{font-size:12px;color:var(--muted);padding:8px 12px;border-top:1px solid var(--line);line-height:1.6}
+  .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#1c1c1a;color:#fff;font-size:12px;padding:8px 14px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:.95}
+  .coordbox{position:fixed;right:10px;bottom:10px;z-index:50;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums;pointer-events:none;box-shadow:0 1px 6px rgba(0,0,0,.12);line-height:1.5}
+  .coordbox b{font-weight:600}
+  .coordbox .cb-near{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+  .recclr{padding:2px 8px;font-size:11px;color:var(--muted);border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer}
+  .recclr:hover{color:var(--bad);border-color:var(--bad);background:#fbeeee}
+  .photoBtn{background:#eef6ef;border-color:#bcdcc0;color:#2a9e50;font-weight:600}
+  /* 버튼 색 구분 */
+  #modeToggle{background:#eaf1ff;border-color:#6a8fe0;color:#2456c7;font-weight:700}
+  #photoBtn,#vPhoto{background:#e3f6f2;border-color:#5cc9b8;color:#0f766e;font-weight:700}
+  #bgBtn,#vMap{background:#fff5dd;border-color:#e3bb55;color:#a87a00;font-weight:700}
+  #rvBtn,#vRv{background:#f1ebff;border-color:#a98ee8;color:#6d28d9;font-weight:700}
+  #bgBtn.on,#vMap.on{background:#e3a008;border-color:#e3a008;color:#fff}
+  #rvBtn.on,#vRv.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+  .photo-panel{width:37%;min-width:480px;max-width:44%;background:#fff;border-left:1px solid var(--line);display:none;flex-direction:column;flex:none}
+  .linkon{background:#eef6ef;border-color:#bcdcc0;color:#2a9e50;font-weight:600}
+  .photo-panel.open{display:flex}
+  .jz-panel .php-head{flex-wrap:wrap;gap:6px}
+  .jz-dlall{background:#eef6ff;border:1px solid #2563eb;color:#2563eb;border-radius:7px;padding:4px 9px;font-weight:700;cursor:pointer}
+  .jz-dldate{background:#e7faf5;border:1px solid #0d9488;color:#0d9488;border-radius:7px;padding:4px 9px;font-weight:700;cursor:pointer}
+  .jz-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border-bottom:1px solid var(--line);max-height:84px;overflow-y:auto}
+  .jz-tab{padding:5px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:12px;cursor:pointer;white-space:nowrap}
+  .jz-tab.on{background:#0d9488;color:#fff;border-color:#0d9488}
+  .jz-prog{display:none;padding:8px 12px;border-bottom:1px solid var(--line)}
+  .jz-progtxt{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .jz-progbar{height:6px;background:#eee;border-radius:3px;overflow:hidden}
+  .jz-progbar>div{height:100%;width:0;background:#0d9488;transition:width .2s}
+  .jz-prev{flex:1;overflow:auto;padding:10px;background:#f7f8fa}
+  .jz-proj{font-weight:700;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:8px}
+  .jz-block{background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:10px;overflow:hidden}
+  .jz-r{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eee;font-size:12px;flex-wrap:wrap}
+  .jz-r span{color:var(--muted);min-width:40px}
+  .jz-r b{font-weight:700;margin-right:8px}
+  .jz-ph2{display:flex;gap:6px;padding:8px}
+  .jz-ph{flex:1;text-align:center}
+  .jz-ph img{width:100%;height:150px;object-fit:cover;border:1px solid var(--line);border-radius:4px;display:block}
+  .jz-ph i{display:flex;align-items:center;justify-content:center;height:150px;color:#bbb;border:1px dashed var(--line);border-radius:4px;font-size:12px}
+  .jz-ph em{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+  /* 엑셀 조서와 동일 표 레이아웃 */
+  .jz-card{background:#fff;border:2px solid #333;margin-bottom:14px}
+  .jz-card.sel{outline:3px solid #d500f2;outline-offset:-3px}
+  table.jz-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.jz-tbl td{border:1px solid #333;font-size:12px;text-align:center;padding:5px 4px;word-break:break-all}
+  table.jz-tbl td.lbl{background:#fff;font-weight:700}
+  table.jz-tbl td.val{font-weight:700}
+  table.jz-tbl td.cap{font-weight:700;background:#fafafa}
+  /* 사진 좌우 동일폭(50:50) */
+  .jz-ph2{display:flex;border-top:1px solid #333}
+  .jz-pc{flex:1;min-width:0;display:flex;flex-direction:column}
+  .jz-pc+.jz-pc{border-left:1px solid #333}
+  .jz-pc img{width:100%;height:300px;object-fit:contain;background:#f2f2f2;display:block}
+  .jz-pc .ne{display:flex;align-items:center;justify-content:center;height:300px;color:#bbb;font-size:12px}
+  .jz-cap{text-align:center;font-weight:700;background:#fafafa;border-top:1px solid #333;padding:4px;font-size:12px}
+  .jz-datemenu{display:none;position:fixed;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:1300;min-width:200px;overflow:hidden}
+  .jz-dateitem{padding:9px 13px;font-size:13px;cursor:pointer;border-bottom:1px solid #f1f1f1;white-space:nowrap}
+  .jz-dateitem:last-child{border-bottom:none}
+  .jz-dateitem:hover{background:#e7faf5}
+  .jz-link{border:1px solid #16a34a;border-radius:7px;padding:4px 10px;font-weight:700;cursor:pointer;background:#eafaf0;color:#16a34a}
+  .jz-link.off{border-color:#9ca3af;background:#f3f4f6;color:#6b7280}
+  .jz-done{background:#eef2ff;border:1px solid #4f46e5;color:#4f46e5;border-radius:7px;padding:4px 10px;font-weight:700;cursor:pointer}
+  .jz-done.on{background:#16a34a;border-color:#16a34a;color:#fff}
+  .fbtn{background:#fff;border:1.5px solid #cfd8e3;color:#33415a;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 7px rgba(0,0,0,.11)}
+  .fbtn:hover{filter:brightness(.97)}
+  #fldCsv{background:#eff4ff;border-color:#3b82f6;color:#2563eb}
+  #fldJoseo{background:#e7faf5;border-color:#0d9488;color:#0d9488}
+  #fldManhole{background:#fff7e6;border-color:#e3a008;color:#b45309}
+  .fbtn.done{background:#eafaf0!important;border-color:#16a34a!important;color:#16a34a!important}
+  .fbtn-final{background:#eef2ff;border-color:#4f46e5;color:#4f46e5}
+  .fbtn-final:hover{filter:brightness(.97)}
+  /* 로드뷰 패널: 위=로드뷰 / 아래=측점사진 (50/50) */
+  .rv-split{flex:1;display:flex;flex-direction:column;min-height:0}
+  .rv-top{flex:1;position:relative;border-bottom:2px solid var(--line);min-height:0;background:#000}
+  #rvView{position:absolute;inset:0}
+  .rv-msg{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--muted);font-size:13px;background:#f7f7f5;text-align:center;padding:20px}
+  .rv-bot{flex:1;display:flex;flex-direction:column;min-height:0;background:#fafaf8;padding:8px}
+  .rv-photo-body{flex:1;display:flex;flex-direction:column;min-height:0}
+  .rv-photo-empty{color:var(--muted);font-size:13px;text-align:center;margin:auto;padding:20px}
+  .php-none{display:flex;align-items:center;justify-content:center;color:var(--muted);min-height:80px}
+  .php-head{display:flex;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .php-head h3{font-size:13px;font-weight:600}
+  .dirtgl{margin-right:auto;border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#555}
+  .dirtgl.on{border-color:#d500f2;color:#d500f2;background:#fdf0ff}
+  .php-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .php-main,.php-sub{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fafaf8;display:flex;flex-direction:column;position:relative}
+  .dirArrow{flex:none;width:26px;height:26px;border-radius:7px;border:2px solid #d500f2;background:#fff;color:#d500f2;font-size:16px;font-weight:900;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+  .dirArrow:hover{background:#fbeaff}
+  .php-main{flex:3;min-height:160px}
+  .php-main .cap,.php-sub .cap{font-size:15px;color:#0d47a1;font-weight:700;padding:6px 11px;border-bottom:1px solid var(--line);background:#fff;flex:none;display:flex;align-items:center;gap:6px}
+  .php-main .cap span,.php-sub .cap span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .php-main .cap{font-size:16px}
+  .zoomwrap{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f3f3f0;position:relative}
+  .php-main .zoomwrap .ph{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;flex:none}
+  .php-main .ph{flex:1;width:100%;height:auto;min-height:0;object-fit:contain;background:#f3f3f0;display:block}
+  .php-row{display:flex;gap:10px;flex:2;min-height:130px}
+  .php-sub{flex:1;min-width:0}
+  .php-sub .ph{flex:1;width:100%;height:auto;min-height:0;object-fit:contain;background:#f3f3f0;display:block}
+  .ph.php-none{display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px}
+  /* 노출/후측량 2등분 — 기본 세로(사이드패널·폰), 현장모드+넓은화면만 가로 */
+  .php-split{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .php-split>.php-main{flex:1;min-height:0}
+  .php-after .ph.php-none{color:#bbb;font-size:13px;background:#f6f6f3;flex:1}
+  /* 폰 현장모드: 노출/후측량 각각 풀사이즈로 세로 스택 + 패널 스크롤 */
+  @media(max-width:760px){.viewer .php-split{flex:none}.viewer .php-split>.php-main{flex:none;height:42vh;min-height:300px}}
+  /* 폰 현장모드 로드뷰: 위=로드뷰 / 아래=측점사진(후측량모드처럼 풀사이즈) + 세로 스크롤 */
+  @media(max-width:760px){
+    .viewer #rvPanel.open{height:86vh}
+    .viewer #rvPanel .rv-split{overflow-y:auto}
+    .viewer #rvPanel .rv-top{flex:none;height:38vh;min-height:240px}
+    .viewer #rvPanel .rv-bot{flex:none;padding:8px}
+    .viewer #rvPanel .rv-photo-body{flex:none}
+    .viewer #rvPanel .rv-photo-body .php-main{flex:none;height:44vh;min-height:300px}
+  }
+  /* 모바일 현장 전용: 탱고작업용 성과제작 버튼 숨김(PC는 유지) + 스크롤 스냅(경계에서 부드럽게 멈춤) */
+  @media(max-width:760px){
+    #fieldBar{display:none!important}
+    .viewer #rvPanel .rv-split{scroll-snap-type:y proximity}
+    .viewer #rvPanel .rv-top,.viewer #rvPanel .rv-bot{scroll-snap-align:start}
+    .viewer .php-body{scroll-snap-type:y proximity}
+    .viewer .php-body .php-main{scroll-snap-align:start}
+  }
+  @media(max-width:760px){.glbl{display:none}.coordbox{font-size:11px;padding:5px 8px}.photo-panel{width:100%;min-width:0}.php-main{min-height:140px}.php-row{min-height:120px}}
+  /* ===== 뷰어모드 ===== */
+  .vw{display:none}
+  .viewer .wk{display:none!important}
+  .viewer .vw{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .viewer #modeToggle{order:1}
+  .viewer #homeBtn{order:1;font-size:12.5px;padding:5px 9px;white-space:nowrap;flex:none}
+  .viewer #vNote.on{background:#fdecef;border-color:#d32f2f;color:#d32f2f}
+  .viewer .stage{flex-direction:column}
+  .viewer #rail,.viewer #subbar,.viewer aside.panel{display:none}
+  .viewer .maincol{flex:1;min-height:0;width:100%}
+  .viewer .photo-panel{width:100%!important;max-width:none!important;min-width:0!important;border-left:none;border-top:2px solid var(--line)}
+  .viewer .photo-panel.open{display:flex;flex:none;height:44vh}
+  .viewer #rvPanel.open{width:100%!important;max-width:none!important;border-left:none;border-top:2px solid var(--line);flex:none;height:50vh}
+  /* 상단바 한 줄 + dev배지 숨김 */
+  .viewer #buildno,.viewer #conn{display:none}
+  .viewer header{flex-wrap:wrap;align-items:center;row-gap:6px;column-gap:6px;padding:7px 9px}
+  .viewer h1{flex-basis:100%;font-size:17px;margin:0;order:0}
+  .viewer #viewerBar{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;gap:5px;order:2}
+  .viewer #viewerBar button{font-size:12.5px;padding:5px 9px;white-space:nowrap;flex:none}
+  .viewer #viewerBar select{font-size:12.5px;padding:4px 6px;flex:none;max-width:130px}#proj{max-width:46vw;min-width:220px}
+  .viewer #modeToggle{font-size:12.5px;padding:5px 9px;white-space:nowrap;flex:none}
+  /* 사진 헤더 한 줄 + 업로드/닫기 숨김 */
+  .viewer .php-head{flex-wrap:nowrap;overflow-x:auto;gap:5px;padding:6px 9px}
+  .viewer .php-head h3{display:none}
+  .viewer #photoUp,.viewer #photoClose{display:none}
+  .viewer .php-head button,.viewer .php-head select{font-size:12px;padding:4px 7px;white-space:nowrap;flex:none}
+  .viewer #vNote2{background:#fff;color:#d32f2f;border-color:#d32f2f;font-weight:700}
+  .viewer #vNote2.on{background:#d32f2f;color:#fff}
+  /* 선택측점 사진만 크게 */
+  .viewer .php-body .php-main{flex:1}
+  /* PC(넓은 화면) 측량(현장) 전용: 사진/로드뷰 패널을 아래 대신 오른쪽에 (결선 DB·탱고는 영향 없음) */
+  @media(min-width:761px){
+    .fpage .stage{flex-direction:row}
+    .fpage #viewerBar{flex:none}
+    .fpage header{border-bottom:2px solid #6aa3ff;position:relative}
+  .fpage #buildno{display:inline-block!important;position:absolute;top:8px;right:12px}
+    .fpage .photo-panel{width:38%!important;min-width:420px!important;max-width:46%!important;border-left:1px solid var(--line)!important;border-top:none!important}
+    .fpage .photo-panel.open{height:auto!important}
+    .fpage #rvPanel.open{width:42%!important;min-width:440px!important;max-width:50%!important;height:auto!important;border-left:1px solid var(--line)!important;border-top:none!important}
+  }
+  /* ===== 보기 전용(결선완료 로딩) ===== */
+  .readonly #rail{opacity:.45;pointer-events:none;filter:grayscale(.35)}
+
+  /* ── 검수데이터 제작: 레이어 토글 ── */
+  .hide-no .L-no{display:none}
+  .hide-date .L-date{display:none}
+  .hide-code .L-code{display:none}
+  .hide-depth .lbl-depth,.hide-depth .depth-lead{display:none}
+  .hide-mh .lbl-mh,.hide-mh .mh-lead{display:none}
+  .hide-riser .sym-riser,.hide-riser .lbl-riser{display:none}
+  .hide-hyun .insp-line{display:none}
+  .lvchk{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:#444;font-weight:600;white-space:nowrap;cursor:pointer;margin:0 2px}
+  .lvchk input{cursor:pointer;margin:0}
+
+/* [1294] 탱고 서브바: 도구 버튼들 ↔ 성과 버튼 그룹 간격 */
+#tgTakeBtn:not(:first-child){margin-left:90px}
+
+/* ===== [1294] 탱고 PC 헤더 2줄 — 결선DB 배치 미러 (tango 전용, 모바일 무영향) ===== */
+#hdrBrk{display:none}
+@media(min-width:761px){
+  #hdrBrk{display:block;flex-basis:100%;height:0;order:8}
+  /* 1줄 우측: [칩][Supabase][작업자][BUILD] */
+  #conn{order:6;margin-left:auto!important}
+  #workerChip{order:6;margin-left:8px!important}
+  #buildno{order:7;margin-left:8px!important}
+  #projFilterChip{order:5;margin-left:auto!important;max-width:170px}
+  #projFilterChip~#conn{margin-left:8px!important}
+  /* 2줄: [완료목록·준공도면] | [지우기·거리산출] | [보기·전체·백판] | [되돌리기·다시실행·휠감도] … 우측 [측점사진보기·카카오맵·로드뷰] */
+  #doneListBtn,#doneSummary{order:9}
+  #asbuiltBtn{order:6}/* [1678] 준공도면 맨앞 */
+  #doneListBtn{display:none!important}/* [1678] tango 결선완료 삭제 */
+  #globalbtns{display:contents}
+  #globalbtns button[data-g="delall2"]{order:10;margin-left:72px}
+  #globalbtns button[data-g="measure"]{order:10}
+  #globalbtns .subhint{order:11;margin-left:72px}
+  #globalbtns button[data-g="fit"],#bpToggle{order:11}
+  #globalbtns button[data-g="undo"]{order:9}/* [1681] 2줄 맨앞 */
+  #globalbtns button[data-g="redo"]{order:9}/* [1681] */
+  #wheelAdjBox{order:9}/* [1681] 2줄 맨앞 */
+  #photoBtn,#bgBtn,#rvBtn{order:13}
+  /* 전체=빨강 / 백판=마젠타 (결선DB 동일) */
+  #globalbtns button[data-g="fit"]{background:#fff;border:1px solid #c0392b;color:#c0392b;font-weight:700}
+  #globalbtns button[data-g="fit"]:active{background:#fdecea}
+  #bpToggle{background:#fff;border:1px solid #d81b60;color:#d81b60;font-weight:700}
+  #bpToggle:not(.off){background:#fde7f1}
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b62c4">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="지하관로 시스템">
+</head>
+<body>
+  <header>
+    <button id="homeBtn" class="photoBtn" style="background:#eef2f7;border:1px solid #c6d2e0;color:#33506e;font-weight:700;border-radius:8px;padding:5px 11px;margin-right:2px">🏠 홈</button>
+    <button id="modeToggle" class="photoBtn">💻 결선</button>
+    <h1>탱고 DB</h1>
+    <button id="sysSwitch" class="wk" onclick="if(confirm('결선 DB로 이동할까요? 저장 안 한 변경은 사라집니다.'))location.href='survey.html'" style="background:#eafaf0;border:1px solid #16a34a;color:#16a34a;font-weight:700;border-radius:8px;padding:5px 11px;margin-left:2px">🔗 결선 DB 이동</button>
+    <span id="roBadge" class="wk" style="display:none;cursor:pointer;color:#d98200;border:1px solid #e0b15a;background:#fff8ec;border-radius:7px;padding:2px 9px;font-size:12px;font-weight:700" title="클릭하면 수정 가능 모드로 전환">🔒 보기 전용 · 클릭=수정</span>
+    <span id="viewerBar" class="vw">
+      <select id="vproj"><option value="">결선완료사업목록</option></select>
+      <button id="vPhoto" class="photoBtn">📷 후측량 사진</button>
+      <button id="vMap" class="photoBtn">🗺 지도</button>
+      <button id="vRv" class="photoBtn">로드뷰</button>
+    </span>
+    <div id="fieldBar" style="order:3;flex:1;min-width:0;display:none;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="fbtn" id="fldSave">💾 저장</button>
+      <button class="fbtn" id="fldDel" style="color:#d32f2f;border-color:#f0c4c4">🗑 사업 삭제</button>
+      <button class="fbtn" id="fldCsv">후측량 csv</button>
+      <button class="fbtn" id="fldJoseo">실시간 사진조서</button>
+      <button class="fbtn" id="fldManhole">맨홀도 제작</button>
+      <button class="fbtn" id="fldImport" style="margin-left:auto">📥 결선완료 성과목록</button>
+      <button class="fbtn fbtn-final" id="fldFinal">📋 후측량 최종성과 등록</button>
+    </div>
+    <select id="proj" class="wk"><option value="">사업 선택…</option></select>
+    <button id="save" class="pri wk">저장</button>
+    <button id="delProj" class="dgr wk">사업 삭제</button>
+    <button id="trashProj" class="wk" title="삭제목록 (7일 보관)">🗂 삭제목록</button>
+    <span id="globalbtns" class="hgbtns wk"></span>
+    <button id="bpToggle" class="wk" title="백판(수치지도) 표시/숨김">🗺 백판 ON</button>
+    <button id="doneListBtn" class="wk" style="background:#eafaf0;color:#16a34a;border:1px solid #16a34a;font-weight:700">✅ 결선 완료사업</button>
+    <span id="doneSummary" class="wk" style="display:none;color:#d32f2f;border:1px solid #d32f2f;background:#fff5f5;border-radius:7px;padding:3px 10px;font-size:12.5px;font-weight:800"></span>
+    <button id="asbuiltBtn" class="wk" style="background:#eef2ff;color:#4f46e5;border:1px solid #7c83e8;font-weight:700">📐 준공도면</button>
+    <div id="hdrBrk"></div><button id="photoBtn" class="photoBtn wk" style="margin-left:auto">측점사진보기</button>
+    <button id="bgBtn" class="photoBtn wk">🗺 카카오맵</button>
+    <button id="rvBtn" class="photoBtn wk">📷 로드뷰</button>
+    <span id="buildno" style="font-size:14px;font-weight:800;color:#fff;background:#c0392b;padding:3px 11px;border-radius:7px;letter-spacing:0.5px;margin-left:10px">BUILD 1198</span>
+    <span id="conn" class="conn off" style="margin-left:8px">로컬 모드</span><span id="tamsaBadge" style="display:none;margin-left:8px;font-size:13px;font-weight:800;color:#fff;background:#d92b2b;padding:3px 11px;border-radius:7px">탐사 모드</span>
+  </header>
+
+  <div class="stage">
+    <div class="rail" id="rail"></div>
+    <div class="maincol">
+      <div class="subbar" id="subbar"></div>
+    <div class="canvas-wrap">
+      <div id="kmapBg" class="kmapbg" style="display:none"></div>
+      <svg id="cv" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="lblOverlay" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5"></div>
+      <div id="coordBox" class="coordbox">X <b>–</b>　Y <b>–</b></div>
+      <div id="toast" class="toast"></div>
+    </div>
+    </div>
+    <div id="photoPanel" class="photo-panel">
+      <div class="php-head">
+        <h3>측점 사진</h3>
+        <button id="dirToggle" class="dirtgl on">🧭 방향 ON</button>
+        <select id="photoSel"><option value="">측점 선택…</option></select>
+        <button id="photoLinkBtn" class="linkon">🔗 연동</button>
+        <button id="vNote2" class="vw">⚠ 특이사항</button>
+        <button id="photoUp">사진 업로드</button>
+        <button id="photoClose">✕</button>
+      </div>
+      <div class="php-body" id="photoBody"></div>
+    </div>
+    <div id="rvPanel" class="photo-panel">
+      <div class="php-head">
+        <h3>로드뷰 <span id="rvPtLabel" style="font-weight:400;color:var(--muted);font-size:12px"></span></h3>
+        <button id="rvClose">✕</button>
+      </div>
+      <div class="rv-split">
+        <div class="rv-top">
+          <div id="rvView"></div>
+          <div id="rvMsg" class="rv-msg">이 위치 근처에 로드뷰가 없습니다<br>(도로에서 떨어진 위치)</div>
+        </div>
+        <div class="rv-bot">
+          <div id="rvPhotoBody" class="rv-photo-body"><div class="rv-photo-empty">측점을 찍으면 사진이 나옵니다</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="joseoPanel" class="photo-panel jz-panel">
+      <div class="php-head">
+        <h3>실시간 사진조서</h3>
+        <button id="joseoLinkBtn" class="jz-link">🔗 연동</button>
+        <button id="joseoDoneBtn" class="jz-done">✅ 완료등록</button>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center;position:relative">
+          <button onclick="joseoDownloadAll()" class="jz-dlall">📦 전체 ZIP</button>
+          <button id="joseoDlDate" class="jz-dldate">📥 날자별 다운로드 ▾</button>
+          <div id="joseoDateMenu" class="jz-datemenu"></div>
+          <button onclick="closeJoseoPanel()">✕</button>
+        </div>
+      </div>
+      <div id="joseoTabs" class="jz-tabs"></div>
+      <div id="joseoProgWrap" class="jz-prog"><div id="joseoProgTxt" class="jz-progtxt"></div><div class="jz-progbar"><div id="joseoProgBar"></div></div></div>
+      <div id="joseoPreview" class="jz-prev"></div>
+    </div>
+    <aside class="panel">
+      <h2><span>검수 기록</span><span style="display:flex;gap:8px;align-items:center"><button id="recClear" class="recclr">전체삭제</button><span id="recCount">0</span></span></h2>
+      <div class="recs" id="recs"><div class="empty">표시 없음</div></div>
+      <div class="meta" id="meta">현장 미선택 · 측량점 0</div>
+    </aside>
+  </div>
+
+  <input type="file" id="fCsv" accept=".csv" multiple style="display:none">
+  <input type="file" id="fDxf" accept=".dxf" style="display:none">
+  <input type="file" id="fAft" accept=".csv" multiple style="display:none">
+  <input type="file" id="fTamsa" accept=".csv" style="display:none">
+  <input type="file" id="fPhotos" accept="image/*" multiple style="display:none">
+  <input type="file" id="fAfter" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="fRegPhotos" accept="image/*,.zip" multiple style="display:none">
+  <input type="file" id="fAsbuilt" accept="application/pdf,image/*" style="display:none">
+  <input type="file" id="fAsbuiltDirect" accept="application/pdf,image/*" style="display:none">
+
+  <!-- 사업 등록 모달 -->
+  <div id="regModal" class="regwrap" style="display:none">
+    <div class="regbox">
+      <div class="reghd"><span class="regt">사업 등록</span><button id="regRealBtn" type="button" class="reg-real">실시간측량</button><button id="regTamsaBtn" type="button" class="reg-tamsa">탐사측량</button><button id="regX" class="regxbtn">✕</button></div>
+      <div class="regname">
+        <label>사업명</label>
+        <input id="regName" type="text" placeholder="예: 수원 권선동 1041-6" autocomplete="off">
+      </div>
+      <div class="reginfo">
+        <label>발주처<input id="regClient" type="text" autocomplete="off"></label>
+        <label>구분<input id="regCategory" type="text" autocomplete="off"></label>
+        <label>시설물종류<select id="regFacility"><option value="">선택</option><option value="통신">통신</option><option value="전기">전기</option></select></label>
+        <label>사업번호<input id="regBizNo" type="text" autocomplete="off"></label>
+      </div>
+      <div class="regcards">
+        <div class="regcard tamsa" id="regTamsaCard">
+          <div class="rc-t">탐사측량 CSV</div>
+          <div class="rc-drop" id="dropTamsa">
+            <span class="rc-dico">⬇</span>
+            <span class="rc-st" id="rcTamsa">탐사 측점 데이터 (.csv)</span>
+            <span class="rc-hint">파일을 끌어다 놓기</span>
+          </div>
+          <button class="rc-btn" id="rcTamsaBtn">직접 로딩</button>
+          <button class="rc-clr" id="clrTamsa" style="display:none;margin-top:4px;font-size:11px;color:#c0392b;background:#fff;border:1px solid #e3b4ae;border-radius:6px;padding:3px 8px;cursor:pointer">✕ 삭제</button>
+        </div>
+        <div class="regcard csv">
+          <div class="rc-t">CSV 로딩</div>
+          <div class="rc-drop" id="dropCsv">
+            <span class="rc-dico">⬇</span>
+            <span class="rc-st" id="rcCsv">측점 데이터 (.csv)</span>
+            <span class="rc-hint">파일을 끌어다 놓기</span>
+          </div>
+          <button class="rc-btn" id="rcCsvBtn">직접 로딩</button>
+          <button class="rc-clr" id="clrCsv" style="display:none;margin-top:4px;font-size:11px;color:#c0392b;background:#fff;border:1px solid #e3b4ae;border-radius:6px;padding:3px 8px;cursor:pointer">🗑 CSV별 삭제</button>
+        </div>
+        <div class="regcard aft" id="regAftCard"><div class="rc-t">후측량 CSV (심도)</div><div class="rc-drop" id="dropAft"><span class="rc-dico">⬇</span><span class="rc-st" id="rcAft">복구후 후측량 (.csv)</span><span class="rc-hint">파일을 끌어다 놓기</span></div><button class="rc-btn" id="rcAftBtn">직접 로딩</button><div id="rcAftOut" style="margin-top:6px;font-size:11px;color:#7a52e0;font-weight:700"></div><div id="rcAftCnt" style="margin-top:3px;font-size:11px;color:#16a34a;font-weight:700"></div><button class="rc-clr" id="clrAft" style="display:none;margin-top:4px;font-size:11px;color:#c0392b;background:#fff;border:1px solid #e3b4ae;border-radius:6px;padding:3px 8px;cursor:pointer">🗑 심도 삭제</button></div><div class="regcard pho">
+          <div class="rc-t">측점사진 로딩</div>
+          <div class="rc-drop" id="dropPho">
+            <span class="rc-dico">⬇</span>
+            <span class="rc-st" id="rcPho">사진 — 번호 또는 ZIP(이름=날짜)</span>
+            <span class="rc-hint">사진·ZIP 끌어다 놓기</span>
+          </div>
+          <button class="rc-btn" id="rcPhoBtn">직접 로딩</button>
+          <button class="rc-clr" id="clrPho" style="display:none;margin-top:4px;font-size:11px;color:#c0392b;background:#fff;border:1px solid #e3b4ae;border-radius:6px;padding:3px 8px;cursor:pointer">🗑 사진별 삭제</button>
+        </div>
+        <div class="regcard crs">
+          <div class="rc-t">좌표계 설정</div>
+          <div class="rc-crs">
+            <label><input type="radio" name="regCrs" value="5186" checked> 중부 GRS80</label>
+            <label><input type="radio" name="regCrs" value="5187"> 동부 GRS80</label>
+            <label><input type="radio" name="regCrs" value="5185"> 서부 GRS80</label>
+          </div>
+          <button class="rc-btn" id="crsCheckBtn">변환 확인</button>
+          <div class="rc-crsout" id="crsResult">CSV 로딩 후 변환 확인</div>
+          <a class="rc-maplink" id="crsMapLink" target="_blank" rel="noopener" style="display:none">카카오맵에서 위치 확인 →</a>
+        </div>
+        <div class="regcard dxf">
+          <div class="rc-t">수치지도 로딩</div>
+          <div class="rc-drop" id="dropDxf">
+            <span class="rc-dico">⬇</span>
+            <span class="rc-st" id="rcDxf">백판 도면 (.dxf)</span>
+            <span class="rc-hint">파일을 끌어다 놓기</span>
+          </div>
+          <button class="rc-btn" id="rcDxfBtn">직접 로딩</button>
+          <button class="rc-clr" id="clrDxf" style="display:none;margin-top:4px;font-size:11px;color:#c0392b;background:#fff;border:1px solid #e3b4ae;border-radius:6px;padding:3px 8px;cursor:pointer">✕ 제거</button>
+        </div>
+      </div>
+      <div id="regNightRow" style="display:flex;align-items:center;gap:8px;padding:2px 20px 0;font-size:13px;color:#444;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:#4f46e5"><input type="checkbox" id="regNight"> 🌙 야간작업 보정</label>
+        <span style="color:#888">— 새벽</span>
+        <input type="time" id="regNightCut" value="06:00" style="border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:13px">
+        <span style="color:#888">이전 측점을 전날(작업일)로 이동 → 사진 매칭</span>
+      </div>
+      <div class="regfoot" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:7px">
+          <button class="rc-btn" id="rcAsbuiltBtn" style="background:#eef2ff;border-color:#7c83e8;color:#4f46e5;padding:6px 11px;width:auto">📐 준공도면 첨부 (PDF·이미지)</button>
+          <span id="asbuiltName" style="font-size:12px;color:#4f46e5;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          <button id="clrAsbuilt" style="display:none;border:1px solid #e3b4ae;background:#fff;color:#c0392b;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">✕</button>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button id="regCancel" class="rf-cancel">취소</button>
+          <button id="regOk" class="rf-ok">등록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="login.js?v=3261"></script><script src="core.js?v=3261"></script>
+</body>
+</html>
