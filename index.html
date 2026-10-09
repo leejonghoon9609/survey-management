@@ -266,9 +266,9 @@ header .spacer{flex:1;}
 .per{--pc:#be185d;border:2px solid var(--pc);border-radius:10px;margin-bottom:12px;display:flex;flex-direction:column;background:#fff;overflow:hidden;}
 .per-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;background:color-mix(in srgb,var(--pc) 10%,#fff);}
 .per-h .pn{font-size:15px;font-weight:800;color:var(--pc);min-width:34px;}
-.per-h .nav2{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:#475569;font-variant-numeric:tabular-nums;}
-.per-h .nav2 button{border:1px solid #e2e8f0;background:#fff;border-radius:6px;width:24px;height:24px;cursor:pointer;font-family:inherit;color:#475569;}
-.per-h .nav2 span{min-width:96px;text-align:center;font-weight:600;}
+.per-h .nav2,.pw-h .nav2{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:#475569;font-variant-numeric:tabular-nums;}
+.per-h .nav2 button,.pw-h .nav2 button{border:1px solid #e2e8f0;background:#fff;border-radius:6px;width:24px;height:24px;cursor:pointer;font-family:inherit;color:#475569;}
+.per-h .nav2 span,.pw-h .nav2 span{min-width:96px;text-align:center;font-weight:600;}
 .pk3{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--c);border-radius:7px;padding:3px 10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--c);background:#fff;cursor:pointer;}
 .pk3 b{font-size:15px;font-variant-numeric:tabular-nums;}
 .pk3.on{background:var(--c);color:#fff;}
@@ -276,6 +276,29 @@ header .spacer{flex:1;}
 .per-list{overflow-y:scroll;overflow-x:hidden;min-height:0;max-height:230px;scrollbar-width:auto;scrollbar-color:color-mix(in srgb,var(--pc) 60%,#fff) #eef2f7;padding:8px 6px 2px 8px;background:#F8FAFC;border-right:2px solid color-mix(in srgb,var(--pc) 25%,#fff);}
 .per-st{padding:8px 10px;overflow:auto;background:color-mix(in srgb,var(--pc) 5%,#fff);}
 .per-st .hd{font-size:12px;font-weight:700;color:var(--pc);margin-bottom:6px;}
+.pwbtn{margin-left:auto;border:2px solid #059669;background:#ECFDF5;color:#047857;border-radius:7px;padding:3px 10px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;}
+.pwbtn:hover{background:#059669;color:#fff;}
+/* 기간 목록 창 (#per=…) */
+#perWin{display:none;}
+body.perwin header,body.perwin .nav,body.perwin .wrap{display:none !important;}
+body.perwin #perWin{display:block;padding:14px 18px;}
+.pw-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border:2px solid var(--pc);border-radius:10px;background:color-mix(in srgb,var(--pc) 9%,#fff);}
+.pw-h .pn{font-size:18px;font-weight:800;color:var(--pc);}
+.pw-h .sum{margin-left:auto;font-size:13px;color:#475569;font-variant-numeric:tabular-nums;}
+.pw-st{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+.pw-st span{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--c);color:var(--c);border-radius:8px;padding:3px 10px;font-size:12.5px;font-weight:700;background:#fff;}
+.pw-st span b{color:#0f172a;font-variant-numeric:tabular-nums;}
+.pw-t{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:13px;}
+.pw-t th{text-align:left;font-size:12px;color:#64748b;font-weight:700;padding:4px 8px;position:sticky;top:0;background:#fff;}
+.pw-t td{background:#fff;border-top:1.5px solid #cbd5e1;border-bottom:1.5px solid #cbd5e1;padding:7px 8px;vertical-align:middle;}
+.pw-t td:first-child{border-left:5px solid var(--c);border-radius:7px 0 0 7px;}
+.pw-t td:last-child{border-right:1.5px solid #cbd5e1;border-radius:0 7px 7px 0;}
+.pw-t tr.r{cursor:pointer;}
+.pw-t tr.r:hover td{background:#F8FAFC;}
+.pw-t .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.pw-t .wk{min-width:260px;white-space:normal !important;text-align:left !important;line-height:1.4;}
+.pw-t td{white-space:nowrap;}
+.pw-wrap{overflow-x:auto;}
 .per-list::-webkit-scrollbar{width:12px;}
 .per-list::-webkit-scrollbar-track{background:#eef2f7;border-radius:6px;}
 .per-list::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--pc) 55%,#fff);border-radius:6px;border:2px solid #eef2f7;}
@@ -956,6 +979,7 @@ td.left{text-align:left;}
         </div>
       </div>
     </div></div>
+<div id="perWin"></div>
 <div id="cardPop" class="hide"><div class="tc" role="dialog" aria-modal="true" aria-labelledby="tcTitle">
   <div class="tc-h"><div style="flex:1;min-width:0;"><div class="t" id="tcTitle"></div><div class="m" id="tcMeta"></div></div><span class="cell-x" id="tcX" title="닫기">✕</span></div>
   <div class="tc-b" id="tcBody"></div>
@@ -1125,8 +1149,9 @@ td.left{text-align:left;}
              · 공사취소·측량취소는 「취소」 배지 (단계 숫자는 완료에 포함)
    BUILD 72: 사업현황 단계 칸을 누르면 글자가 사라지던 문제 — 누른 칸은 그 색으로 채우고 글자 흰색
    BUILD 73: 일별·주간·월간 목록에 거리(km) 칸 · 목록마다 세로 스크롤바
+   BUILD 74: 일별·주간·월간마다 「목록 창 ↗」 — 그 기간 목록을 별도 창으로 (다른 모니터로 이동, 자동 동기화)
    ======================================================================== */
-const BUILD_NO='73';
+const BUILD_NO='74';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2794,8 +2819,8 @@ function startDate(d){
 }
 function doneDate(d){return parseDate(d.tup);}
 const inR=(dt,r)=>!!dt&&dt>=r[0]&&dt<r[1];
-function perRows(k){
-  const st=PST[k],r=perRange(k,st.off);
+function perRows(k,off){
+  const st=PST[k],r=perRange(k,off==null?st.off:off);
   const sets={add:[],start:[],done:[]};
   DATA.forEach(d=>{
     if(inR(addedDate(d),r))sets.add.push(d);
@@ -2813,7 +2838,8 @@ function renderPeriods(){
     rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
     h+='<div class="per" style="--pc:'+P.c+'"><div class="per-h"><span class="pn">'+P.name+'</span>'+
        '<span class="nav2"><button data-pm="'+P.k+'" data-dv="-1" aria-label="이전">◀</button><span>'+perLabel(P.k,o.r)+'</span><button data-pm="'+P.k+'" data-dv="1" aria-label="다음">▶</button>'+(st.off?'<button data-pm="'+P.k+'" data-dv="0" title="오늘로" style="width:auto;padding:0 6px;">오늘</button>':'')+'</span>'+
-       PKIND.map(K=>'<button class="pk3'+(st.kind===K.k?' on':'')+'" data-pk="'+P.k+'" data-kind="'+K.k+'" style="--c:'+K.c+'">'+K.name+' <b>'+o.sets[K.k].length+'</b>건</button>').join('')+'</div>';
+       PKIND.map(K=>'<button class="pk3'+(st.kind===K.k?' on':'')+'" data-pk="'+P.k+'" data-kind="'+K.k+'" style="--c:'+K.c+'">'+K.name+' <b>'+o.sets[K.k].length+'</b>건</button>').join('')+
+       '<button class="pwbtn" data-pw="'+P.k+'" title="이 기간 목록을 별도 창으로 (다른 모니터로 옮길 수 있어요)">목록 창 ↗</button></div>';
     h+='<div class="per-b"><div class="per-list">';
     if(!rows.length)h+='<div class="pempty">'+({add:'이 기간에 추가된 사업이 없어요',start:'이 기간에 착수한 사업이 없어요<br><span style="font-size:11.5px">착수일 = 굴착완료 통보일 또는 1차·2차 측량일</span>',done:'이 기간에 완료(Tango 업로드)된 사업이 없어요'}[st.kind])+'</div>';
     rows.slice(0,200).forEach(d=>{const dt=dfn(d);
@@ -2830,6 +2856,8 @@ function renderPeriods(){
   document.getElementById('pNote').textContent=nAdded?('등록일 기록 '+nAdded+'건 · 나머지는 요청일 기준'):'추가 = 요청일 기준 (기준 리스트 이후 들어온 건은 등록일)';
 }
 document.getElementById('pBody').addEventListener('click',e=>{
+  const pw=e.target.closest('[data-pw]');
+  if(pw){openPerWin(pw.dataset.pw);return;}
   const m=e.target.closest('[data-pm]');
   if(m){const st=PST[m.dataset.pm];const dv=+m.dataset.dv;st.off=dv===0?0:st.off+dv;renderPeriods();return;}
   const k=e.target.closest('[data-pk]');
@@ -2843,6 +2871,57 @@ document.getElementById('pBase').addEventListener('click',()=>{
   askConfirm('지금 목록 전체를 기준으로 잡습니다.\n등록일이 기록된 '+n+'건의 등록일을 지워, 「추가사업 현황」에서는 요청일로만 셉니다.\n\n계속할까요?',()=>{
     DATA.forEach(d=>{d._added=null;});renderPeriods();markDirty();toast('기준을 다시 잡았어요');
   },{title:'기준 다시 잡기',ok:'기준 잡기'});
+});
+
+/* ---- 기간 목록 창 (BUILD 74) : 같은 앱을 #per=w&off=0&kind=start 로 연다 ---- */
+function openPerWin(k){
+  saveState(true);
+  const st=PST[k];
+  const url=location.href.split('#')[0]+'#per='+k+'&off='+st.off+'&kind='+st.kind;
+  const win=window.open(url,'gongjeong_per_'+k,'width=1400,height=850');
+  if(!win){toast('창이 막혔어요 — 주소창 오른쪽에서 팝업을 허용해 주세요',true);return;}
+  try{win.focus();}catch(e){}
+}
+let PWIN=null;
+(function(){
+  const m=location.hash.match(/^#per=([dwm])(?:&off=(-?\d+))?(?:&kind=(add|start|done))?/);
+  if(!m)return;
+  PWIN={k:m[1],off:+(m[2]||0),kind:m[3]||'add'};
+  document.body.classList.add('perwin');
+})();
+function renderPerWin(){
+  if(!PWIN)return;
+  const box=document.getElementById('perWin');
+  DATA.forEach(d=>{if(d._id==null)d._id=++idSeq;});
+  const bi=bizIdx();DATA.forEach(d=>{d._grp=grpOf(d,bi);d._ws=workStage(d);});
+  const P=PERS.find(x=>x.k===PWIN.k),o=perRows(PWIN.k,PWIN.off),rows=o.sets[PWIN.kind].slice();
+  const dfn={add:addedDate,start:startDate,done:doneDate}[PWIN.kind];
+  rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
+  const K=PKIND.find(x=>x.k===PWIN.kind);
+  document.title=P.name+' '+K.name+' 목록 · '+perLabel(PWIN.k,o.r);
+  const km=rows.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
+  const tc={};rows.forEach(d=>{tc[d._ws]=(tc[d._ws]||0)+1;});
+  let h='<div class="pw-h" style="--pc:'+P.c+'"><span class="pn">'+P.name+'</span>'+
+    '<span class="nav2"><button data-wm="-1" aria-label="이전">◀</button><span>'+perLabel(PWIN.k,o.r)+'</span><button data-wm="1" aria-label="다음">▶</button>'+(PWIN.off?'<button data-wm="0" style="width:auto;padding:0 6px;">오늘</button>':'')+'</span>'+
+    PKIND.map(X=>'<button class="pk3'+(PWIN.kind===X.k?' on':'')+'" data-wk="'+X.k+'" style="--c:'+X.c+'">'+X.name+' <b>'+o.sets[X.k].length+'</b>건</button>').join('')+
+    '<span class="sum">'+K.name+' '+rows.length+'건 · 거리 합계 <b>'+km.toFixed(3)+' km</b> · 메인 창과 자동으로 맞춰져요</span></div>';
+  h+='<div class="pw-st">'+WSTAGES.map(T=>'<span style="--c:'+T.c+'">'+T.k+' <b>'+(tc[T.k]||0)+'</b></span>').join('')+'</div>';
+  if(!rows.length){h+='<div class="pempty" style="padding:40px">이 기간에 해당하는 사업이 없어요</div>';}
+  else{
+    h+='<div class="pw-wrap"><table class="pw-t"><thead><tr><th>'+K.name+'일</th><th>발주처</th><th>관리번호·공사코드</th><th>공사명</th><th>협력사</th><th>지사</th><th>측량방법</th><th class="num">거리</th><th>단계</th><th>누구 차례 · 다음 할 일</th><th class="num">경과</th></tr></thead><tbody>';
+    rows.forEach(d=>{const dt=dfn(d),x=distOf(d);
+      h+='<tr class="r" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><td class="num">'+(dt?fmtDate(dt):'')+'</td><td>'+esc(d._grp||'')+'</td><td>'+esc(d.seq||d.eng||'')+'</td><td class="wk">'+esc(d.work)+'</td><td>'+esc(String(colv(d,'협력사')||'').trim())+'</td><td>'+esc(d.jisa)+'</td><td>'+esc(d.mKey||d.method||'')+'</td>'+
+        '<td class="num">'+(x?x.v.toFixed(3)+' km':'—')+'</td><td>'+wsBadge(d)+'</td><td>'+esc(d.turn)+(d.next?' · '+esc(d.next):'')+'</td><td class="num">'+(d.wait!=null?d.wait+'일':'')+'</td></tr>';});
+    h+='</tbody></table></div>';
+  }
+  box.innerHTML=h;
+}
+document.getElementById('perWin').addEventListener('click',e=>{
+  const m=e.target.closest('[data-wm]');
+  if(m){const dv=+m.dataset.wm;PWIN.off=dv===0?0:PWIN.off+dv;renderPerWin();return;}
+  const k=e.target.closest('[data-wk]');
+  if(k){PWIN.kind=k.dataset.wk;renderPerWin();return;}
+  const r=e.target.closest('[data-card]');if(r)openCard(r.dataset.card);
 });
 
 /* ---- 오른쪽 리스트 ---- */
@@ -2907,6 +2986,7 @@ window.addEventListener('storage',e=>{
   loadState({keepUI:true,keepVis:keep});
   if(st)st.scrollTop=top;
   if(CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
+  if(PWIN)renderPerWin();
 });
 if(location.hash==='#list'){
   document.body.classList.add('listwin');
@@ -4621,6 +4701,7 @@ document.getElementById('export').addEventListener('click',()=>{
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
 if(location.hash==='#list'){goTab('manage');requestAnimationFrame(syncHbar);}
+if(PWIN)renderPerWin();
 updateUpMode();showPrevBtn();syncToolbar();syncHbar();
 document.getElementById('mapBox').innerHTML='';
 </script>
