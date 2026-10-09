@@ -248,13 +248,15 @@ header .spacer{flex:1;}
 .gcard .gl button span{display:block;font-size:10px;color:#64748b;}
 .gcard .gl button b{display:block;font-size:13px;font-variant-numeric:tabular-nums;color:#1e293b;}
 .gcard .gl button.z b{color:#cbd5e1;font-weight:500;}
-.gcard .gl button[data-ph="실시간"]{--s:#E11D48;background:#FFE4E6;border-color:#FECDD3;}
-.gcard .gl button[data-ph="후측량"]{--s:#EA580C;background:#FFEDD5;border-color:#FED7AA;}
-.gcard .gl button[data-ph="탱고"]{--s:#2563EB;background:#DBEAFE;border-color:#BFDBFE;}
-.gcard .gl button[data-ph="정산"]{--s:#7C3AED;background:#EDE9FE;border-color:#DDD6FE;}
-.gcard .gl button[data-ph="완료"]{--s:#15803D;background:#DCFCE7;border-color:#BBF7D0;}
-.gcard .gl button span{color:var(--s) !important;font-weight:600;}
-.gcard .gl button.z{opacity:.55;}
+.gcard .gl button[data-ph="실시간"]{--s:#E11D48;background:#FFF7F8;}
+.gcard .gl button[data-ph="후측량"]{--s:#EA580C;background:#FFFAF5;}
+.gcard .gl button[data-ph="탱고"]{--s:#2563EB;background:#F7FAFF;}
+.gcard .gl button[data-ph="정산"]{--s:#7C3AED;background:#FAF8FF;}
+.gcard .gl button[data-ph="완료"]{--s:#15803D;background:#F6FDF8;}
+.gcard .gl button[data-ph]{border:1.5px solid var(--s);}
+.gcard .gl button span{color:var(--s) !important;font-weight:700;}
+.gcard .gl button b{color:#0f172a !important;font-weight:800;}
+.gcard .gl button.z{opacity:.4;}
 .gcard .gl button.on{background:var(--s);border-color:var(--s);opacity:1;}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff !important;}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff;}
@@ -1108,8 +1110,9 @@ td.left{text-align:left;}
    BUILD 67: 사업현황 카드를 납작하게 → 원인자까지 한 화면 · 주간·월간 목록 줄마다 테두리 카드 ·
              리스트 카드 구분 진하게
    BUILD 68: 사업현황 노란 계열 · 추가사업 현황 빨강 계열 · 실시간/후측량/탱고/정산/완료 칸마다 연한 배경색
+   BUILD 69: 단계 칸 배경을 더 연하게, 테두리를 그 색으로 진하게 · 숫자 진하게
    ======================================================================== */
-const BUILD_NO='68';
+const BUILD_NO='69';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
