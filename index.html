@@ -575,7 +575,7 @@ td.left{text-align:left;}
 
   <!-- 사업관리 -->
   <div class="page" id="p-manage">
-    <div class="card topcard" id="vCard">
+    <div class="card topcard hide" id="vCard">
       <div class="cards" id="cards"></div>
       <div class="topdiv"></div>
       <div class="vgrid" id="vChips"></div>
@@ -987,8 +987,10 @@ td.left{text-align:left;}
              · 건마다 지금 누가 처리할 차례인지 자동 판정 (시공사/우리 측량/우리 DB/심사기관/발주처/완료)
              · 자동 칸 : 누구 차례 · 다음 할 일 · 경과일   입력 칸 : 굴착완료 통보일 · 성과심사 신청일
              · 상단 지표 4개 · 데이터 점검(오늘 고칠 것) · 건별 타임라인 카드 + 회신 문구 복사
+   BUILD 64: 리스트관리 위쪽 지표·점검 칸 묶음 숨김 (걸러보기는 「점검」 드롭다운에 그대로)
+             · 리스트를 이어 올릴 때 칸이 전부 다시 펼쳐지던 문제 — 보던 칸 그대로 유지
    ======================================================================== */
-const BUILD_NO='63';
+const BUILD_NO='64';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1755,7 +1757,9 @@ function importSelected(){
   if(mTmp.소요일수<0&&mTmp.요청일>=0&&mTmp.탱고업로드>=0){ensure('소요일수');madeDays=true;}
   const mapped=mapCols(labels);
 
-  DISP=labels.map((l,i)=>({idx:i,label:l||('칸'+(i+1)),vis:!!l}));
+  /* 이어 올릴 때는 보던 칸을 그대로 둔다. 이번 파일로 처음 생긴 칸은 숨겨 두고 컬럼 설정에서 켠다 */
+  const prevVis={};if(append)DISP.forEach(c=>{prevVis[c.label]=c.vis;});
+  DISP=labels.map((l,i)=>({idx:i,label:l||('칸'+(i+1)),vis:append?(prevVis[l]===true):!!l}));
   COL=mapped.col;COLREP=mapped.rep;
   if(COL.소요일수>=0&&COL.탱고업로드>=0){
     const from=DISP.findIndex(c=>c.idx===COL.소요일수),to=DISP.findIndex(c=>c.idx===COL.탱고업로드);
