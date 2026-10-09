@@ -252,6 +252,8 @@ header .spacer{flex:1;}
 .gcard .gl button[data-ph]{border:1.5px solid var(--s);}
 .gcard .gl button span{color:var(--s) !important;font-weight:700;}
 .gcard .gl button b{color:#0f172a !important;font-weight:800;}
+.gcard .gl button.on{background:var(--s) !important;border-color:var(--s) !important;opacity:1 !important;box-shadow:0 0 0 2px color-mix(in srgb,var(--s) 35%,transparent);}
+.gcard .gl button.on span,.gcard .gl button.on b{color:#fff !important;}
 .gcard.sub{margin-left:16px !important;padding-top:3px;padding-bottom:4px;}
 .gcard.sub .gh b{font-size:12.5px;}
 .gcard.sub .gh .n{font-size:15px;}
@@ -1115,8 +1117,9 @@ td.left{text-align:left;}
    BUILD 71: 작업 단계를 화면 전체에 통일 (사업현황 카드·목록 배지·리스트 필터) — 「측량예정일」 칸 기준
              · 사업현황 SKB를 탭 구성대로: SKB 전체 → SK TNS · 팬텍 · 유엔에이 · 사업자 확인필요
              · 공사취소·측량취소는 「취소」 배지 (단계 숫자는 완료에 포함)
+   BUILD 72: 사업현황 단계 칸을 누르면 글자가 사라지던 문제 — 누른 칸은 그 색으로 채우고 글자 흰색
    ======================================================================== */
-const BUILD_NO='71';
+const BUILD_NO='72';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
