@@ -523,7 +523,7 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc-box b{display:block;font-size:12.5px;margin-bottom:2px;}
 .tc-reply textarea{width:100%;box-sizing:border-box;min-height:150px;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;line-height:1.55;resize:vertical;}
 .tc-f{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;}
-.tc2-top{display:grid;grid-template-columns:minmax(0,724px) minmax(0,1fr);gap:16px;flex:none;min-height:188px;}
+.tc2-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,300px);gap:16px;flex:none;min-height:188px;}
 .tc2-top>.tc2-main{border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 16px;align-content:space-evenly;}
 .tc2-main .tc-now{font-size:15px;gap:12px;}
 .tc2-main .tc-now .turn{font-size:14px;padding:4px 14px;}
@@ -1484,8 +1484,9 @@ td.left{text-align:left;}
    BUILD 114: 사업 카드 — 닫기 버튼 빼고 작업 특이사항 작게 · 아래 두 칸 키움 · 사업 정보 한 화면(넘치면 글자·줄 자동 축소) · ＋추가는 메모 끝 칸
    BUILD 115: 사업 카드 — 위 두 칸 키움 · 사업 정보 글자·줄 간격 키움 · 이슈사항·비고·비고 2 각각 「＋ 추가」(줄 단위 추가 메모)
    BUILD 116: 사업 정보 글자 크기는 BUILD 114 로 · 진행 막대·단계 글자를 키워 위 칸 빈 공간을 채움
+   BUILD 117: 위 진행 칸 가로 넓힘 · 작업 특이사항 칸 좁힘
    ======================================================================== */
-const BUILD_NO='116';
+const BUILD_NO='117';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
