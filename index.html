@@ -460,6 +460,9 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc-pct{font-size:13px;color:#475569;}
 .tc-pct b{color:#EA002C;font-size:14px;}
 .tl-step.cur{color:#EA002C;font-weight:700;}
+.tl-step.todo b,.tl-step.na b{color:#cbd5e1;font-weight:500;}
+.tl-step.na{color:#94a3b8;}
+.tl-step.done b{color:#1e293b;}
 .tl-step b.now{color:#EA002C !important;font-weight:800;}
 .tl-bar span{display:block;height:100%;}
 .tl-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
@@ -1330,8 +1333,9 @@ td.left{text-align:left;}
    BUILD 96: 「누구 차례 · 다음 할 일」 대신 작업자(측량작업자 이름) — 기간 목록 창·오른쪽 리스트·사업 카드
    BUILD 97: 기간 목록 창 — 완료 목록은 「정산유무」(정산 상황) · 대기(불가) 배지 밑에 사유(빨간 글자)
    BUILD 98: 사업 카드 — 작업자 글자·20일 판정·이슈·회신 문구 빼고, 진행률 막대(빨강/흰색) + 지금 단계 날짜를 빨간 글자로
+   BUILD 99: 사업 카드 진행 막대 — 실시간 8단계 / 탐사 5단계로 나눠 지금 단계에 정확히 빨간 글자
    ======================================================================== */
-const BUILD_NO='98';
+const BUILD_NO='99';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3661,6 +3665,47 @@ if(location.hash==='#list'){
 /* ======================= 타임라인 카드 (BUILD 63) ======================= */
 let CARD_ID=null;
 function fd(dt){return dt?fmtDate(dt):'';}
+/* 사업 카드 진행 단계 (BUILD 99)
+   실시간 : 접수 → 실시간측량 → 결선 → 후측량 → Tango → 정위치DB → 성과심사완료 → 정산완료
+   탐사   : 접수 → 후측량 → Tango → 정위치DB → 정산완료
+   지금 단계는 빨간 글자 · 성과심사가 불필요하면 정위치DB·성과심사완료는 「불필요」 */
+function cardFlow(d,K0){
+  const real=d.mKey==='실시간';
+  const sim=ns(d.simsa).replace(/\s/g,'');
+  const simNeed=!/불필요/.test(sim)&&/필요|진행중|신청|완료/.test(sim);
+  const simDone=/성과심사완료|심사완료/.test(sim);
+  const jDone=d.jeongKey==='정산완료';
+  const reqD=parseDate(d.req),r1=parseDate(colv(d,'측량1')),r2=parseDate(colv(d,'측량2')),tupD=parseDate(d.tup),simD=parseDate(colv(d,'심사신청일')),jD=jeongDate(d);
+  const S=real
+    ?[{k:'접수',d:reqD,raw:ns(d.req)},{k:'실시간측량',d:r1},{k:'결선'},{k:'후측량',d:r2},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'성과심사완료',sim:1},{k:'정산완료',d:jD,raw:ns(d.jeong)}]
+    :[{k:'접수',d:reqD,raw:ns(d.req)},{k:'후측량',d:r2||r1},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'정산완료',d:jD,raw:ns(d.jeong)}];
+  const ix=k=>S.findIndex(x=>x.k===k);
+  let cur;
+  if(d._cancel)cur=S.length;
+  else if(K0==='미착수'||K0==='대기(불가)')cur=1;
+  else if(K0==='실시간측량')cur=real?ix('실시간측량'):ix('후측량');
+  else if(K0==='결선')cur=real?ix('결선'):ix('후측량');
+  else if(K0==='후측량')cur=ix('후측량');
+  else if(K0==='탱고')cur=ix('Tango');
+  else if(K0==='정위치DB')cur=(real&&/진행중/.test(sim))?ix('성과심사완료'):ix('정위치DB');
+  else cur=jDone?S.length:ix('정산완료');
+  const prevD=i=>{for(let j=i-1;j>=0;j--)if(S[j].d)return S[j].d;return null;};
+  const steps=S.map((x,i)=>{
+    const na=x.sim&&!simNeed&&(/불필요/.test(sim)||i<cur||K0==='완료'||K0==='탱고');
+    if(na&&i!==cur)return {k:x.k,st:'na',v:'불필요'};
+    if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.raw?x.raw.slice(0,10):'완료'))};
+    if(i===cur){
+      let v;
+      if(K0==='대기(불가)')v=String(d.jin==null?'':d.jin).trim().slice(0,12)||'대기';
+      else if(K0==='미착수')v='착수 전';
+      else if(x.d)v=fmtDate(x.d);
+      else{const pd=prevD(i);v=pd?fmtDate(pd)+'~':'진행중';}
+      return {k:x.k,st:'cur',v:v};
+    }
+    return {k:x.k,st:'todo',v:'—'};
+  });
+  return {steps:steps,cur:cur,kind:real?'실시간':'탐사'};
+}
 function cardSteps(d){
   const reqD=parseDate(d.req),gulD=parseDate(colv(d,'통보일'))||parseDate(colv(d,'굴착')),svD=surveyDate(d),tupD=parseDate(d.tup),simD=parseDate(colv(d,'심사신청일')),jD=jeongDate(d);
   return [
@@ -3713,23 +3758,14 @@ function openCard(id){
   const st=cardSteps(d),seg=cardSegments(d);
   const tot=seg.reduce((s,x)=>s+x.n,0);
   const K0=d._ws||workStage(d);
-  const PCT={'미착수':0,'대기(불가)':5,'실시간측량':25,'결선':40,'후측량':50,'탱고':65,'정위치DB':85,'완료':100};
-  const pct=d._cancel?100:(PCT[K0]!=null?PCT[K0]:0);
-  /* 지금 단계가 걸린 칸 : 요청 · 굴착완료 통보 · 측량 · Tango · 심사 신청 · 정산 */
-  const CUR={'미착수':1,'대기(불가)':1,'실시간측량':2,'결선':2,'후측량':2,'탱고':3,'정위치DB':4,'완료':(d.jeongKey==='정산완료'?-1:5)};
-  const cur=d._cancel?-1:(CUR[K0]!=null?CUR[K0]:-1);
+  const F=cardFlow(d,K0),n=F.steps.length;
+  const pct=F.cur>=n?100:Math.round((F.cur+0.5)/n*100);
   let h='<div class="tc-now"><span class="turn solid" style="--c:'+(d._cancel?'#94a3b8':wsColor(K0))+';cursor:default">'+esc(d._cancel?'취소':K0)+'</span>'+
-        '<span class="tc-pct">진행률 <b>'+pct+'%</b></span>'+
+        '<span class="tc-pct">'+esc(F.kind)+' · 진행률 <b>'+pct+'%</b></span>'+
         (d.wait!=null?'<span class="elap">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
   h+='<div class="tl">';
   h+='<div class="tl-prog" title="진행률 '+pct+'%"><i style="width:'+pct+'%;'+(d._cancel?'background:#94a3b8':'')+'"></i></div>';
-  const prevDate=i=>{for(let j=i-1;j>=0;j--)if(st[j].d)return st[j].d;return null;};
-  h+='<div class="tl-steps">'+st.map((x,i)=>{
-    let v;
-    if(i===cur){const pd=x.d||prevDate(i);v='<b class="now" title="지금 단계">'+(x.d?fd(x.d):(K0==='대기(불가)'&&ns(d.jin)?esc(String(d.jin).trim().slice(0,12)):(pd?fd(pd)+'~':'진행중')))+'</b>';}
-    else v='<b>'+(x.d?fd(x.d):(x.raw?esc(x.raw.slice(0,10)):'—'))+'</b>';
-    return '<div class="tl-step'+(x.d||i===cur?'':' miss')+(i===cur?' cur':'')+'">'+esc(x.k)+v+'</div>';
-  }).join('')+'</div>';
+  h+='<div class="tl-steps" style="grid-template-columns:repeat('+n+',1fr)">'+F.steps.map(x=>'<div class="tl-step '+x.st+'">'+esc(x.k)+'<b'+(x.st==='cur'?' class="now"':'')+'>'+esc(x.v)+'</b></div>').join('')+'</div>';
   if(seg.length)h+='<div class="tl-seg">'+seg.map(x=>'<span style="box-shadow:inset 3px 0 0 '+x.c+'">'+esc(x.from)+' → '+esc(x.to)+' <b>'+x.n+'일</b></span>').join('')+'</div>';
   h+='</div>';
   h+='<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div>';
