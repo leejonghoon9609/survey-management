@@ -485,7 +485,9 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .dgrp .gl{font-size:11px;color:#94a3b8;font-weight:600;padding:0 4px 0 6px;}
 #cardPop{position:fixed;inset:0;background:rgba(15,23,42,.38);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
 #cardPop .tc{background:#fff;border-radius:14px;width:min(1240px,100%);height:min(890px,92vh);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);display:flex;flex-direction:column;}
-#cardPop .tc-h,#cardPop .tc-b{width:min(760px,100%);box-sizing:border-box;}
+#cardPop .tc-h,#cardPop .tc-b{width:100%;box-sizing:border-box;}
+#cardPop .tc-h .t{font-size:19px;}
+#cardPop .tc-b{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;}
 #cardPop .tc-h{border-bottom:0;}
 #cardPop .tc-b{border-top:1px solid #e2e8f0;}
 #cardPop .tc-h .cell-x{position:absolute;right:22px;top:16px;}
@@ -521,6 +523,34 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc-box b{display:block;font-size:12.5px;margin-bottom:2px;}
 .tc-reply textarea{width:100%;box-sizing:border-box;min-height:150px;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;line-height:1.55;resize:vertical;}
 .tc-f{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;}
+.tc2-top{display:grid;grid-template-columns:minmax(0,724px) minmax(0,1fr);gap:16px;flex:none;}
+.tc2-main{display:grid;gap:12px;align-content:start;}
+.tc2-h{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:6px;padding-left:8px;border-left:4px solid var(--c);}
+.tc2-note{display:flex;flex-direction:column;min-height:0;border:2px solid #FCD34D;border-radius:10px;padding:10px 12px;background:#FFFDF5;}
+.tc2-note textarea{flex:1;min-height:110px;resize:none;border:1.5px solid #1e293b;border-radius:6px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.55;}
+.tc2-note textarea:focus{outline:none;border-color:#D69E00;box-shadow:0 0 0 3px rgba(214,158,0,.15);}
+.tc2-sv{font-size:11.5px;color:#94a3b8;margin-top:4px;min-height:15px;}
+.tc2-bot{flex:1;min-height:300px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;}
+.tc2-info{display:flex;flex-direction:column;min-height:0;border:2px solid #F9A8D4;border-radius:10px;padding:10px 12px;background:#fff;}
+.tc2-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-content:start;}
+.tc2-grid .kv{display:grid;grid-template-columns:112px minmax(0,1fr);gap:6px;padding:3px 0;border-bottom:1px dashed #f1f5f9;font-size:12px;line-height:1.35;}
+.tc2-grid .k{color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc2-grid .v{color:#0f172a;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc2-grid .kv.z .v{color:#cbd5e1;font-weight:400;}
+.tc2-dwg{display:flex;flex-direction:column;min-height:0;}
+.tc2-dh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.tc2-dh b{font-size:15px;color:#0f172a;}
+.tc2-dh .btn{padding:6px 14px;font-weight:700;}
+#tcUp{border-color:#EA002C;color:#EA002C;}
+#tcDn{border-color:#2563EB;color:#2563EB;}
+#tcDn:disabled{border-color:#e2e8f0;color:#cbd5e1;cursor:default;}
+.tc2-dv{flex:1;min-height:0;border:2px solid #EA002C;border-radius:10px;background:#fff;display:flex;flex-direction:column;overflow:hidden;}
+.tc2-fi{font-size:12px;color:#475569;padding:6px 10px;border-bottom:1px solid #fde2e6;background:#FFF7F8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc2-pv{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;justify-content:center;background:#f8fafc;}
+.tc2-pv img{max-width:100%;}
+.tc2-pdf{flex:1;border:0;width:100%;min-height:0;}
+.tc2-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:15px;font-weight:700;color:#94a3b8;line-height:1.7;}
+.tc2-empty span{font-size:12px;font-weight:400;}
 @media (max-width:640px){.tl-steps{grid-template-columns:repeat(3,1fr);}}
 .elap{display:inline-block;padding:1px 7px;border-radius:10px;font-size:12px;font-weight:700;background:#f1f5f9;color:#475569;}
 .elap.warn{background:#FFF4D6;color:#92400E;}
@@ -1384,8 +1414,9 @@ td.left{text-align:left;}
    BUILD 104: 월간 통계 — 월별 추가사업도 머리 상자+본 상자 · 달 이동 크게 · 발주처 줄 크게, 네 상자 같은 높이에 맞춤
    BUILD 105: 월간 통계 — 0건 발주처 줄은 확실한 회색
    BUILD 106: 사업 카드 창을 크게 (화면 약 2/3) · 지금 내용은 같은 크기로 왼쪽 위에
+   BUILD 107: 사업 카드 — 사업명 제목 · 작업 특이사항 입력 · 사업 정보 두 줄 · 준공도면 업로드/다운로드(공용)
    ======================================================================== */
-const BUILD_NO='106';
+const BUILD_NO='107';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3848,8 +3879,8 @@ function replyText(d){
 function openCard(id){
   const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;
   CARD_ID=d._id;
-  document.getElementById('tcTitle').textContent=(d.seq?d.seq+' · ':'')+(d.eng?d.eng+' · ':'')+(d.work||'');
-  document.getElementById('tcMeta').textContent=[d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
+  document.getElementById('tcTitle').textContent=d.work||'(사업명 없음)';
+  document.getElementById('tcMeta').textContent=[d.seq,d.eng,d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
   const st=cardSteps(d),seg=cardSegments(d);
   const tot=seg.reduce((s,x)=>s+x.n,0);
   const K0=d._ws||workStage(d);
@@ -3863,10 +3894,78 @@ function openCard(id){
   h+='<div class="tl-steps" style="grid-template-columns:repeat('+n+',1fr)">'+F.steps.map(x=>'<div class="tl-step '+x.st+'">'+esc(x.k)+'<b'+(x.st==='cur'?' class="now"':'')+'>'+esc(x.v)+'</b></div>').join('')+'</div>';
   if(seg.length)h+='<div class="tl-seg">'+seg.map(x=>'<span style="box-shadow:inset 3px 0 0 '+x.c+'">'+esc(x.from)+' → '+esc(x.to)+' <b>'+x.n+'일</b></span>').join('')+'</div>';
   h+='</div>';
-  h+='<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div>';
-  document.getElementById('tcBody').innerHTML=h;
+  /* BUILD 107 : 위 = 진행 + 작업 특이사항 / 아래 = 사업 정보(두 줄) + 준공도면 */
+  const nIdx=noteIdx(),note=nIdx!=null?String(d.row[nIdx]==null?'':d.row[nIdx]):'';
+  let H='<div class="tc2-top"><div class="tc2-main">'+h+'<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div></div>'+
+    '<div class="tc2-note"><div class="tc2-h" style="--c:#D69E00">작업 특이사항</div><textarea id="tcNote" placeholder="작업 중 특이사항을 적어 주세요 · 적으면 자동 저장되고 공용으로 같이 보여요">'+esc(note)+'</textarea><div class="tc2-sv" id="tcNoteSv"></div></div></div>';
+  H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><div class="tc2-grid">'+cardInfoHTML(d)+'</div></div>'+
+    '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><b>준공도면</b><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
+    '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
+  document.getElementById('tcBody').innerHTML=H;
   document.getElementById('cardPop').classList.remove('hide');
+  loadDwg(d);
 }
+/* ---- 작업 특이사항 칸 : 「작업 특이사항」 칸에 저장 (없으면 숨김 칸으로 만든다) ---- */
+const NOTE_LABEL='작업 특이사항';
+function noteIdx(make){
+  const c=DISP.find(x=>x.label===NOTE_LABEL);if(c)return c.idx;
+  if(!make)return null;
+  const idx=nextColIdx();DISP.push({idx:idx,label:NOTE_LABEL,vis:false});return idx;
+}
+let NOTE_T=null;
+document.getElementById('cardPop').addEventListener('input',e=>{
+  if(e.target.id!=='tcNote')return;
+  const sv=document.getElementById('tcNoteSv');if(sv)sv.textContent='저장 중…';
+  clearTimeout(NOTE_T);
+  NOTE_T=setTimeout(()=>{
+    const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(!d)return;
+    const idx=noteIdx(true);d.row[idx]=e.target.value;markDirty();
+    if(sv)sv.textContent='저장됨 '+hhmm(new Date())+(SYNC&&SYNC.on?' · 공용':'');
+  },700);
+});
+/* ---- 사업 정보 : 칸 이름 : 값 (두 줄) ---- */
+function cardInfoHTML(d){
+  return DISP.filter(c=>!isAutoIdx(c.idx)&&c.label!==NOTE_LABEL&&c.label!=='발주처(자동)').map(c=>{
+    const v=d.row[c.idx];const t=v==null||v===''?'':(isDateObj(v)?fmtDate(v):String(v));
+    return '<div class="kv'+(t?'':' z')+'"><span class="k" title="'+esc(c.label)+'">'+esc(c.label)+'</span><span class="v" title="'+esc(t)+'">'+(t?esc(t):'—')+'</span></div>';
+  }).join('');
+}
+/* ---- 준공도면 : 사업마다 파일 1개 · 공용 저장소(gj_files)에 'dwg:고유번호' 로 ---- */
+const DWG_MIME={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp'};
+let DWG_URL=null;
+function dwgKey(d){ensureIds();return 'dwg:'+d._uid;}
+async function loadDwg(d){
+  const box=document.getElementById('tcDwg'),dn=document.getElementById('tcDn');if(!box)return;
+  let f=null;try{f=await cTplGet(dwgKey(d));}catch(e){}
+  if(String(CARD_ID)!==String(d._id))return;
+  if(DWG_URL){URL.revokeObjectURL(DWG_URL);DWG_URL=null;}
+  if(!f||!f.buf){box.innerHTML='<div class="tc2-empty">준공도면이 아직 없어요<br><span>위 「업로드 ↑」로 PDF·이미지·도면 파일을 올려 주세요</span></div>';dn.disabled=true;return;}
+  const ext=(String(f.name).split('.').pop()||'').toLowerCase(),mime=DWG_MIME[ext]||'application/octet-stream';
+  DWG_URL=URL.createObjectURL(new Blob([f.buf],{type:mime}));
+  const info='<div class="tc2-fi"><b>'+esc(f.name)+'</b> · '+(f.size?Math.round(f.size/1024).toLocaleString()+' KB':'')+(f.by?' · '+esc(f.by):'')+(f.at?' · '+fmtDate(new Date(f.at)):'')+'</div>';
+  box.innerHTML=info+(/^image\//.test(mime)?'<div class="tc2-pv"><img src="'+DWG_URL+'" alt="준공도면"></div>':(mime==='application/pdf'?'<iframe class="tc2-pdf" src="'+DWG_URL+'" title="준공도면"></iframe>':'<div class="tc2-empty">미리보기가 없는 파일이에요 · 「다운로드 ↓」로 받아서 여세요</div>'));
+  dn.disabled=false;dn.dataset.name=f.name;
+}
+document.getElementById('cardPop').addEventListener('click',e=>{
+  if(e.target.id==='tcUp'){document.getElementById('tcDwgFile').click();return;}
+  if(e.target.id==='tcDn'&&DWG_URL){const a=document.createElement('a');a.href=DWG_URL;a.download=e.target.dataset.name||'준공도면';document.body.appendChild(a);a.click();a.remove();return;}
+});
+document.getElementById('cardPop').addEventListener('change',async e=>{
+  if(e.target.id!=='tcDwgFile')return;
+  const file=e.target.files[0];e.target.value='';if(!file)return;
+  if(file.size>20*1024*1024){toast('20MB 보다 큰 파일은 올릴 수 없어요 ('+Math.round(file.size/1048576)+'MB)',true);return;}
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(!d)return;
+  const go=async()=>{
+    const box=document.getElementById('tcDwg');if(box)box.innerHTML='<div class="tc2-empty">올리는 중…</div>';
+    const buf=await file.arrayBuffer(),k=dwgKey(d);
+    const v={name:file.name,at:Date.now(),size:file.size,buf:buf,by:cMe()};
+    await tplPut(k,v);
+    if(await cFilePut(k,file.name,file.size,buf)){const f=SYNC.files[k];if(f){v.cat=new Date(f.t).getTime();await tplPut(k,v);}toast('준공도면을 올렸어요 · 다른 직원도 볼 수 있어요');}
+    else if(!cCloudReady())toast('준공도면을 이 브라우저에 저장했어요');
+    saveState(true);loadDwg(d);
+  };
+  if(file.size>8*1024*1024)askConfirm('파일이 커요 ('+Math.round(file.size/1048576)+'MB). 올리는 데 시간이 걸릴 수 있어요.\n계속할까요?',go,{title:'준공도면 올리기',ok:'올리기'});else go();
+});
 function closeCard(){document.getElementById('cardPop').classList.add('hide');CARD_ID=null;}
 document.getElementById('cardPop').addEventListener('click',e=>{
   if(e.target.id==='cardPop'||e.target.id==='tcX'||e.target.id==='tcClose'){closeCard();return;}
@@ -5851,8 +5950,9 @@ async function cTplGet(k){
   const loc=await tplGet(k).catch(()=>null);
   if(!cCloudReady())return loc;
   let fm=null;try{const s=JSON.parse(localStorage.getItem(LS_SYNC)||'null');fm=s&&s.files&&s.files[k];}catch(e){}
+  let known=false;try{const s2=JSON.parse(localStorage.getItem(LS_SYNC)||'null');known=!!(s2&&s2.files);}catch(e){}
   if(fm){if(loc&&loc.cat&&loc.cat>=new Date(fm.t).getTime())return loc;}
-  else if(T_CHECKED[k])return loc;
+  else if(known||T_CHECKED[k])return loc;
   T_CHECKED[k]=1;
   try{
     const f=await cRpc('gj_file_get',{p_key:k});
