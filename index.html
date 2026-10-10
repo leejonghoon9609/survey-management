@@ -1435,8 +1435,9 @@ td.left{text-align:left;}
    BUILD 108: 사업 정보 — 묶음별(기본·일정/측량·거리/성과·정산·메모)로 깔끔하게 · 더블클릭 수정 · 빈 칸 추가 · 「수정 저장」 · 저장 안 하고 닫으면 물어봄
    BUILD 109: 사업 정보 — 다시 BUILD 107 처럼 전체 칸 두 줄 목록 · 그 화면에서 더블클릭 수정(빈 칸 포함) · 수정 저장 · 닫을 때 확인
    BUILD 110: 사업 정보 값 파란 글자 · 줄 테두리 진하게 · 준공도면 옆 초록 「탱고」 버튼(자리만)
+   BUILD 111: 카드 진행 막대 끝을 「정산접수 → 정산완료」 두 칸으로 (미지급·미정산 = 정산접수 단계, 정산예정 = 정산완료 기다림)
    ======================================================================== */
-const BUILD_NO='110';
+const BUILD_NO='111';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3818,8 +3819,8 @@ function cardRemap(){
 }
 function fd(dt){return dt?fmtDate(dt):'';}
 /* 사업 카드 진행 단계 (BUILD 99)
-   실시간 : 접수 → 실시간측량 → 결선 → 후측량 → Tango → 정위치DB → 성과심사완료 → 정산완료
-   탐사   : 접수 → 후측량 → Tango → 정위치DB → 정산완료
+   실시간 : 접수 → 실시간측량 → 결선 → 후측량 → Tango → 정위치DB → 성과심사완료 → 정산접수 → 정산완료
+   탐사   : 접수 → 후측량 → Tango → 정위치DB → 정산접수 → 정산완료
    지금 단계는 빨간 글자 · 성과심사가 불필요하면 정위치DB·성과심사완료는 「불필요」 */
 function cardFlow(d,K0){
   const real=d.mKey==='실시간';
@@ -3829,8 +3830,8 @@ function cardFlow(d,K0){
   const jDone=d.jeongKey==='정산완료';
   const reqD=parseDate(d.req),r1=parseDate(colv(d,'측량1')),r2=parseDate(colv(d,'측량2')),tupD=parseDate(d.tup),simD=parseDate(colv(d,'심사신청일')),jD=jeongDate(d);
   const S=real
-    ?[{k:'접수',d:reqD,raw:ns(d.req)},{k:'실시간측량',d:r1},{k:'결선'},{k:'후측량',d:r2},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'성과심사완료',sim:1},{k:'정산완료',d:jD,raw:ns(d.jeong)}]
-    :[{k:'접수',d:reqD,raw:ns(d.req)},{k:'후측량',d:r2||r1},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'정산완료',d:jD,raw:ns(d.jeong)}];
+    ?[{k:'접수',d:reqD,raw:ns(d.req)},{k:'실시간측량',d:r1},{k:'결선'},{k:'후측량',d:r2},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'성과심사완료',sim:1},{k:'정산접수',jr:1},{k:'정산완료',d:jD,jr:1}]
+    :[{k:'접수',d:reqD,raw:ns(d.req)},{k:'후측량',d:r2||r1},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'정산접수',jr:1},{k:'정산완료',d:jD,jr:1}];
   const ix=k=>S.findIndex(x=>x.k===k);
   let cur;
   if(d._cancel)cur=S.length;
@@ -3840,15 +3841,16 @@ function cardFlow(d,K0){
   else if(K0==='후측량')cur=ix('후측량');
   else if(K0==='탱고')cur=ix('Tango');
   else if(K0==='정위치DB')cur=(real&&/진행중/.test(sim))?ix('성과심사완료'):ix('정위치DB');
-  else cur=jDone?S.length:ix('정산완료');
+  else cur=jDone?S.length:(d.jeongKey==='정산예정'?ix('정산완료'):ix('정산접수'));   /* 미지급·미정산·빈칸 = 정산접수 단계 */
   const prevD=i=>{for(let j=i-1;j>=0;j--)if(S[j].d)return S[j].d;return null;};
   const steps=S.map((x,i)=>{
     const na=x.sim&&!simNeed&&(/불필요/.test(sim)||i<cur||K0==='완료'||K0==='탱고');
     if(na&&i!==cur)return {k:x.k,st:'na',v:'불필요'};
-    if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.raw?x.raw.slice(0,10):'완료'))};
+    if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.k==='정산접수'?'완료':(x.jr&&ns(d.jeong)?String(d.jeong).trim().slice(0,12):(x.raw?x.raw.slice(0,10):'완료'))))};
     if(i===cur){
       let v;
       if(K0==='대기(불가)')v=String(d.jin==null?'':d.jin).trim().slice(0,12)||'대기';
+      else if(x.jr&&ns(d.jeong)&&!parseDate(d.jeong))v=String(d.jeong).trim().slice(0,12);   /* 정산상황 글자 (미지급 · 26년10월예정 …) */
       else if(K0==='미착수')v='착수 전';
       else if(x.d)v=fmtDate(x.d);
       else{const pd=prevD(i);v=pd?fmtDate(pd)+'~':'진행중';}
