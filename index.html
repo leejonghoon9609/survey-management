@@ -262,6 +262,37 @@ header .spacer{flex:1;}
 .gcard.sub .gh b{font-size:12.5px;color:var(--tc,var(--c));}
 .gcard.sub .gh .n{font-size:15px;}
 .gcard.skball{margin-bottom:0;}
+.gwin{margin-left:8px;border:1.5px solid #059669;background:#ECFDF5;color:#047857;border-radius:6px;padding:1px 7px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.gwin:hover{background:#059669;color:#fff;}
+/* SKB 정산리스트 창 (#skb=…) */
+#skbWin{display:none;}
+body.skbwin header,body.skbwin .nav,body.skbwin .wrap{display:none !important;}
+body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px 14px;box-sizing:border-box;gap:8px;}
+.sw-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border:2px solid #1D4ED8;border-radius:10px;background:#EFF6FF;}
+.sw-h .tt{font-size:17px;font-weight:800;color:#1D4ED8;}
+.sw-h .tf{font-size:12px;color:#475569;}
+.sw-h .sp{flex:1;}
+.sw-btn{border:1.5px solid #1D4ED8;background:#fff;color:#1D4ED8;border-radius:7px;padding:5px 12px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;}
+.sw-btn.pri{background:#1D4ED8;color:#fff;}
+.sw-btn:disabled{opacity:.5;cursor:default;}
+.sw-sum{display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px;}
+.sw-sum span{display:inline-flex;gap:5px;align-items:center;border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:8px;padding:2px 9px;font-weight:700;}
+.sw-sum b{color:#0f172a;font-variant-numeric:tabular-nums;}
+.sw-tabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:-8px;}
+.sw-tabs button{border:1px solid #cbd5e1;border-bottom:0;border-radius:7px 7px 0 0;background:#f1f5f9;padding:5px 12px;font-family:inherit;font-size:12.5px;cursor:pointer;color:#334155;}
+.sw-tabs button.on{background:#fff;color:#1D4ED8;font-weight:800;border-color:#1D4ED8;}
+.sw-tabs button b{font-weight:700;color:#DC2626;margin-left:5px;font-size:11.5px;}
+.sw-grid{flex:1;overflow:auto;border:1px solid #1D4ED8;border-radius:0 8px 8px 8px;background:#fff;min-height:0;}
+.sw-grid table{border-collapse:separate;border-spacing:0;table-layout:fixed;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11.5px;}
+.sw-grid td{border-right:1px solid #d9d9d9;border-bottom:1px solid #d9d9d9;padding:1px 4px;height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;}
+.sw-grid td.rn{background:#f3f4f6;color:#6b7280;text-align:center;position:sticky;left:0;z-index:2;font-size:10.5px;}
+.sw-grid tr.h td{position:sticky;z-index:3;}
+.sw-grid td.chg{box-shadow:inset 0 0 0 2px #2563EB;}
+.sw-grid tr.nw td{background:#DCFCE7;cursor:pointer;}
+.sw-grid tr.nw td.rn{background:#16A34A;color:#fff;font-weight:700;}
+.sw-legend{font-size:11.5px;color:#64748b;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.sw-legend i{display:inline-block;width:14px;height:12px;vertical-align:-2px;margin-right:4px;}
+.sw-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#475569;font-size:14px;text-align:center;line-height:1.7;}
 .gfold{margin-left:6px;width:24px;height:22px;border:1.5px solid var(--c);border-radius:6px;background:#fff;color:var(--c);font-size:13px;font-weight:800;line-height:1;cursor:pointer;padding:0;flex:none;}
 .gfold:hover{background:var(--c);color:#fff;}
 .gcard .gh{align-items:center;}
@@ -997,6 +1028,8 @@ td.left{text-align:left;}
       </div>
     </div></div>
 <div id="perWin"></div>
+<div id="skbWin"></div>
+<input type="file" id="skbTplFile" accept=".xlsx" class="hide">
 <div id="cardPop" class="hide"><div class="tc" role="dialog" aria-modal="true" aria-labelledby="tcTitle">
   <div class="tc-h"><div style="flex:1;min-width:0;"><div class="t" id="tcTitle"></div><div class="m" id="tcMeta"></div></div><span class="cell-x" id="tcX" title="닫기">✕</span></div>
   <div class="tc-b" id="tcBody"></div>
@@ -1178,8 +1211,11 @@ td.left{text-align:left;}
    BUILD 82: 하위 카드(지사·SKB 사업자)는 흰 바탕, 고르면 색 바탕 · 이름 글자만 서로 다른 색 · 처음엔 SKT·SKB 모두 접힘
    BUILD 83: 사업현황 카드(전체 물량·SKT·지사·SKB·원인자)를 누르면 리스트에 완료 포함 전체가 나오게
              단계 칸(완료 등)을 누르면 그 단계만 · 다시 누르거나 ✕ 로 풀면 「진행 중 전체」로
+   BUILD 84: SKB 정산리스트 창 — 원본 양식(엑셀 파일)을 등록해 두면 순서·배경색·메모 칸 그대로,
+             시스템에서 바뀐 칸만 고치고 새 사업만 아래에 붙여 엑셀로 내려받기 (SKB 전체·SK TNS·팬텍·유엔에이·확인필요)
+             · 한국 시간에서 엑셀 날짜가 하루 앞당겨 읽히던 문제 수정 (저장된 날짜도 한 번 바로잡음)
    ======================================================================== */
-const BUILD_NO='83';
+const BUILD_NO='84';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1329,6 +1365,7 @@ function stateObj(){
     DISP:DISP.map(c=>({idx:c.idx,label:c.label,vis:c.vis})),
     colWidth:colWidth,
     ui:uiObj(),
+    dfix:1,   /* BUILD 84 : 날짜 하루 밀림을 바로잡은 목록 */
     rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone,o:d._src||'',a:d._added||null}))};
 }
 function saveState(silent){
@@ -1342,6 +1379,16 @@ function saveState(silent){
     toast('저장 공간이 부족합니다. "백업 내려받기"로 파일 보관하세요',true);
   }
 }
+/* BUILD 84 이전에 저장된 목록 : 엑셀에서 읽은 날짜(YYYY-MM-DD)가 하루 앞당겨져 있으므로 하루 더한다 */
+function fixOldDates(rows){
+  const skip=new Set([COL.소요일수,COL.차례,COL.다음,COL.경과].filter(i=>i!=null&&i>=0));
+  let n=0;
+  (rows||[]).forEach(o=>{const r=o.r||[];for(let i=0;i<r.length;i++){
+    if(skip.has(i))continue;const v=r[i];
+    if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)){const m=v.split('-');r[i]=fmtDate(new Date(+m[0],+m[1]-1,+m[2]+1));n++;}
+  }});
+  return n;
+}
 function hhmm(d){const p=n=>String(n).padStart(2,'0');return p(d.getHours())+':'+p(d.getMinutes());}
 function loadState(opt){
   opt=opt||{};
@@ -1351,6 +1398,7 @@ function loadState(opt){
     const s=JSON.parse(raw);
     if(!s||!s.rows||!s.rows.length)return false;
     COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
+    if(!s.dfix){const n=fixOldDates(s.rows);if(n)setTimeout(()=>{markDirty();toast('저장된 목록의 날짜 '+n+'곳을 하루씩 바로잡았어요 (엑셀 날짜 읽기 오류 수정)');},600);}
     const rep=repairCols();
     DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
@@ -1408,6 +1456,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       const __go=()=>{
       COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
+      if(!s.dfix)fixOldDates(s.rows);
       repairCols();
       DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null};deriveItem(d);return d;});
       loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
@@ -1718,7 +1767,9 @@ function readFile(file){
   reader.onerror=()=>toast('파일을 읽지 못했습니다',true);
   reader.readAsArrayBuffer(file);
 }
-function cleanCell(v){return isDateObj(v)?fmtDate(v):v;}
+/* 엑셀 날짜 바로잡기 : 한국 시간에서 SheetJS 가 날짜를 전날 23:59:08 로 주는 문제 → 가까운 5분 단위로 반올림 */
+function fixXlDate(v){return new Date(Math.round(v.getTime()/300000)*300000);}
+function cleanCell(v){return isDateObj(v)?fmtDate(fixXlDate(v)):v;}
 
 function scanSheet(name,aoa){
   const det=detectHeader(aoa);
@@ -2778,12 +2829,15 @@ function renderGroups(){
     if(G.sub&&(!o.n||GFOLD[G.sub]))return;
     const kids=G.all?GROUPS.filter(x=>x.sub===G.k&&(cnt[x.k]||{}).n).length:0;
     const fold=G.all&&kids?'<button class="gfold" data-fold="'+G.k+'" title="'+(GFOLD[G.k]?'펴기':'접기')+' — '+kids+'개">'+(GFOLD[G.k]?'▸':'▾')+'</button>':'';
-    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+(G.tc?';--tc:'+G.tc:'')+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
+    const win=(G.k==='SKB'||G.sub==='SKB')?'<button class="gwin" data-skbwin="'+esc(G.k)+'" title="SKB 정산리스트 창 (원본 양식 그대로 · 엑셀 다운)">목록 창 ↗</button>':'';
+    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+(G.tc?';--tc:'+G.tc:'')+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b>'+win+'<span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
   });
   box.innerHTML=h;
   document.getElementById('gTotal').textContent='진행 '+(all.n-(all['완료']||0))+' · 완료 '+(all['완료']||0);
 }
 document.getElementById('gBody').addEventListener('click',e=>{
+  const sw=e.target.closest('[data-skbwin]');
+  if(sw){e.stopPropagation();openSkbWin(sw.dataset.skbwin);return;}
   const f=e.target.closest('[data-fold]');
   if(f){e.stopPropagation();GFOLD[f.dataset.fold]=!GFOLD[f.dataset.fold];saveFold();renderGroups();return;}
   const b=e.target.closest('button[data-ph]');
@@ -2982,6 +3036,344 @@ document.getElementById('perWin').addEventListener('click',e=>{
   const r=e.target.closest('[data-card]');if(r)openCard(r.dataset.card);
 });
 
+/* ======================= SKB 정산리스트 창 (BUILD 84) =======================
+   원본 양식(엑셀)을 IndexedDB 에 보관 → 창에서 시트를 그대로 그리고, 시스템과 다른 칸만 바꿔 보여준다.
+   엑셀 다운로드 = 원본 파일을 그대로 열어 바뀐 칸 값만 고치고, 원본에 없는 새 사업을 아래에 붙여 저장.
+   (순서·배경색·글자색·수식·메모 칸은 원본 그대로) */
+const EXJS_URL='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+function loadExcelJS(){
+  if(window.ExcelJS)return Promise.resolve(window.ExcelJS);
+  return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=EXJS_URL;sc.onload=()=>res(window.ExcelJS);sc.onerror=()=>rej(new Error('엑셀 도구를 불러오지 못했어요 (인터넷 연결 확인)'));document.head.appendChild(sc);});
+}
+function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('gongjeong_files',1);r.onupgradeneeded=()=>{r.result.createObjectStore('tpl');};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function tplGet(k){const db=await idbOpen();return new Promise((res,rej)=>{const q=db.transaction('tpl','readonly').objectStore('tpl').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error);});}
+async function tplPut(k,v){const db=await idbOpen();return new Promise((res,rej)=>{const t=db.transaction('tpl','readwrite');t.objectStore('tpl').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
+
+/* 그룹 → 시트 이름 키워드 */
+const SKB_SHEETS=[
+  {g:'SKB',          kw:/전체/,      name:'SKB 전체'},
+  {g:'SKB·SK TNS',   kw:/TNS/i,     name:'SK TNS'},
+  {g:'SKB·팬텍',     kw:/팬텍/,      name:'팬텍'},
+  {g:'SKB·유엔에이', kw:/유엔에이/,   name:'유엔에이'},
+  {g:'SKB·확인필요', kw:/확인/,      name:'사업자 확인필요'}
+];
+function bizSheetKey(biz){
+  const v=String(biz==null?'':biz).replace(/\s/g,'');
+  if(/SKTNS|SK티앤에스/i.test(v))return 'SKB·SK TNS';
+  if(/팬텍|펜텍/.test(v))return 'SKB·팬텍';
+  if(/유엔에이|U&A/i.test(v))return 'SKB·유엔에이';
+  if(/^SKB$/i.test(v))return 'SKB·확인필요';
+  return '';
+}
+/* 셀 값 → 값 하나 (서식 글자·수식 결과·하이퍼링크 풀기) */
+function xv(v){
+  if(v==null)return '';
+  if(typeof v==='object'&&!isDateObj(v)){
+    if(v.richText)return v.richText.map(t=>t.text).join('');
+    if(v.formula||v.sharedFormula||('result' in v))return xv(v.result);
+    if(v.text!=null)return String(v.text);
+    if(v.error)return '';
+  }
+  return v;
+}
+function ymdUTC(d){const p=n=>String(n).padStart(2,'0');return d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate());}
+/* 비교용 글자 (fromXl = 엑셀 원본 값 : 날짜가 UTC 자정) */
+function normX(v,fromXl){
+  v=xv(v);
+  if(v==null||v==='')return '';
+  if(isDateObj(v))return fromXl?ymdUTC(v):fmtDate(v);
+  if(typeof v==='number')return String(+v.toFixed(6));
+  const t=String(v).replace(/\s+/g,' ').trim();
+  const iso=t.match(/^(\d{4})-(\d{2})-(\d{2})(?:T[\d:.]+Z?)?$/);if(iso)return iso[1]+'-'+iso[2]+'-'+iso[3];
+  if(/^-?\d+(\.\d+)?$/.test(t))return String(+(+t).toFixed(6));
+  return t;
+}
+function isFormulaCell(c){const v=c.value;return !!(v&&typeof v==='object'&&(v.formula||v.sharedFormula));}
+/* 시트 머리글 : 공사명·Eng 번호가 같이 있는 줄 */
+function tplHeader(ws){
+  for(let r=1;r<=6;r++){
+    const raw=[];const row=ws.getRow(r);
+    for(let c=1;c<=ws.columnCount;c++)raw[c-1]=xv(row.getCell(c).value);
+    const N=raw.map(nh);
+    if(N.includes('공사명')&&N.some(x=>x.toLowerCase()==='eng번호'))return {hr:r,labels:uniqLabels(raw)};
+  }
+  return null;
+}
+function tplLastRow(ws,hdr){
+  let last=hdr.hr;const iw=hdr.labels.indexOf('공사명')+1,ie=hdr.labels.findIndex(l=>nh(l).toLowerCase()==='eng번호')+1;
+  ws.eachRow({includeEmpty:false},(row,rn)=>{if(rn<=hdr.hr)return;if(normX(row.getCell(iw).value,1)||normX(row.getCell(ie).value,1))last=Math.max(last,rn);});
+  return last;
+}
+/* 원본 줄 ↔ 시스템 줄 : ① 공사코드+공사명 ② 공사코드 ③ 공사명 (②③은 양쪽에 하나뿐일 때만) */
+function skbMatch(entries,sysRows){
+  const K=d=>(d.eng||'').toLowerCase()+'|'+nh(d.work);
+  const used=new Set(),out=new Map();
+  const byKey=new Map(),byEng=new Map(),byWork=new Map();
+  const add=(m,k,d)=>{if(!k||k==='|')return;if(!m.has(k))m.set(k,[]);m.get(k).push(d);};
+  sysRows.forEach(d=>{add(byKey,K(d),d);add(byEng,(d.eng||'').toLowerCase(),d);add(byWork,nh(d.work),d);});
+  const tE={},tW={};entries.forEach(e=>{const a=e.eng.toLowerCase(),b=nh(e.work);if(a)tE[a]=(tE[a]||0)+1;if(b)tW[b]=(tW[b]||0)+1;});
+  const pick=(m,k,uniq)=>{const all=m.get(k)||[];if(uniq&&all.length!==1)return null;const a=all.filter(d=>!used.has(d));return a.length?a[0]:null;};
+  entries.forEach(e=>{const d=pick(byKey,e.eng.toLowerCase()+'|'+nh(e.work));if(d){used.add(d);out.set(e.r,{d,how:'코드+공사명'});}});
+  entries.forEach(e=>{if(out.has(e.r))return;const a=e.eng.toLowerCase();if(!a||tE[a]!==1)return;const d=pick(byEng,a,true);if(d){used.add(d);out.set(e.r,{d,how:'공사코드'});}});
+  entries.forEach(e=>{if(out.has(e.r))return;const b=nh(e.work);if(!b||tW[b]!==1)return;const d=pick(byWork,b,true);if(d){used.add(d);out.set(e.r,{d,how:'공사명'});}});
+  return {map:out,used};
+}
+/* 계획 : 시트마다 바뀐 칸 · 새 줄 */
+function skbPlan(wb){
+  DATA.forEach(d=>{if(d._id==null)d._id=++idSeq;});
+  const sys=DATA.filter(d=>(d._src||d.baal)==='SKB');
+  const lab2idx={};DISP.forEach(c=>{lab2idx[c.label]=c.idx;});
+  const bizI=bizIdx();
+  const plan={sheets:[],newRows:[],main:null,sysN:sys.length};
+  wb.worksheets.forEach(ws=>{
+    const hdr=tplHeader(ws);if(!hdr)return;
+    const last=tplLastRow(ws,hdr);
+    const iw=hdr.labels.indexOf('공사명'),ie=hdr.labels.findIndex(l=>nh(l).toLowerCase()==='eng번호');
+    const entries=[];
+    for(let r=hdr.hr+1;r<=last;r++){const row=ws.getRow(r);const w=String(xv(row.getCell(iw+1).value)||'').trim(),e=String(xv(row.getCell(ie+1).value)||'').trim();if(w||e)entries.push({r,work:w,eng:e});}
+    /* 날짜 칸 = 원본에 날짜 값이 하나라도 있는 칸 */
+    const dateCol=hdr.labels.map((l,ci)=>{for(let r=hdr.hr+1;r<=last;r++){if(isDateObj(ws.getRow(r).getCell(ci+1).value))return true;}return false;});
+    const SG=SKB_SHEETS.find(x=>x.kw.test(ws.name));
+    plan.sheets.push({ws,name:ws.name,g:SG?SG.g:'',hdr,last,entries,dateCol,changes:[],matched:0,orphan:0,adds:[]});
+  });
+  const main=plan.sheets.find(x=>x.g==='SKB')||plan.sheets[0];plan.main=main;
+  /* 원본 메인 시트의 값 (사업별·칸별) : 하위 시트는 "원본 이후 시스템에서 바뀐 값"만 반영하기 위해 */
+  const mainVal=new Map();
+  const order=[main].concat(plan.sheets.filter(x=>x!==main));
+  order.forEach(sh=>{
+    const m=skbMatch(sh.entries,sys);sh.matchMap=m.map;sh.matched=m.map.size;sh.orphan=sh.entries.length-m.map.size;
+    sh.entries.forEach(e=>{
+      const hit=m.map.get(e.r);if(!hit)return;const d=hit.d;const row=sh.ws.getRow(e.r);
+      sh.hdr.labels.forEach((L,ci)=>{
+        if(!L)return;const idx=lab2idx[L];if(idx==null)return;
+        const cell=row.getCell(ci+1);if(isFormulaCell(cell))return;
+        const nt=normX(cell.value,1);
+        if(sh===main)mainVal.set(d._id+'|'+L,nt);
+        const sv=d.row[idx],nsv=normX(sv,0);if(nsv==='')return;            /* 시스템이 빈 칸이면 원본 그대로 */
+        if(nsv===nt)return;
+        if(sh!==main&&mainVal.has(d._id+'|'+L)&&mainVal.get(d._id+'|'+L)===nsv)return;   /* 원본 메인과 같은 값 = 바뀐 게 아님 (하위 시트만 다르게 적어 둔 칸은 그대로) */
+        sh.changes.push({r:e.r,c:ci+1,label:L,from:nt,to:nsv,sv,d,how:hit.how});
+      });
+    });
+    if(sh===main)plan.newRows=sys.filter(d=>!m.used.has(d));
+  });
+  plan.sheets.forEach(sh=>{
+    if(sh===main){sh.adds=plan.newRows.slice();return;}
+    if(!sh.g)return;
+    sh.adds=plan.newRows.filter(d=>bizSheetKey(bizI>=0?d.row[bizI]:'')===sh.g);
+  });
+  return plan;
+}
+/* 시스템 값 → 엑셀에 넣을 값 (날짜 칸이면 날짜로) */
+function toXl(sv,isDateCol){
+  if(sv==null||sv==='')return null;
+  if(isDateObj(sv))return new Date(Date.UTC(sv.getFullYear(),sv.getMonth(),sv.getDate()));
+  if(typeof sv==='string'){
+    const m=sv.trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:T[\d:.]+Z?)?$/);
+    if(m&&isDateCol)return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+  }
+  return sv;
+}
+function cloneStyle(st){const o=JSON.parse(JSON.stringify(st||{}));delete o.fill;return o;}
+function plainBaseRow(ws,sh){
+  for(let r=sh.last;r>sh.hdr.hr;r--){let f=false;ws.getRow(r).eachCell({includeEmpty:false},c=>{if(c.fill&&c.fill.fgColor)f=true;});if(!f)return r;}
+  return sh.last;
+}
+/* 원본에 계획 적용 (opt.mark = 바뀐 칸·새 줄에 검토용 색) */
+function skbApply(plan,opt){
+  opt=opt||{};
+  const lab2idx={};DISP.forEach(c=>{lab2idx[c.label]=c.idx;});
+  const MARK={type:'pattern',pattern:'solid',fgColor:{argb:'FFBFDBFE'}},MARKN={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCFCE7'}};
+  plan.sheets.forEach(sh=>{
+    const ws=sh.ws;
+    sh.changes.forEach(ch=>{const cell=ws.getRow(ch.r).getCell(ch.c);cell.value=toXl(ch.sv,sh.dateCol[ch.c-1]);if(opt.mark)cell.fill=MARK;});
+    if(!sh.adds.length)return;
+    const baseRow=ws.getRow(plainBaseRow(ws,sh));
+    const ncol=Math.max(ws.columnCount,sh.hdr.labels.length);
+    sh.adds.forEach((d,i)=>{
+      const row=ws.getRow(sh.last+1+i);
+      for(let c=1;c<=ncol;c++)row.getCell(c).style=cloneStyle(baseRow.getCell(c).style);
+      if(baseRow.height)row.height=baseRow.height;
+      sh.hdr.labels.forEach((L,ci)=>{if(!L)return;const idx=lab2idx[L];if(idx==null)return;const v=toXl(d.row[idx],sh.dateCol[ci]);if(v!=null)row.getCell(ci+1).value=v;});
+      if(opt.mark)for(let c=1;c<=sh.hdr.labels.length;c++)row.getCell(c).fill=MARKN;
+    });
+    /* 필터 범위 늘리기 */
+    const nl=sh.last+sh.adds.length;
+    if(typeof ws.autoFilter==='string')ws.autoFilter=ws.autoFilter.replace(/(\d+)$/,n=>String(Math.max(+n,nl)));
+    else if(ws.autoFilter&&ws.autoFilter.to){const t=ws.autoFilter.to;if(typeof t==='string')ws.autoFilter.to=t.replace(/\d+$/,n=>String(Math.max(+n,nl)));else if(t.row)t.row=Math.max(t.row,nl);}
+  });
+  return plan;
+}
+
+/* ---- 테마 색 ---- */
+function themeColors(wb){
+  const xml=(wb._themes&&(wb._themes.theme1||Object.values(wb._themes)[0]))||'';
+  const get=n=>{const m=xml.match(new RegExp('<a:'+n+'>[\\s\\S]*?(?:srgbClr val="([0-9A-Fa-f]{6})"|lastClr="([0-9A-Fa-f]{6})")'));return m?(m[1]||m[2]):null;};
+  return [get('lt1')||'FFFFFF',get('dk1')||'000000',get('lt2')||'E7E6E6',get('dk2')||'44546A',get('accent1')||'4472C4',get('accent2')||'ED7D31',get('accent3')||'A5A5A5',get('accent4')||'FFC000',get('accent5')||'5B9BD5',get('accent6')||'70AD47'];
+}
+function tintHex(hex,tint){
+  const r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;
+  if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h/=6;}
+  l=tint<0?l*(1+tint):l*(1-tint)+tint;
+  const f=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+  let R,G,B;if(!s){R=G=B=l;}else{const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;R=f(p,q,h+1/3);G=f(p,q,h);B=f(p,q,h-1/3);}
+  const x=v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0');return '#'+x(R)+x(G)+x(B);
+}
+function xlColor(c,TH){
+  if(!c)return '';
+  if(c.argb&&c.argb.length>=6)return '#'+c.argb.slice(-6);
+  if(c.theme!=null&&TH[c.theme])return c.tint?tintHex(TH[c.theme],c.tint):'#'+TH[c.theme];
+  return '';
+}
+function fmtXl(v,numFmt){
+  v=xv(v);
+  if(v==null||v==='')return '';
+  if(isDateObj(v))return ymdUTC(v);
+  if(typeof v==='number'){
+    const f=String(numFmt||'');
+    if(/0\.000/.test(f))return v.toFixed(3);
+    if(/#,##0/.test(f))return Math.round(v).toLocaleString('ko-KR');
+    if(Math.abs(v)>=10000&&Number.isInteger(v))return v.toLocaleString('ko-KR');
+    return String(+v.toFixed(6));
+  }
+  return String(v);
+}
+
+/* ---- 창 ---- */
+let SKBWIN=null;   /* {g, sheet, mark} */
+(function(){const m=location.hash.match(/^#skb=(.+)$/);if(!m)return;SKBWIN={g:decodeURIComponent(m[1]),sheet:null,mark:false};document.body.classList.add('skbwin');})();
+function openSkbWin(g){
+  saveState(true);
+  const url=location.href.split('#')[0]+'#skb='+encodeURIComponent(g);
+  const win=window.open(url,'gongjeong_skb','width=1500,height=900');
+  if(!win){toast('창이 막혔어요 — 주소창 오른쪽에서 팝업을 허용해 주세요',true);return;}
+  try{win.focus();}catch(e){}
+}
+let SKB_CACHE=null;   /* 원본을 매번 다시 읽지 않도록 */
+async function skbLoadWb(){
+  const t=await tplGet('SKB');if(!t)return null;
+  if(SKB_CACHE&&SKB_CACHE.at===t.at)return SKB_CACHE;
+  const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(t.buf);
+  SKB_CACHE={at:t.at,name:t.name,wb,TH:themeColors(wb)};return SKB_CACHE;
+}
+async function renderSkbWin(){
+  if(!SKBWIN)return;
+  const box=document.getElementById('skbWin');
+  const SG=SKB_SHEETS.find(x=>x.g===SKBWIN.g)||SKB_SHEETS[0];
+  document.title='SKB 정산리스트 · '+SG.name;
+  let C;
+  try{C=await skbLoadWb();}catch(err){box.innerHTML='<div class="sw-empty"><b>원본 양식을 읽지 못했어요</b>'+esc(err.message||'')+'</div>';return;}
+  if(!C){
+    box.innerHTML='<div class="sw-h"><span class="tt">SKB 정산리스트 · '+esc(SG.name)+'</span></div>'+
+      '<div class="sw-empty"><div><b style="font-size:16px">원본 양식이 아직 없어요</b><br>SKB 담당자와 같이 보는 정산리스트 엑셀(예: 20260917_SKB_측량공정진행현황_대원항업.xlsx)을 등록하면<br>그 파일의 순서·배경색·메모 칸은 그대로 두고, 시스템에서 바뀐 칸과 새 사업만 반영해 보여드려요.</div>'+
+      '<button class="sw-btn pri" data-sw="tpl">원본 양식 등록</button></div>';
+    return;
+  }
+  const plan=skbPlan(C.wb);   /* 원본은 그대로 두고 계획만 (적용은 다운로드 때 새 복사본에) */
+  const sheets=plan.sheets.filter(x=>x.g);
+  const sh=sheets.find(x=>x.name===SKBWIN.sheet)||sheets.find(x=>x.g===SG.g)||sheets[0];
+  if(!sh){box.innerHTML='<div class="sw-empty">이 원본에서 SKB 시트를 찾지 못했어요</div>';return;}
+  SKBWIN.sheet=sh.name;
+  const totCh=plan.sheets.reduce((a,x)=>a+x.changes.length,0),chRows=new Set(sh.changes.map(c=>c.r)).size;
+  let h='<div class="sw-h"><span class="tt">SKB 정산리스트</span>'+
+    '<span class="tf">원본 양식 : <b>'+esc(C.name)+'</b> · 등록 '+new Date(C.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</span><span class="sp"></span>'+
+    '<label class="tf" style="display:flex;gap:4px;align-items:center;cursor:pointer;"><input type="checkbox" id="swMark"'+(SKBWIN.mark?' checked':'')+'>엑셀에도 바뀐 칸·새 줄 색 표시 (검토용)</label>'+
+    '<button class="sw-btn" data-sw="tpl">원본 양식 바꾸기</button>'+
+    '<button class="sw-btn pri" data-sw="dl">엑셀 다운로드 ↓</button></div>';
+  h+='<div class="sw-sum">'+
+    '<span style="--c:#2563EB">바뀐 칸 <b>'+totCh+'</b>곳 (전체 시트)</span>'+
+    '<span style="--c:#16A34A">새 사업 <b>'+plan.newRows.length+'</b>건</span>'+
+    '<span style="--c:#64748b">이 시트 : 원본 <b>'+sh.entries.length+'</b>줄 · 바뀐 줄 <b>'+chRows+'</b> · 새 줄 <b>'+sh.adds.length+'</b>'+(sh.orphan?' · 시스템에 없는 원본 줄 <b>'+sh.orphan+'</b>':'')+'</span>'+
+    '</div>';
+  h+='<div class="sw-tabs">'+sheets.map(x=>'<button class="'+(x===sh?'on':'')+'" data-swsh="'+esc(x.name)+'">'+esc(x.name)+(x.changes.length||x.adds.length?'<b>'+(x.changes.length?'바뀜 '+x.changes.length:'')+(x.adds.length?(x.changes.length?' · ':'')+'새 '+x.adds.length:'')+'</b>':'')+'</button>').join('')+'</div>';
+  /* 표 */
+  const ws=sh.ws,TH=C.TH,nc=Math.max(sh.hdr.labels.length,ws.columnCount);
+  const chMap=new Map();sh.changes.forEach(c=>chMap.set(c.r+':'+c.c,c));
+  const lab2idx={};DISP.forEach(c=>{lab2idx[c.label]=c.idx;});
+  const cellHtml=(cell,disp,cls,tip,top)=>{
+    const st=[],f=cell.fill,fo=cell.font||{},al=cell.alignment||{};
+    if(f&&f.type==='pattern'&&f.fgColor){const bg=xlColor(f.fgColor,TH);if(bg)st.push('background:'+bg);}
+    const fc=xlColor(fo.color,TH);if(fc)st.push('color:'+fc);
+    if(fo.bold)st.push('font-weight:700');
+    if(al.horizontal==='center'||al.horizontal==='centerContinuous')st.push('text-align:center');else if(al.horizontal==='right')st.push('text-align:right');
+    if(top!=null)st.push('top:'+top+'px');
+    return '<td'+(cls?' class="'+cls+'"':'')+(st.length?' style="'+st.join(';')+'"':'')+' title="'+esc(tip||disp)+'">'+esc(disp)+'</td>';
+  };
+  let t='<table><colgroup><col style="width:40px">';
+  for(let c=1;c<=nc;c++){const w=ws.getColumn(c).width||8.43;t+='<col style="width:'+Math.round(w*7+6)+'px">';}
+  t+='</colgroup>';
+  for(let r=1;r<=sh.last;r++){
+    const row=ws.getRow(r),isH=r<=sh.hdr.hr,top=isH?(r-1)*21:null;
+    t+='<tr'+(isH?' class="h"':'')+'><td class="rn"'+(isH?' style="top:'+top+'px;z-index:4"':'')+'>'+r+'</td>';
+    for(let c=1;c<=nc;c++){
+      const cell=row.getCell(c),ch=chMap.get(r+':'+c);
+      const disp=ch?fmtXl(toXl(ch.sv,sh.dateCol[c-1]),cell.numFmt):fmtXl(cell.value,cell.numFmt);
+      t+=cellHtml(cell,disp,ch?'chg':'',ch?('원본: '+(ch.from||'(빈칸)')+'  →  시스템: '+ch.to):'',top);
+    }
+    t+='</tr>';
+  }
+  const base=ws.getRow(plainBaseRow(ws,sh));
+  sh.adds.forEach((d,i)=>{
+    t+='<tr class="nw" data-card="'+d._id+'"><td class="rn" title="새 사업 (원본에 없음)">+'+(sh.last+1+i)+'</td>';
+    for(let c=1;c<=nc;c++){
+      const L=sh.hdr.labels[c-1],idx=L?lab2idx[L]:null,v=idx!=null?toXl(d.row[idx],sh.dateCol[c-1]):null,bc=base.getCell(c);
+      t+=cellHtml({font:bc.font,alignment:bc.alignment},fmtXl(v,bc.numFmt),'','',null);
+    }
+    t+='</tr>';
+  });
+  t+='</table>';
+  h+='<div class="sw-grid" id="swGrid">'+t+'</div>';
+  h+='<div class="sw-legend"><span><i style="box-shadow:inset 0 0 0 2px #2563EB"></i>바뀐 칸 (마우스를 올리면 원본 → 시스템 값)</span><span><i style="background:#DCFCE7"></i>새 사업 (원본에 없음 · 엑셀에서는 맨 아래에 붙음)</span><span>시스템이 빈 칸이면 원본 값 그대로 · 수식 칸은 건드리지 않음 · 메인 창에서 고치면 자동으로 다시 그려짐</span></div>';
+  const g0=document.getElementById('swGrid');const st0=g0?g0.scrollTop:0,sl0=g0?g0.scrollLeft:0;
+  box.innerHTML=h;
+  const g1=document.getElementById('swGrid');if(g1){g1.scrollTop=st0;g1.scrollLeft=sl0;}
+}
+async function skbBuild(mark){
+  const t=await tplGet('SKB');if(!t)throw new Error('원본 양식이 없어요');
+  const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(t.buf);   /* 매번 원본에서 새로 */
+  const plan=skbApply(skbPlan(wb),{mark:!!mark});
+  wb.calcProperties=wb.calcProperties||{};wb.calcProperties.fullCalcOnLoad=true;   /* 정산확인 등 수식은 엑셀이 열 때 다시 계산 */
+  /* 수식 칸의 예전 계산값을 지워 어느 프로그램으로 열어도 새로 계산되게 */
+  wb.worksheets.forEach(ws=>ws.eachRow({includeEmpty:false},row=>row.eachCell({includeEmpty:false},c=>{
+    const v=c.value;if(v&&typeof v==='object'&&(v.formula||v.sharedFormula)&&('result' in v)){const o=Object.assign({},v);delete o.result;c.value=o;}
+  })));
+  const out=await wb.xlsx.writeBuffer();
+  return {out,plan};
+}
+async function skbDownload(){
+  const btn=document.querySelector('[data-sw="dl"]');if(btn){btn.disabled=true;btn.textContent='만드는 중…';}
+  try{
+    const r=await skbBuild(SKBWIN&&SKBWIN.mark);
+    const blob=new Blob([r.out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const d=new Date(),p=n=>String(n).padStart(2,'0');
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_SKB_측량공정진행현황_대원항업.xlsx';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+    const n=r.plan.sheets.reduce((s,x)=>s+x.changes.length,0);
+    toast('엑셀을 만들었어요 · 바뀐 칸 '+n+'곳 · 새 사업 '+r.plan.newRows.length+'건');
+  }catch(err){toast('엑셀을 만들지 못했어요 : '+(err.message||err),true);}
+  if(btn){btn.disabled=false;btn.textContent='엑셀 다운로드 ↓';}
+}
+document.getElementById('skbWin').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sw]');
+  if(b){if(b.dataset.sw==='tpl')document.getElementById('skbTplFile').click();else if(b.dataset.sw==='dl')skbDownload();return;}
+  const s=e.target.closest('[data-swsh]');if(s){SKBWIN.sheet=s.dataset.swsh;renderSkbWin();return;}
+  const r=e.target.closest('tr[data-card]');if(r)openCard(r.dataset.card);
+});
+document.getElementById('skbWin').addEventListener('change',e=>{if(e.target.id==='swMark'&&SKBWIN)SKBWIN.mark=e.target.checked;});
+async function skbRegister(buf,name,size){
+  const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(buf);
+  if(!wb.worksheets.some(ws=>tplHeader(ws)))throw new Error('공사명·Eng 번호 머리글이 있는 시트가 없어요');
+  await tplPut('SKB',{name,at:Date.now(),size,buf});
+  SKB_CACHE=null;
+}
+document.getElementById('skbTplFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{await skbRegister(await f.arrayBuffer(),f.name,f.size);toast('원본 양식을 등록했어요 · '+f.name);renderSkbWin();}
+  catch(err){toast('등록하지 못했어요 : '+(err.message||err),true);}
+});
+
 /* ---- 오른쪽 리스트 ---- */
 function renderLeftList(){
   const box=document.getElementById('lBody');if(!box)return;
@@ -3045,6 +3437,7 @@ window.addEventListener('storage',e=>{
   if(st)st.scrollTop=top;
   if(CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
   if(PWIN)renderPerWin();
+  if(SKBWIN)renderSkbWin();
 });
 if(location.hash==='#list'){
   document.body.classList.add('listwin');
@@ -4760,6 +5153,7 @@ loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
 if(location.hash==='#list'){goTab('manage');requestAnimationFrame(syncHbar);}
 if(PWIN)renderPerWin();
+if(SKBWIN)renderSkbWin();
 updateUpMode();showPrevBtn();syncToolbar();syncHbar();
 document.getElementById('mapBox').innerHTML='';
 </script>
