@@ -362,6 +362,18 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .ms-k{font-size:12.5px;color:#475569;}
 .ms-k b{font-size:17px;font-weight:800;color:var(--c,#DB2777);font-variant-numeric:tabular-nums;}
 .ms-s{font-size:11px;color:#A16207;font-weight:700;}
+.ms-tot{display:flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:8px;padding:2px 10px;}
+.ms-tot:hover{background:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--c,#F472B6) 40%,transparent);}
+.ms-src{display:flex;flex-direction:column;gap:3px;width:100%;margin-top:4px;}
+.ms-r{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:5px;cursor:pointer;}
+.ms-r .sl{border:2px solid #EA002C;border-radius:5px;color:#EA002C;font-size:11px;font-weight:800;padding:0 5px;background:#fff;text-align:center;min-width:42px;}
+.ms-r .sv{border:2px solid #2563EB;border-radius:5px;background:#fff;font-size:11px;color:#475569;padding:0 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ms-r .sv b{color:#0f172a;font-variant-numeric:tabular-nums;}
+.ms-r:hover .sv{background:#EFF6FF;}
+.ms-r.z{opacity:.45;}
+.ms-box{justify-content:center;}
+.pwf{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:8px;padding:2px 4px 2px 9px;font-size:13px;font-weight:800;}
+.pwf button{border:0;background:none;color:var(--c);cursor:pointer;font-size:12px;padding:0 3px;}
 .per.one{flex:1.6 1 0;}
 .per-h .psel{display:inline-flex;gap:5px;}
 .per-h .psel button{border:1.5px solid var(--c);border-radius:7px;background:#fff;color:var(--c);font-family:inherit;font-size:13px;font-weight:800;padding:3px 12px;cursor:pointer;}
@@ -1357,8 +1369,9 @@ td.left{text-align:left;}
    BUILD 100: 추가사업 현황 — 일별·주간·월간 3칸을 한 칸으로 합치고 위에서 고르기 · 위쪽은 월간 통계 자리(빈 칸)
    BUILD 101: 일별·주간·월간을 붙은 칸 대신 따로 떨어진 버튼 3개로
    BUILD 102: 월간 통계 — 그 달 추가 사업 건수·거리 + 미착수 / 진행중 / 완료 건수·거리
+   BUILD 103: 월간 통계에 SKT·SKB·원인자별 건수/km · 누르면 그 목록을 별도 창으로 (다른 모니터로 옮기기)
    ======================================================================== */
-const BUILD_NO='102';
+const BUILD_NO='103';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3113,22 +3126,37 @@ function perRows(k,off){
   });
   return {r,sets};
 }
-/* 월간 통계 (BUILD 102) : 그 달에 추가된 사업 → 미착수(대기 포함) / 진행중 / 완료 */
+/* 월간 통계 (BUILD 103) : 그 달에 추가된 사업 → 미착수(대기 포함) / 진행중 / 완료 · 발주처별 */
+const MS_SRC=['SKT','SKB','원인자'];
+function msBucket(d){return (d._ws==='미착수'||d._ws==='대기(불가)')?'pre':(d._ws==='완료'?'fin':'ing');}
+function srcOf(d){return d._src||d.baal||'';}
 function monthStatHTML(){
   const st=PST.m,o=perRows('m',st.off),rows=o.sets.add;
   const km=a=>a.reduce((t,d)=>{const x=distOf(d);return t+(x?x.v:0);},0);
-  const pre=rows.filter(d=>d._ws==='미착수'||d._ws==='대기(불가)'),fin=rows.filter(d=>d._ws==='완료'),ing=rows.filter(d=>!pre.includes(d)&&!fin.includes(d));
+  const box=(g,a,extra)=>{
+    let h='<div class="ms-tot" data-msw="'+g+'|" title="눌러서 목록 창"><div class="ms-n"><b>'+a.length+'</b>건</div><div class="ms-k"><b>'+km(a).toFixed(3)+'</b> km</div></div>'+(extra||'');
+    h+='<div class="ms-src">'+MS_SRC.map(S=>{const b=a.filter(d=>srcOf(d)===S);
+      return '<div class="ms-r'+(b.length?'':' z')+'" data-msw="'+g+'|'+S+'" title="'+S+' 목록 창"><span class="sl">'+S+'</span><span class="sv"><b>'+b.length+'</b>건 / <b>'+km(b).toFixed(3)+'</b>km</span></div>';}).join('')+'</div>';
+    return h;
+  };
+  const pre=rows.filter(d=>msBucket(d)==='pre'),ing=rows.filter(d=>msBucket(d)==='ing'),fin=rows.filter(d=>msBucket(d)==='fin');
   const wait=pre.filter(d=>d._ws==='대기(불가)').length;
-  const body=(a,extra)=>'<div class="ms-n"><b>'+a.length+'</b>건</div><div class="ms-k"><b>'+km(a).toFixed(3)+'</b> km</div>'+(extra||'');
   return '<div class="mstat" id="mStat">'+
-    '<div class="ms-box ms-all" data-msopen="1" title="눌러서 이 달 추가 목록 창 열기">'+
+    '<div class="ms-box ms-all">'+
       '<div class="ms-t">월별 추가 사업 리스트</div>'+
       '<div class="ms-nav"><button data-pm="m" data-dv="-1" aria-label="이전 달">◀</button><span>'+perLabel('m',o.r)+'</span><button data-pm="m" data-dv="1" aria-label="다음 달">▶</button></div>'+
-      body(rows)+'</div>'+
-    '<div class="ms-col" style="--c:#15803D;--bg:#F3FBF6"><div class="ms-h">미착수</div><div class="ms-box">'+body(pre,wait?'<div class="ms-s">대기(불가) '+wait+'건 포함</div>':'')+'</div></div>'+
-    '<div class="ms-col" style="--c:#D69E00;--bg:#FFFBEB"><div class="ms-h">진행중</div><div class="ms-box">'+body(ing)+'</div></div>'+
-    '<div class="ms-col" style="--c:#EA002C;--bg:#FFF5F6"><div class="ms-h">완료</div><div class="ms-box">'+body(fin)+'</div></div>'+
+      box('',rows)+'</div>'+
+    '<div class="ms-col" style="--c:#15803D;--bg:#F3FBF6"><div class="ms-h">미착수</div><div class="ms-box">'+box('pre',pre,wait?'<div class="ms-s">대기(불가) '+wait+'건 포함</div>':'')+'</div></div>'+
+    '<div class="ms-col" style="--c:#D69E00;--bg:#FFFBEB"><div class="ms-h">진행중</div><div class="ms-box">'+box('ing',ing)+'</div></div>'+
+    '<div class="ms-col" style="--c:#EA002C;--bg:#FFF5F6"><div class="ms-h">완료</div><div class="ms-box">'+box('fin',fin)+'</div></div>'+
   '</div>';
+}
+function openMsWin(g,S){
+  saveState(true);
+  const url=location.href.split('#')[0]+'#per=m&off='+PST.m.off+'&kind=add'+(g?'&grp='+g:'')+(S?'&src='+encodeURIComponent(S):'');
+  const win=window.open(url,'gongjeong_per_ms','width=1400,height=850');
+  if(!win){toast('창이 막혔어요 — 주소창 오른쪽에서 팝업을 허용해 주세요',true);return;}
+  try{win.focus();}catch(e){}
 }
 function renderPeriods(){
   const box=document.getElementById('pBody');if(!box)return;
@@ -3166,7 +3194,8 @@ function renderPeriods(){
   document.getElementById('pNote').textContent=nAdded?('등록일 기록 '+nAdded+'건 · 나머지는 요청일 기준'):'추가 = 요청일 기준 (기준 리스트 이후 들어온 건은 등록일)';
 }
 document.getElementById('pBody').addEventListener('click',e=>{
-  if(e.target.closest('[data-msopen]')&&!e.target.closest('[data-pm]')){PST.m.kind='add';openPerWin('m');return;}
+  const mw=e.target.closest('[data-msw]');
+  if(mw){const [g,S]=mw.dataset.msw.split('|');openMsWin(g,S);return;}
   const ps=e.target.closest('[data-psel]');
   if(ps){PSEL=ps.dataset.psel;try{localStorage.setItem('gongjeong_psel_v1',PSEL);}catch(x){}renderPeriods();return;}
   const pw=e.target.closest('[data-pw]');
@@ -3200,6 +3229,8 @@ let PWIN=null;
   const m=location.hash.match(/^#per=([dwm])(?:&off=(-?\d+))?(?:&kind=(add|start|done))?/);
   if(!m)return;
   PWIN={k:m[1],off:+(m[2]||0),kind:m[3]||'add'};
+  const g=location.hash.match(/&grp=(pre|ing|fin)/),sr=location.hash.match(/&src=([^&]+)/);
+  if(g)PWIN.grp=g[1];if(sr){try{PWIN.src=decodeURIComponent(sr[1]);}catch(e){}}
   document.body.classList.add('perwin');
 })();
 function renderPerWin(){
@@ -3207,16 +3238,22 @@ function renderPerWin(){
   const box=document.getElementById('perWin');
   DATA.forEach(d=>{if(d._id==null)d._id=++idSeq;});
   const bi=bizIdx();DATA.forEach(d=>{d._grp=grpOf(d,bi);d._ws=workStage(d);});
-  const P=PERS.find(x=>x.k===PWIN.k),o=perRows(PWIN.k,PWIN.off),rows=o.sets[PWIN.kind].slice();
+  const P=PERS.find(x=>x.k===PWIN.k),o=perRows(PWIN.k,PWIN.off);
+  const pf=d=>(!PWIN.grp||msBucket(d)===PWIN.grp)&&(!PWIN.src||srcOf(d)===PWIN.src);
+  Object.keys(o.sets).forEach(k=>{o.sets[k]=o.sets[k].filter(pf);});
+  const rows=o.sets[PWIN.kind].slice();
+  const GN={pre:'미착수',ing:'진행중',fin:'완료'},GC={pre:'#15803D',ing:'#D69E00',fin:'#EA002C'};
   const dfn={add:addedDate,start:startDate,done:doneDate}[PWIN.kind];
   rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
   const K=PKIND.find(x=>x.k===PWIN.kind);
-  document.title=P.name+' '+K.name+' 목록 · '+perLabel(PWIN.k,o.r);
+  document.title=P.name+' '+K.name+(PWIN.src?' · '+PWIN.src:'')+(PWIN.grp?' · '+GN[PWIN.grp]:'')+' 목록 · '+perLabel(PWIN.k,o.r);
   const km=rows.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
   const tc={};rows.forEach(d=>{tc[d._ws]=(tc[d._ws]||0)+1;});
   let h='<div class="pw-h" style="--pc:'+P.c+'"><span class="pn">'+P.name+'</span>'+
     '<span class="nav2"><button data-wm="-1" aria-label="이전">◀</button><span>'+perLabel(PWIN.k,o.r)+'</span><button data-wm="1" aria-label="다음">▶</button>'+(PWIN.off?'<button data-wm="0" style="width:auto;padding:0 6px;">오늘</button>':'')+'</span>'+
     PKIND.map(X=>'<button class="pk3'+(PWIN.kind===X.k?' on':'')+'" data-wk="'+X.k+'" style="--c:'+X.c+'">'+X.name+' <b>'+o.sets[X.k].length+'</b>건</button>').join('')+
+    (PWIN.src?'<span class="pwf" style="--c:#1D4ED8">'+esc(PWIN.src)+'<button data-wclr="src" title="풀기">✕</button></span>':'')+
+    (PWIN.grp?'<span class="pwf" style="--c:'+GC[PWIN.grp]+'">'+GN[PWIN.grp]+'<button data-wclr="grp" title="풀기">✕</button></span>':'')+
     '<span class="sum">'+K.name+' '+rows.length+'건 · 거리 합계 <b>'+km.toFixed(3)+' km</b> · 메인 창과 자동으로 맞춰져요</span></div>';
   h+='<div class="pw-st">'+WSTAGES.map(T=>'<span style="--c:'+T.c+'">'+T.k+' <b>'+(tc[T.k]||0)+'</b></span>').join('')+'</div>';
   if(!rows.length){h+='<div class="pempty" style="padding:40px">이 기간에 해당하는 사업이 없어요</div>';}
@@ -3230,6 +3267,8 @@ function renderPerWin(){
   box.innerHTML=h;
 }
 document.getElementById('perWin').addEventListener('click',e=>{
+  const wc=e.target.closest('[data-wclr]');
+  if(wc){delete PWIN[wc.dataset.wclr];history.replaceState(null,'',location.hash.replace(new RegExp('&'+wc.dataset.wclr+'=[^&]*'),''));renderPerWin();return;}
   const m=e.target.closest('[data-wm]');
   if(m){const dv=+m.dataset.wm;PWIN.off=dv===0?0:PWIN.off+dv;renderPerWin();return;}
   const k=e.target.closest('[data-wk]');
