@@ -373,7 +373,10 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .ms-r .sv i{font-style:normal;color:#94a3b8;}
 .ms-r .sv b{color:#0f172a;font-variant-numeric:tabular-nums;}
 .ms-r:hover .sv{background:#EFF6FF;}
-.ms-r.z{opacity:.45;}
+.ms-r.z{cursor:default;}
+.ms-r.z .sl,.ms-r.z .sv{border-color:#d1d5db;background:#f3f4f6;color:#9ca3af;}
+.ms-r.z .sv b{color:#9ca3af;font-weight:600;}
+.ms-r.z:hover .sv{background:#f3f4f6;}
 .ms-box{justify-content:center;}
 .pwf{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:8px;padding:2px 4px 2px 9px;font-size:13px;font-weight:800;}
 .pwf button{border:0;background:none;color:var(--c);cursor:pointer;font-size:12px;padding:0 3px;}
@@ -1374,8 +1377,9 @@ td.left{text-align:left;}
    BUILD 102: 월간 통계 — 그 달 추가 사업 건수·거리 + 미착수 / 진행중 / 완료 건수·거리
    BUILD 103: 월간 통계에 SKT·SKB·원인자별 건수/km · 누르면 그 목록을 별도 창으로 (다른 모니터로 옮기기)
    BUILD 104: 월간 통계 — 월별 추가사업도 머리 상자+본 상자 · 달 이동 크게 · 발주처 줄 크게, 네 상자 같은 높이에 맞춤
+   BUILD 105: 월간 통계 — 0건 발주처 줄은 확실한 회색
    ======================================================================== */
-const BUILD_NO='104';
+const BUILD_NO='105';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
