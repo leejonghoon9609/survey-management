@@ -484,7 +484,7 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .dgrp{display:inline-flex;align-items:center;gap:6px;padding:3px;border-radius:12px;background:#f8fafc;}
 .dgrp .gl{font-size:11px;color:#94a3b8;font-weight:600;padding:0 4px 0 6px;}
 #cardPop{position:fixed;inset:0;background:rgba(15,23,42,.38);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
-#cardPop .tc{background:#fff;border-radius:14px;width:min(1240px,100%);height:min(890px,92vh);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);display:flex;flex-direction:column;}
+#cardPop .tc{background:#fff;border-radius:14px;width:min(1240px,100%);height:min(940px,95vh);max-height:95vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);display:flex;flex-direction:column;}
 #cardPop .tc-h,#cardPop .tc-b{width:100%;box-sizing:border-box;}
 #cardPop .tc-h .t{font-size:19px;}
 #cardPop .tc-b{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;}
@@ -526,11 +526,13 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-top{display:grid;grid-template-columns:minmax(0,724px) minmax(0,1fr);gap:16px;flex:none;}
 .tc2-main{display:grid;gap:12px;align-content:start;}
 .tc2-h{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:6px;padding-left:8px;border-left:4px solid var(--c);}
-.tc2-note{display:flex;flex-direction:column;min-height:0;border:2px solid #FCD34D;border-radius:10px;padding:10px 12px;background:#FFFDF5;}
-.tc2-note textarea{flex:1;min-height:110px;resize:none;border:1.5px solid #1e293b;border-radius:6px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.55;}
+.tc2-note{display:flex;flex-direction:column;min-height:0;border:2px solid #FCD34D;border-radius:10px;padding:7px 10px;background:#FFFDF5;}
+.tc2-note .tc2-h{font-size:13.5px;margin-bottom:4px;}
+.tc2-note .tc2-sv{margin-top:2px;min-height:12px;font-size:11px;}
+.tc2-note textarea{flex:1;min-height:52px;resize:none;border:1.5px solid #1e293b;border-radius:6px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.55;}
 .tc2-note textarea:focus{outline:none;border-color:#D69E00;box-shadow:0 0 0 3px rgba(214,158,0,.15);}
 .tc2-sv{font-size:11.5px;color:#94a3b8;margin-top:4px;min-height:15px;}
-.tc2-bot{flex:1;min-height:300px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;}
+.tc2-bot{flex:1;min-height:420px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;}
 .tc2-info{display:flex;flex-direction:column;min-height:0;border:2px solid #F9A8D4;border-radius:10px;padding:10px 12px;background:#fff;}
 .tc2-ih{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
 .tc2-ih .tc2-h{margin:0;}
@@ -554,6 +556,20 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-grid .isec-in input{border:1.5px solid var(--g);border-radius:5px;padding:1px 6px;font-family:inherit;font-size:12px;width:170px;}
 .tc2-grid .isec-in button{margin-left:0;}
 .tc2-grid .kv.blank{border-bottom-color:transparent;cursor:default;}
+.tc2-grid .kv.addc{grid-template-columns:1fr;border-bottom-color:transparent;cursor:default;}
+.tc2-grid .kv.addc:hover{background:none;}
+.tc2-grid .kv.addc>button{justify-self:start;border:1.5px solid #16A34A;background:#F0FDF4;color:#15803D;border-radius:6px;padding:0 10px;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;line-height:18px;}
+.tc2-grid .kv.addc>button:hover{background:#DCFCE7;}
+.tc2-grid .kv.addc .isec-in input{border-color:#16A34A;}
+.tc2-grid .kv.addc .isec-in button{border:1.5px solid #16A34A;background:#16A34A;color:#fff;border-radius:5px;padding:0 8px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
+.tc2-grid.t1 .kv{padding:2px 4px;min-height:17px;font-size:11.5px;}
+.tc2-grid.t1 .isec{margin:5px 0 1px;}
+.tc2-grid.t2 .kv{padding:1px 4px;min-height:15px;font-size:11px;line-height:1.2;}
+.tc2-grid.t2 .v{font-size:11px;}
+.tc2-grid.t2 .isec{margin:3px 0 0;padding-bottom:1px;}
+.tc2-grid.t2 .isec>span:first-child{font-size:11px;}
+.tc2-grid.t3 .kv{padding:0 4px;min-height:13px;font-size:10.5px;line-height:1.15;}
+.tc2-grid.t3 .v{font-size:10.5px;}
 .tc2-grid .kv.blank:hover{background:none;}
 .tc2-grid .kv.ch .v{color:#1E3A8A;font-weight:800;}
 .tc2-grid .kv.ch .k::before{content:'● ';color:#2563EB;}
@@ -1448,8 +1464,9 @@ td.left{text-align:left;}
    BUILD 110: 사업 정보 값 파란 글자 · 줄 테두리 진하게 · 준공도면 옆 초록 「탱고」 버튼(자리만)
    BUILD 111: 카드 진행 막대 끝을 「정산접수 → 정산완료」 두 칸으로 (미지급·미정산 = 정산접수 단계, 정산예정 = 정산완료 기다림)
    BUILD 112: 사업 정보 성격별 순서(사업 기본·측량 일정·거리/성과·정산·메모) · 정산접수일 칸 · 정산·메모 「＋」 추가 칸 · 엑셀 「발주처 보고용 / 관리용」
+   BUILD 114: 사업 카드 — 닫기 버튼 빼고 작업 특이사항 작게 · 아래 두 칸 키움 · 사업 정보 한 화면(넘치면 글자·줄 자동 축소) · ＋추가는 메모 끝 칸
    ======================================================================== */
-const BUILD_NO='112';
+const BUILD_NO='114';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3938,13 +3955,14 @@ function openCard(id){
   h+='</div>';
   /* BUILD 107 : 위 = 진행 + 작업 특이사항 / 아래 = 사업 정보(두 줄) + 준공도면 */
   const nIdx=noteIdx(),note=nIdx!=null?String(d.row[nIdx]==null?'':d.row[nIdx]):'';
-  let H='<div class="tc2-top"><div class="tc2-main">'+h+'<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div></div>'+
+  let H='<div class="tc2-top"><div class="tc2-main">'+h+'</div>'+
     '<div class="tc2-note"><div class="tc2-h" style="--c:#D69E00">작업 특이사항</div><textarea id="tcNote" placeholder="작업 중 특이사항을 적어 주세요 · 적으면 자동 저장되고 공용으로 같이 보여요">'+esc(note)+'</textarea><div class="tc2-sv" id="tcNoteSv"></div></div></div>';
   H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-ih"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><span class="tc2-tip">값을 더블클릭하면 고쳐요 (빈 칸 「—」도 더블클릭해서 입력)</span><button class="btn" id="tcSave" disabled>수정 저장</button></div><div class="tc2-grid" id="tcInfo">'+cardInfoHTML(d)+'</div></div>'+
     '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><span class="tc2-dt"><b>준공도면</b><button class="btn" id="tcTango" title="탱고 (준비 중)">탱고</button></span><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
     '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
   document.getElementById('tcBody').innerHTML=H;
   document.getElementById('cardPop').classList.remove('hide');
+  fitCardInfo();
   loadDwg(d);
 }
 /* ---- 작업 특이사항 칸 : 「작업 특이사항」 칸에 저장 (없으면 숨김 칸으로 만든다) ---- */
@@ -4010,10 +4028,11 @@ function cardInfoHTML(d){
   const cells=cardCells();
   return INFO_SEC.map(S=>{
     const mine=cells.filter(c=>secOf(c.label)===S.k).sort((a,b)=>secRank(S.k,a.label)-secRank(S.k,b.label)||DISP.indexOf(a)-DISP.indexOf(b));
-    let h='<div class="isec" style="--g:'+S.c+'"><span>'+S.k+'</span>'+(S.add?'<button data-isadd="'+S.k+'" title="'+S.k+' 칸 추가 (모든 사업에 같은 칸이 생겨요)">＋ 추가</button>':'')+'</div>';
+    let h='<div class="isec" style="--g:'+S.c+'"><span>'+S.k+'</span></div>';
     h+=mine.map(c=>{const t=infoVal(d,c),ch=(c.idx in CARD_DRAFT),L=showLabel(c.label);
       return '<div class="kv'+(ch?' ch':'')+(t?'':' z')+'" data-ci="'+c.idx+'"><span class="k" title="'+esc(c.label)+'">'+esc(L)+'</span><span class="v" title="'+esc(t)+(ch?' (저장 전)':'')+'">'+(t?esc(t):'—')+'</span></div>';}).join('');
-    if(mine.length%2)h+='<div class="kv blank"></div>';
+    if(S.k==='메모'){h+='<div class="kv addc" data-isadd="메모" style="--g:'+S.c+'"><button>＋ 추가</button></div>';if(mine.length%2===0)h+='<div class="kv blank"></div>';}
+    else if(mine.length%2)h+='<div class="kv blank"></div>';
     return h;
   }).join('');
 }
@@ -4024,12 +4043,12 @@ function ensureJrCol(){
 }
 /* ＋ 추가 : 칸 이름을 받아 [정산] / [메모] 칸을 만든다 */
 function addInfoField(sec){
-  const box=document.querySelector('.isec [data-isadd="'+sec+'"]');if(!box)return;
-  const wrap=box.parentElement;if(wrap.querySelector('.isec-in'))return;
-  wrap.insertAdjacentHTML('beforeend','<span class="isec-in"><input placeholder="새 칸 이름 (예: 정산 메모)" maxlength="20"><button>만들기</button></span>');
+  const wrap=document.querySelector('#tcInfo [data-isadd="'+sec+'"]');if(!wrap)return;
+  if(wrap.querySelector('.isec-in'))return;
+  wrap.innerHTML='<span class="isec-in"><input placeholder="새 칸 이름 (예: 현장 메모)" maxlength="20"><button>만들기</button></span>';
   const inp=wrap.querySelector('.isec-in input'),btn=wrap.querySelector('.isec-in button');inp.focus();
   const go=()=>{
-    const nm=inp.value.trim();if(!nm){wrap.querySelector('.isec-in').remove();return;}
+    const nm=inp.value.trim();if(!nm){renderCardInfo();return;}
     const label='['+(sec==='정산'?'정산':'메모')+'] '+nm;
     let c=DISP.find(x=>x.label===label);
     if(!c){c={idx:nextColIdx(),label:label,vis:false};DISP.push(c);buildColPanel&&buildColPanel();markDirty();}
@@ -4037,11 +4056,18 @@ function addInfoField(sec){
     toast('「'+nm+'」 칸을 만들었어요 · 모든 사업에 같은 칸이 생겨요');
   };
   btn.addEventListener('click',go);
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}else if(e.key==='Escape'){e.stopPropagation();wrap.querySelector('.isec-in').remove();}});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}else if(e.key==='Escape'){e.stopPropagation();renderCardInfo();}});
+  btn.addEventListener('mousedown',e=>e.preventDefault());
 }
+function fitCardInfo(){
+  const g=document.getElementById('tcInfo');if(!g)return;
+  g.classList.remove('t1','t2','t3');
+  for(const k of ['t1','t2','t3']){if(g.scrollHeight<=g.clientHeight+1)break;g.classList.add(k);}
+}
+window.addEventListener('resize',()=>{if(CARD_ID!=null)fitCardInfo();});
 function renderCardInfo(){
   const d=DATA.find(x=>String(x._id)===String(CARD_ID));const box=document.getElementById('tcInfo');if(!d||!box)return;
-  const st=box.scrollTop;box.innerHTML=cardInfoHTML(d);box.scrollTop=st;
+  const st=box.scrollTop;box.innerHTML=cardInfoHTML(d);fitCardInfo();box.scrollTop=st;
   const n=Object.keys(CARD_DRAFT).length,b=document.getElementById('tcSave');
   if(b){b.disabled=!n;b.textContent=n?'수정 저장 ('+n+')':'수정 저장';}
 }
@@ -4077,7 +4103,7 @@ document.getElementById('cardPop').addEventListener('dblclick',e=>{
   const kv=e.target.closest('#tcInfo .kv');if(kv&&!e.target.closest('input'))editCell(kv.dataset.ci);
 });
 document.getElementById('cardPop').addEventListener('click',e=>{
-  const isa=e.target.closest('[data-isadd]');if(isa){addInfoField(isa.dataset.isadd);return;}
+  const isa=e.target.closest('[data-isadd]');if(isa&&!e.target.closest('.isec-in')){addInfoField(isa.dataset.isadd);return;}
   const ad=e.target.closest('[data-cadd]');
   if(ad){CARD_SHOW.add(+ad.dataset.cadd);renderCardInfo();editCell(ad.dataset.cadd);return;}
   if(e.target.id==='tcSave'){const st=(document.getElementById('tcInfo')||{}).scrollTop||0;saveCardDraft();openCard(CARD_ID);const g=document.getElementById('tcInfo');if(g)g.scrollTop=st;return;}
