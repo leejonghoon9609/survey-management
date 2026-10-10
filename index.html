@@ -1257,8 +1257,9 @@ td.left{text-align:left;}
    BUILD 86: 공용 저장소(Supabase) — 여러 작업자가 같은 목록을 보고 고친다. 사업마다 고유번호(uid),
              바뀐 줄만 올리고 15초마다 받기, 같은 사업 동시 수정은 칸 단위로 합치기, SKB 원본 양식 공용
    BUILD 87: 팀 비밀번호 없이도 연결 (비밀번호는 나중에 서버에서 켜면 그때 묻는다)
+   BUILD 88: 공용 저장소 키를 넣어 둠 → 각 PC에서 작업자 이름만 넣으면 연결
    ======================================================================== */
-const BUILD_NO='87';
+const BUILD_NO='88';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -5204,7 +5205,7 @@ document.getElementById('export').addEventListener('click',()=>{
    · 칸은 '칸 이름'으로 주고받는다 → 사람마다 칸 순서가 달라도 섞이지 않는다
    · 팀 비밀번호(x-gj-team)가 맞아야 읽고 쓸 수 있다 (Supabase 쪽 RLS)
    · uid 는 탱고·정산시스템과 이어 쓸 때의 열쇠 */
-const CLOUD_DEF={url:'https://shkpcnffcozqjobbghjf.supabase.co',key:''};
+const CLOUD_DEF={url:'https://shkpcnffcozqjobbghjf.supabase.co',key:'sb_publishable_QTYCfIWcZuvGmuUwCMLYTg_lVccXEpD'};   /* 공개용 키 (Publishable) */
 const LS_CLOUD='gj_cloud_v1';          /* {url,key,team,off} — 전체 초기화로 지우지 않는다 */
 const LS_ME='gj_me_v1';                /* 작업자 이름 */
 const LS_SYNC='gongjeong_sync_v1';     /* {url,since,base:[[uid,rev,hash]],lay:{r,h},files} */
