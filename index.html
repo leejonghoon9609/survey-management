@@ -545,6 +545,16 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-grid .v{color:#1D4ED8;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tc2-grid .kv.z .v{color:#cbd5e1;font-weight:400;}
 .tc2-grid .kv.ch{background:#EFF6FF;}
+.tc2-grid .isec{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:8px 0 2px;padding-bottom:3px;border-bottom:2px solid color-mix(in srgb,var(--g) 45%,#fff);}
+.tc2-grid .isec:first-child{margin-top:0;}
+.tc2-grid .isec>span:first-child{font-size:12px;font-weight:800;color:var(--g);}
+.tc2-grid .isec button{margin-left:auto;border:1.5px solid var(--g);background:#fff;color:var(--g);border-radius:6px;padding:0 9px;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;line-height:20px;}
+.tc2-grid .isec button:hover{background:color-mix(in srgb,var(--g) 10%,#fff);}
+.tc2-grid .isec-in{display:inline-flex;gap:4px;}
+.tc2-grid .isec-in input{border:1.5px solid var(--g);border-radius:5px;padding:1px 6px;font-family:inherit;font-size:12px;width:170px;}
+.tc2-grid .isec-in button{margin-left:0;}
+.tc2-grid .kv.blank{border-bottom-color:transparent;cursor:default;}
+.tc2-grid .kv.blank:hover{background:none;}
 .tc2-grid .kv.ch .v{color:#1E3A8A;font-weight:800;}
 .tc2-grid .kv.ch .k::before{content:'● ';color:#2563EB;}
 .kv-in{width:100%;box-sizing:border-box;border:1.5px solid #2563EB;border-radius:5px;padding:2px 6px;font-family:inherit;font-size:13px;font-weight:600;}
@@ -964,7 +974,8 @@ td.left{text-align:left;}
         <label><input type="radio" name="exCols" value="all"> 모든 칸</label>
         <span style="flex:1"></span>
         <span class="stat" id="exInfo"></span>
-        <button class="btn btn-primary" id="exGo" style="padding:6px 16px;background:#EA580C;border-color:#EA580C;">내보내기</button>
+        <button class="btn btn-primary" id="exGo" style="padding:6px 14px;background:#EA580C;border-color:#EA580C;" title="리스트 양식 그대로 (시스템이 만든 칸 · 정산접수일 · 작업 특이사항 · 추가 메모 칸 빼고)">발주처 보고용 ↓</button>
+        <button class="btn" id="exGoM" style="padding:6px 14px;border-color:#EA580C;color:#EA580C;font-weight:700;" title="모든 칸 (정산접수일 · 작업 특이사항 · 추가 메모 · 자동 칸 · 이슈체크 포함)">관리용 ↓</button>
         <button class="btn" id="exClose" style="padding:6px 12px;">닫기</button>
       </div>
       <div id="colAddBar" class="hide tbar tbar-add">
@@ -1436,8 +1447,9 @@ td.left{text-align:left;}
    BUILD 109: 사업 정보 — 다시 BUILD 107 처럼 전체 칸 두 줄 목록 · 그 화면에서 더블클릭 수정(빈 칸 포함) · 수정 저장 · 닫을 때 확인
    BUILD 110: 사업 정보 값 파란 글자 · 줄 테두리 진하게 · 준공도면 옆 초록 「탱고」 버튼(자리만)
    BUILD 111: 카드 진행 막대 끝을 「정산접수 → 정산완료」 두 칸으로 (미지급·미정산 = 정산접수 단계, 정산예정 = 정산완료 기다림)
+   BUILD 112: 사업 정보 성격별 순서(사업 기본·측량 일정·거리/성과·정산·메모) · 정산접수일 칸 · 정산·메모 「＋」 추가 칸 · 엑셀 「발주처 보고용 / 관리용」
    ======================================================================== */
-const BUILD_NO='111';
+const BUILD_NO='112';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3829,9 +3841,10 @@ function cardFlow(d,K0){
   const simDone=/성과심사완료|심사완료/.test(sim);
   const jDone=d.jeongKey==='정산완료';
   const reqD=parseDate(d.req),r1=parseDate(colv(d,'측량1')),r2=parseDate(colv(d,'측량2')),tupD=parseDate(d.tup),simD=parseDate(colv(d,'심사신청일')),jD=jeongDate(d);
+  const jrc=DISP.find(c=>c.label===JR_LABEL),jrD=jrc?parseDate(d.row[jrc.idx]):null;
   const S=real
-    ?[{k:'접수',d:reqD,raw:ns(d.req)},{k:'실시간측량',d:r1},{k:'결선'},{k:'후측량',d:r2},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'성과심사완료',sim:1},{k:'정산접수',jr:1},{k:'정산완료',d:jD,jr:1}]
-    :[{k:'접수',d:reqD,raw:ns(d.req)},{k:'후측량',d:r2||r1},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'정산접수',jr:1},{k:'정산완료',d:jD,jr:1}];
+    ?[{k:'접수',d:reqD,raw:ns(d.req)},{k:'실시간측량',d:r1},{k:'결선'},{k:'후측량',d:r2},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'성과심사완료',sim:1},{k:'정산접수',d:jrD,jr:1},{k:'정산완료',d:jD,jr:1}]
+    :[{k:'접수',d:reqD,raw:ns(d.req)},{k:'후측량',d:r2||r1},{k:'Tango',d:tupD},{k:'정위치DB',d:simD,sim:1},{k:'정산접수',d:jrD,jr:1},{k:'정산완료',d:jD,jr:1}];
   const ix=k=>S.findIndex(x=>x.k===k);
   let cur;
   if(d._cancel)cur=S.length;
@@ -3841,12 +3854,12 @@ function cardFlow(d,K0){
   else if(K0==='후측량')cur=ix('후측량');
   else if(K0==='탱고')cur=ix('Tango');
   else if(K0==='정위치DB')cur=(real&&/진행중/.test(sim))?ix('성과심사완료'):ix('정위치DB');
-  else cur=jDone?S.length:(d.jeongKey==='정산예정'?ix('정산완료'):ix('정산접수'));   /* 미지급·미정산·빈칸 = 정산접수 단계 */
+  else cur=jDone?S.length:((d.jeongKey==='정산예정'||jrD)?ix('정산완료'):ix('정산접수'));   /* 미지급·미정산·빈칸 = 정산접수 단계 */
   const prevD=i=>{for(let j=i-1;j>=0;j--)if(S[j].d)return S[j].d;return null;};
   const steps=S.map((x,i)=>{
     const na=x.sim&&!simNeed&&(/불필요/.test(sim)||i<cur||K0==='완료'||K0==='탱고');
     if(na&&i!==cur)return {k:x.k,st:'na',v:'불필요'};
-    if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.k==='정산접수'?'완료':(x.jr&&ns(d.jeong)?String(d.jeong).trim().slice(0,12):(x.raw?x.raw.slice(0,10):'완료'))))};
+    if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.k==='정산접수'?(x.d?fmtDate(x.d):'완료'):(x.jr&&ns(d.jeong)?String(d.jeong).trim().slice(0,12):(x.raw?x.raw.slice(0,10):'완료'))))};
     if(i===cur){
       let v;
       if(K0==='대기(불가)')v=String(d.jin==null?'':d.jin).trim().slice(0,12)||'대기';
@@ -3907,6 +3920,7 @@ function replyText(d){
 function openCard(id){
   const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;
   CARD_ID=d._id;ensureIds();CARD_UID=d._uid;CARD_DRAFT={};CARD_SHOW=new Set();
+  if(ensureJrCol()!=null)markDirty();
   document.getElementById('tcTitle').textContent=d.work||'(사업명 없음)';
   document.getElementById('tcMeta').textContent=[d.seq,d.eng,d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
   const st=cardSteps(d),seg=cardSegments(d);
@@ -3974,9 +3988,56 @@ function infoVal(d,c){
   const v=(c.idx in CARD_DRAFT)?CARD_DRAFT[c.idx]:d.row[c.idx];
   return v==null||v===''?'':(isDateObj(v)?fmtDate(v):String(v));
 }
+/* BUILD 112 : 카드에서만 성격별로 모아 보인다 (엑셀 「발주처 보고용」은 리스트 양식 순서 그대로) */
+const JR_LABEL='정산접수일';
+const INFO_ORDER={
+  '사업 기본':['공사명','관리번호','Eng 번호','시행시기','지역본부','행정구역','사업유형','사업자','대표사업자','사업자 (정산 업체)','공사협력사','협력사 연락처','담당Manager','구분'],
+  '측량 일정':['요청일','굴착 작업일정','굴착완료 통보일','측량예정일','측량방법','1차 측량 (실시간)','2차 측량 (사후)','측량작업자 이름/연락처'],
+  '거리·성과':['측량 심사내역','실측거리 (정산거리)','도면거리','업로딩거리','Tango업로드','납품완료유무','성과심사신청','성과심사 신청일','성과심사 사업명','성과심사 결과서 확인'],
+  '정산':['정산접수일','측량 정산완료','TNS 정산일정','정례기성 반영','측량비 정산예정금액(원)','측량비 정산예정금액','성과심사비 정산예정금액','sap 입력명칭','기성 남음금액'],
+  '메모':['이슈사항','비고','비고 2']
+};
+const INFO_SEC=[{k:'사업 기본',c:'#DB2777'},{k:'측량 일정',c:'#EA580C'},{k:'거리·성과',c:'#7C3AED'},{k:'정산',c:'#2563EB',add:1},{k:'메모',c:'#475569',add:1}];
+const nl=x=>String(x).replace(/\s/g,'');
+function secOf(l){
+  if(/^\[정산\]/.test(l))return '정산';if(/^\[메모\]/.test(l))return '메모';
+  for(const k in INFO_ORDER)if(INFO_ORDER[k].some(x=>nl(x)===nl(l)))return k;
+  const g=infoGroupOf(l);return g==='기본 정보'?'사업 기본':(g==='일정·측량'?'측량 일정':g);
+}
+function secRank(k,l){const i=(INFO_ORDER[k]||[]).findIndex(x=>nl(x)===nl(l));return i<0?999:i;}
+function showLabel(l){return String(l).replace(/^\[(정산|메모)\]\s*/,'');}
 function cardInfoHTML(d){
-  return cardCells().map(c=>{const t=infoVal(d,c),ch=(c.idx in CARD_DRAFT);
-    return '<div class="kv'+(ch?' ch':'')+(t?'':' z')+'" data-ci="'+c.idx+'"><span class="k" title="'+esc(c.label)+'">'+esc(c.label)+'</span><span class="v" title="'+esc(t)+(ch?' (저장 전)':'')+'">'+(t?esc(t):'—')+'</span></div>';}).join('');
+  const cells=cardCells();
+  return INFO_SEC.map(S=>{
+    const mine=cells.filter(c=>secOf(c.label)===S.k).sort((a,b)=>secRank(S.k,a.label)-secRank(S.k,b.label)||DISP.indexOf(a)-DISP.indexOf(b));
+    let h='<div class="isec" style="--g:'+S.c+'"><span>'+S.k+'</span>'+(S.add?'<button data-isadd="'+S.k+'" title="'+S.k+' 칸 추가 (모든 사업에 같은 칸이 생겨요)">＋ 추가</button>':'')+'</div>';
+    h+=mine.map(c=>{const t=infoVal(d,c),ch=(c.idx in CARD_DRAFT),L=showLabel(c.label);
+      return '<div class="kv'+(ch?' ch':'')+(t?'':' z')+'" data-ci="'+c.idx+'"><span class="k" title="'+esc(c.label)+'">'+esc(L)+'</span><span class="v" title="'+esc(t)+(ch?' (저장 전)':'')+'">'+(t?esc(t):'—')+'</span></div>';}).join('');
+    if(mine.length%2)h+='<div class="kv blank"></div>';
+    return h;
+  }).join('');
+}
+/* 정산접수일 칸은 처음부터 만들어 둔다 (보고용 엑셀에는 빠짐) */
+function ensureJrCol(){
+  if(DISP.some(c=>c.label===JR_LABEL))return null;
+  const idx=nextColIdx();DISP.push({idx:idx,label:JR_LABEL,vis:false});return idx;
+}
+/* ＋ 추가 : 칸 이름을 받아 [정산] / [메모] 칸을 만든다 */
+function addInfoField(sec){
+  const box=document.querySelector('.isec [data-isadd="'+sec+'"]');if(!box)return;
+  const wrap=box.parentElement;if(wrap.querySelector('.isec-in'))return;
+  wrap.insertAdjacentHTML('beforeend','<span class="isec-in"><input placeholder="새 칸 이름 (예: 정산 메모)" maxlength="20"><button>만들기</button></span>');
+  const inp=wrap.querySelector('.isec-in input'),btn=wrap.querySelector('.isec-in button');inp.focus();
+  const go=()=>{
+    const nm=inp.value.trim();if(!nm){wrap.querySelector('.isec-in').remove();return;}
+    const label='['+(sec==='정산'?'정산':'메모')+'] '+nm;
+    let c=DISP.find(x=>x.label===label);
+    if(!c){c={idx:nextColIdx(),label:label,vis:false};DISP.push(c);buildColPanel&&buildColPanel();markDirty();}
+    renderCardInfo();setTimeout(()=>editCell(c.idx),0);
+    toast('「'+nm+'」 칸을 만들었어요 · 모든 사업에 같은 칸이 생겨요');
+  };
+  btn.addEventListener('click',go);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}else if(e.key==='Escape'){e.stopPropagation();wrap.querySelector('.isec-in').remove();}});
 }
 function renderCardInfo(){
   const d=DATA.find(x=>String(x._id)===String(CARD_ID));const box=document.getElementById('tcInfo');if(!d||!box)return;
@@ -4016,9 +4077,10 @@ document.getElementById('cardPop').addEventListener('dblclick',e=>{
   const kv=e.target.closest('#tcInfo .kv');if(kv&&!e.target.closest('input'))editCell(kv.dataset.ci);
 });
 document.getElementById('cardPop').addEventListener('click',e=>{
+  const isa=e.target.closest('[data-isadd]');if(isa){addInfoField(isa.dataset.isadd);return;}
   const ad=e.target.closest('[data-cadd]');
   if(ad){CARD_SHOW.add(+ad.dataset.cadd);renderCardInfo();editCell(ad.dataset.cadd);return;}
-  if(e.target.id==='tcSave'){saveCardDraft();renderCardInfo();const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(d){document.getElementById('tcTitle').textContent=d.work||'(사업명 없음)';}return;}
+  if(e.target.id==='tcSave'){const st=(document.getElementById('tcInfo')||{}).scrollTop||0;saveCardDraft();openCard(CARD_ID);const g=document.getElementById('tcInfo');if(g)g.scrollTop=st;return;}
 });
 /* ---- 준공도면 : 사업마다 파일 1개 · 공용 저장소(gj_files)에 'dwg:고유번호' 로 ---- */
 const DWG_MIME={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp'};
@@ -4480,20 +4542,36 @@ document.getElementById('exGo').addEventListener('click',()=>{
   const cm=document.querySelector('input[name=exCols]:checked').value;
   const rows=exRows(scope);
   if(!rows.length){toast('내보낼 줄이 없습니다',true);return;}
-  const cols=DISP.filter(c=>cm==='all'||c.vis);
+  const cols=DISP.filter(c=>(cm==='all'||c.vis)&&!isSysCol(c));
   if(!cols.length){toast('내보낼 칸이 없습니다',true);return;}
-  exportRowsToExcel(rows,cols,null);
+  exportRowsToExcel(rows,cols,'발주처보고',{report:true});
   closeBars();syncToolbar();
 });
+document.getElementById('exGoM').addEventListener('click',()=>{
+  const scope=document.querySelector('input[name=exScope]:checked').value;
+  const cm=document.querySelector('input[name=exCols]:checked').value;
+  const rows=exRows(scope);
+  if(!rows.length){toast('내보낼 줄이 없습니다',true);return;}
+  const cols=DISP.filter(c=>cm==='all'||c.vis||(isSysCol(c)&&!isAutoIdx(c.idx)));
+  if(!cols.length){toast('내보낼 칸이 없습니다',true);return;}
+  exportRowsToExcel(rows,cols,'관리용');
+  closeBars();syncToolbar();
+});
+/* 시스템이 만든 칸 : 발주처 보고용 엑셀에서 뺀다 */
+function isSysCol(c){
+  const l=c.label;
+  return isAutoIdx(c.idx)||l===JR_LABEL||l===NOTE_LABEL||l==='발주처(자동)'||/^\[(정산|메모)\]/.test(l)||AUTO_COLS.some(a=>COL[a.k]===c.idx);
+}
 /* rows · cols 를 받아 엑셀 파일로 내보낸다. nameTag 가 있으면 파일명에 붙인다. */
-function exportRowsToExcel(rows,cols,nameTag){
-  const aoa=[cols.map(c=>c.label).concat(['이슈체크'])];
-  rows.forEach(d=>aoa.push(cols.map(c=>exValue(d,c)).concat([d._chk?'O':''])));
+function exportRowsToExcel(rows,cols,nameTag,opt){
+  opt=opt||{};
+  const aoa=[cols.map(c=>c.label).concat(opt.report?[]:['이슈체크'])];
+  rows.forEach(d=>aoa.push(cols.map(c=>exValue(d,c)).concat(opt.report?[]:[d._chk?'O':''])));
   const ws=XLSX.utils.aoa_to_sheet(aoa);
 
-  ws['!cols']=cols.map(c=>({wch:exW(c.label,rows,c)})).concat([{wch:9}]);
+  ws['!cols']=cols.map(c=>({wch:exW(c.label,rows,c)})).concat(opt.report?[]:[{wch:9}]);
   ws['!rows']=[{hpt:27}];
-  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:cols.length}})};
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:cols.length-(opt.report?1:0)}})};
   cols.forEach((c,ci)=>{
     const z=exZ(c.label),isD=exIsDate(c.label);
     if(!z&&!isD)return;
