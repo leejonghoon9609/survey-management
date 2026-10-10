@@ -347,16 +347,18 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .gsub{display:none;}
 .per{--pc:#be185d;--pbg:#fff;--phd:#fff;border:2px solid var(--pc);border-radius:10px;margin:0;display:flex;flex-direction:column;background:var(--pbg);overflow:hidden;flex:1 1 0;min-height:0;}
 #pBody{display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:8px 10px;}
-.mstat{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:10px;}
-.ms-box{border:3px solid var(--c,#EC4899);border-radius:10px;background:var(--bg,#FDF4FA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;padding:6px;}
+.mstat{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1.12fr 1fr 1fr 1fr;gap:10px;}
+.ms-box{border:3px solid var(--c,#EC4899);border-radius:10px;background:var(--bg,#FDF4FA);display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:6px;min-height:0;padding:6px 7px 7px;}
+.ms-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:0;}
 .ms-all{--c:#F472B6;--bg:#FDF2F8;cursor:pointer;}
 .ms-all:hover{box-shadow:0 0 0 3px #FBCFE8;}
 .ms-col{display:flex;flex-direction:column;gap:6px;min-height:0;}
 .ms-col .ms-box{flex:1;}
 .ms-h{border:3px solid var(--c);border-radius:8px;background:#fff;text-align:center;font-size:17px;font-weight:800;color:var(--c);padding:2px 0;}
 .ms-t{font-size:16px;font-weight:800;color:#0f172a;text-align:center;}
-.ms-nav{display:flex;align-items:center;gap:4px;font-size:12px;color:#475569;font-weight:700;}
-.ms-nav button{border:1px solid #e2e8f0;background:#fff;border-radius:5px;width:20px;height:20px;font-size:10px;cursor:pointer;color:#475569;}
+.ms-nav{display:flex;align-items:center;gap:6px;font-size:15px;color:#9D174D;font-weight:800;}
+.ms-nav button{border:1.5px solid #F9A8D4;background:#fff;border-radius:7px;width:28px;height:28px;font-size:13px;cursor:pointer;color:#BE185D;}
+.ms-nav button:hover{background:#FCE7F3;}
 .ms-n{font-size:13px;color:#475569;}
 .ms-n b{font-size:28px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;}
 .ms-k{font-size:12.5px;color:#475569;}
@@ -364,10 +366,11 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .ms-s{font-size:11px;color:#A16207;font-weight:700;}
 .ms-tot{display:flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:8px;padding:2px 10px;}
 .ms-tot:hover{background:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--c,#F472B6) 40%,transparent);}
-.ms-src{display:flex;flex-direction:column;gap:3px;width:100%;margin-top:4px;}
+.ms-src{display:flex;flex-direction:column;gap:4px;width:100%;flex:none;}
 .ms-r{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:5px;cursor:pointer;}
-.ms-r .sl{border:2px solid #EA002C;border-radius:5px;color:#EA002C;font-size:11px;font-weight:800;padding:0 5px;background:#fff;text-align:center;min-width:42px;}
-.ms-r .sv{border:2px solid #2563EB;border-radius:5px;background:#fff;font-size:11px;color:#475569;padding:0 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ms-r .sl{border:2px solid #EA002C;border-radius:6px;color:#EA002C;font-size:13px;font-weight:800;padding:0 4px;background:#fff;text-align:center;min-width:44px;line-height:24px;}
+.ms-r .sv{border:2px solid #2563EB;border-radius:6px;background:#fff;font-size:12.5px;letter-spacing:-.3px;color:#475569;padding:0 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:24px;}
+.ms-r .sv i{font-style:normal;color:#94a3b8;}
 .ms-r .sv b{color:#0f172a;font-variant-numeric:tabular-nums;}
 .ms-r:hover .sv{background:#EFF6FF;}
 .ms-r.z{opacity:.45;}
@@ -1370,8 +1373,9 @@ td.left{text-align:left;}
    BUILD 101: 일별·주간·월간을 붙은 칸 대신 따로 떨어진 버튼 3개로
    BUILD 102: 월간 통계 — 그 달 추가 사업 건수·거리 + 미착수 / 진행중 / 완료 건수·거리
    BUILD 103: 월간 통계에 SKT·SKB·원인자별 건수/km · 누르면 그 목록을 별도 창으로 (다른 모니터로 옮기기)
+   BUILD 104: 월간 통계 — 월별 추가사업도 머리 상자+본 상자 · 달 이동 크게 · 발주처 줄 크게, 네 상자 같은 높이에 맞춤
    ======================================================================== */
-const BUILD_NO='103';
+const BUILD_NO='104';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3133,19 +3137,17 @@ function srcOf(d){return d._src||d.baal||'';}
 function monthStatHTML(){
   const st=PST.m,o=perRows('m',st.off),rows=o.sets.add;
   const km=a=>a.reduce((t,d)=>{const x=distOf(d);return t+(x?x.v:0);},0);
-  const box=(g,a,extra)=>{
-    let h='<div class="ms-tot" data-msw="'+g+'|" title="눌러서 목록 창"><div class="ms-n"><b>'+a.length+'</b>건</div><div class="ms-k"><b>'+km(a).toFixed(3)+'</b> km</div></div>'+(extra||'');
+  const box=(g,a,extra,top)=>{
+    let h='<div class="ms-top">'+(top||'')+'<div class="ms-tot" data-msw="'+g+'|" title="눌러서 목록 창"><div class="ms-n"><b>'+a.length+'</b>건</div><div class="ms-k"><b>'+km(a).toFixed(3)+'</b> km</div></div>'+(extra||'')+'</div>';
     h+='<div class="ms-src">'+MS_SRC.map(S=>{const b=a.filter(d=>srcOf(d)===S);
-      return '<div class="ms-r'+(b.length?'':' z')+'" data-msw="'+g+'|'+S+'" title="'+S+' 목록 창"><span class="sl">'+S+'</span><span class="sv"><b>'+b.length+'</b>건 / <b>'+km(b).toFixed(3)+'</b>km</span></div>';}).join('')+'</div>';
+      return '<div class="ms-r'+(b.length?'':' z')+'" data-msw="'+g+'|'+S+'" title="'+S+' 목록 창"><span class="sl">'+S+'</span><span class="sv"><b>'+b.length+'</b>건 <i>·</i> <b>'+km(b).toFixed(3)+'</b>km</span></div>';}).join('')+'</div>';
     return h;
   };
   const pre=rows.filter(d=>msBucket(d)==='pre'),ing=rows.filter(d=>msBucket(d)==='ing'),fin=rows.filter(d=>msBucket(d)==='fin');
   const wait=pre.filter(d=>d._ws==='대기(불가)').length;
   return '<div class="mstat" id="mStat">'+
-    '<div class="ms-box ms-all">'+
-      '<div class="ms-t">월별 추가 사업 리스트</div>'+
-      '<div class="ms-nav"><button data-pm="m" data-dv="-1" aria-label="이전 달">◀</button><span>'+perLabel('m',o.r)+'</span><button data-pm="m" data-dv="1" aria-label="다음 달">▶</button></div>'+
-      box('',rows)+'</div>'+
+    '<div class="ms-col" style="--c:#EC4899;--bg:#FDF2F8"><div class="ms-h">월별 추가사업</div><div class="ms-box">'+
+      box('',rows,'','<div class="ms-nav"><button data-pm="m" data-dv="-1" aria-label="이전 달">◀</button><span>'+perLabel('m',o.r)+'</span><button data-pm="m" data-dv="1" aria-label="다음 달">▶</button></div>')+'</div></div>'+
     '<div class="ms-col" style="--c:#15803D;--bg:#F3FBF6"><div class="ms-h">미착수</div><div class="ms-box">'+box('pre',pre,wait?'<div class="ms-s">대기(불가) '+wait+'건 포함</div>':'')+'</div></div>'+
     '<div class="ms-col" style="--c:#D69E00;--bg:#FFFBEB"><div class="ms-h">진행중</div><div class="ms-box">'+box('ing',ing)+'</div></div>'+
     '<div class="ms-col" style="--c:#EA002C;--bg:#FFF5F6"><div class="ms-h">완료</div><div class="ms-box">'+box('fin',fin)+'</div></div>'+
