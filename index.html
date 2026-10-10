@@ -327,6 +327,8 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .sw-grid td{border-right:1px solid #d9d9d9;border-bottom:1px solid #d9d9d9;padding:1px 4px;height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;}
 .sw-grid td.rn{background:#f3f4f6;color:#6b7280;text-align:center;position:sticky;left:0;z-index:2;font-size:10.5px;}
 .sw-grid tr.h td{position:sticky;z-index:3;}
+.sw-grid td.sh{background:#1D4ED8;color:#fff;font-weight:700;text-align:center;}
+.sw-grid tr[data-card]:hover td{background:#F1F5F9;cursor:pointer;}
 .sw-grid td.chg{box-shadow:inset 0 0 0 2px #2563EB;}
 .sw-grid tr.nw td{background:#DCFCE7;cursor:pointer;}
 .sw-grid tr.nw td.rn{background:#16A34A;color:#fff;font-weight:700;}
@@ -1314,8 +1316,9 @@ td.left{text-align:left;}
    BUILD 91: 로그인 화면 보라를 더 연하게
    BUILD 92: 「관리자로 접속」 버튼만 전 색(진보라)으로
    BUILD 93: 로그인 화면에서 서버 연결 실패 이유를 보여 줌 (SQL 미실행 등)
+   BUILD 94: SKB 목록 창 — 원본 양식이 없어도 시스템 목록으로 바로 보기 · 엑셀 다운로드
    ======================================================================== */
-const BUILD_NO='93';
+const BUILD_NO='94';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3367,12 +3370,7 @@ async function renderSkbWin(){
   document.title='SKB 정산리스트 · '+SG.name;
   let C;
   try{C=await skbLoadWb();}catch(err){box.innerHTML='<div class="sw-empty"><b>원본 양식을 읽지 못했어요</b>'+esc(err.message||'')+'</div>';return;}
-  if(!C){
-    box.innerHTML='<div class="sw-h"><span class="tt">SKB 정산리스트 · '+esc(SG.name)+'</span></div>'+
-      '<div class="sw-empty"><div><b style="font-size:16px">원본 양식이 아직 없어요</b><br>SKB 담당자와 같이 보는 정산리스트 엑셀(예: 20260917_SKB_측량공정진행현황_대원항업.xlsx)을 등록하면<br>그 파일의 순서·배경색·메모 칸은 그대로 두고, 시스템에서 바뀐 칸과 새 사업만 반영해 보여드려요.</div>'+
-      '<button class="sw-btn pri" data-sw="tpl">원본 양식 등록</button></div>';
-    return;
-  }
+  if(!C){skbSysView(box,SG);return;}
   const plan=skbPlan(C.wb);   /* 원본은 그대로 두고 계획만 (적용은 다운로드 때 새 복사본에) */
   const sheets=plan.sheets.filter(x=>x.g);
   const sh=sheets.find(x=>x.name===SKBWIN.sheet)||sheets.find(x=>x.g===SG.g)||sheets[0];
@@ -3432,6 +3430,67 @@ async function renderSkbWin(){
   box.innerHTML=h;
   const g1=document.getElementById('swGrid');if(g1){g1.scrollTop=st0;g1.scrollLeft=sl0;}
 }
+/* ---- 원본 양식이 없을 때 : 시스템 목록으로 바로 보기 (BUILD 94) ---- */
+function skbSysData(){
+  const bi=bizIdx();DATA.forEach(d=>{d._grp=grpOf(d,bi);d._ws=workStage(d);});
+  const all=DATA.filter(d=>String(d._grp||'').indexOf('SKB')===0);
+  const skip=new Set(['발주처(자동)']);
+  const cols=DISP.filter(c=>!isAutoIdx(c.idx)&&!skip.has(c.label)&&all.some(d=>{const v=d.row[c.idx];return v!=null&&v!=='';}));
+  const rowsOf=g=>g==='SKB'?all:all.filter(d=>d._grp===g);
+  return {all,cols,rowsOf};
+}
+function skbSysView(box,SG){
+  const g=SKBWIN.sg||SG.g,S=skbSysData(),rows=S.rowsOf(g),cols=S.cols;
+  const SGc=SKB_SHEETS.find(x=>x.g===g)||SG;
+  document.title='SKB 정산리스트 · '+SGc.name+' (시스템 목록)';
+  let h='<div class="sw-h"><span class="tt">SKB 정산리스트</span>'+
+    '<span class="tf">원본 양식 없이 <b>시스템 목록</b>으로 보여드려요 · 원본 양식을 등록하면 원본 순서·배경색·메모 칸 그대로 받아요</span><span class="sp"></span>'+
+    '<button class="sw-btn" data-sw="tpl">원본 양식 등록</button>'+
+    '<button class="sw-btn pri" data-sw="dlsys">엑셀 다운로드 ↓</button></div>';
+  const cnt={};WSTAGES.forEach(p=>cnt[p.k]=0);rows.forEach(d=>{cnt[d._ws]=(cnt[d._ws]||0)+1;});
+  h+='<div class="sw-sum"><span style="--c:#1D4ED8">'+esc(SGc.name)+' <b>'+rows.length+'</b>건</span>'+
+    WSTAGES.map(p=>'<span style="--c:'+p.c+'">'+esc(p.k)+' <b>'+(cnt[p.k]||0)+'</b></span>').join('')+'</div>';
+  h+='<div class="sw-tabs">'+SKB_SHEETS.map(x=>{const n=S.rowsOf(x.g).length;return '<button class="'+(x.g===g?'on':'')+'" data-swg="'+esc(x.g)+'">'+esc(x.name)+'<b style="color:#64748b">'+n+'</b></button>';}).join('')+'</div>';
+  let t='<table><colgroup><col style="width:40px"><col style="width:76px">'+cols.map(c=>{const L=c.label;const w=/공사명|공구명|이슈|비고|주소/.test(L)?320:(/번호|코드/.test(L)?140:96);return '<col style="width:'+w+'px">';}).join('')+'</colgroup>';
+  t+='<tr class="h"><td class="rn" style="top:0;z-index:4">#</td><td class="sh" style="top:0">단계</td>'+cols.map(c=>'<td class="sh" style="top:0" title="'+esc(c.label)+'">'+esc(c.label)+'</td>').join('')+'</tr>';
+  rows.forEach((d,i)=>{
+    const P=WSTAGES.find(x=>x.k===d._ws);
+    t+='<tr data-card="'+d._id+'"><td class="rn">'+(i+1)+'</td><td style="color:'+(P?P.c:'#64748b')+';background:'+(P?P.bg:'#fff')+';font-weight:700;text-align:center">'+esc(d._ws||'')+'</td>'+
+      cols.map(c=>{const v=d.row[c.idx];const sv=v==null?'':String(v);return '<td title="'+esc(sv)+'"'+(typeof v==='number'?' style="text-align:right"':'')+'>'+esc(sv)+'</td>';}).join('')+'</tr>';
+  });
+  t+='</table>';
+  h+='<div class="sw-grid" id="swGrid">'+t+'</div>';
+  h+='<div class="sw-legend"><span>사업자 칸으로 SK TNS·팬텍·유엔에이·확인필요를 나눴어요 · 줄을 누르면 사업 카드 · 메인 창에서 고치면 자동으로 다시 그려져요</span></div>';
+  const g0=document.getElementById('swGrid');const st0=g0?g0.scrollTop:0,sl0=g0?g0.scrollLeft:0;
+  box.innerHTML=h;
+  const g1=document.getElementById('swGrid');if(g1){g1.scrollTop=st0;g1.scrollLeft=sl0;}
+}
+async function skbSysDownload(){
+  const btn=document.querySelector('[data-sw="dlsys"]');if(btn){btn.disabled=true;btn.textContent='만드는 중…';}
+  try{
+    const EX=await loadExcelJS();const wb=new EX.Workbook();const S=skbSysData();
+    const hx=c=>'FF'+String(c||'#FFFFFF').replace('#','').toUpperCase();
+    SKB_SHEETS.forEach(x=>{
+      const rows=S.rowsOf(x.g),ws=wb.addWorksheet(x.name,{views:[{state:'frozen',ySplit:1,xSplit:0}]});
+      const head=['순번','단계'].concat(S.cols.map(c=>c.label));
+      ws.addRow(head);
+      rows.forEach((d,i)=>ws.addRow([i+1,d._ws||''].concat(S.cols.map(c=>{const v=d.row[c.idx];return v==null?'':v;}))));
+      const hr=ws.getRow(1);hr.height=22;
+      hr.eachCell(c=>{c.font={bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1D4ED8'}};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};});
+      rows.forEach((d,i)=>{const P=WSTAGES.find(z=>z.k===d._ws);if(!P)return;const c=ws.getRow(i+2).getCell(2);c.font={bold:true,color:{argb:hx(P.c)}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:hx(P.bg)}};c.alignment={horizontal:'center'};});
+      head.forEach((L,ci)=>{let m=String(L).length*2;rows.forEach(d=>{const v=ci===0?'':ci===1?d._ws:d.row[S.cols[ci-2].idx];const n=String(v==null?'':v).length;if(n>m)m=n;});ws.getColumn(ci+1).width=Math.max(6,Math.min(50,m+2));});
+      ws.autoFilter={from:{row:1,column:1},to:{row:1,column:head.length}};
+    });
+    const out=await wb.xlsx.writeBuffer();
+    const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const d=new Date(),p=n=>String(n).padStart(2,'0');
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_SKB_정산리스트(시스템)_대원항업.xlsx';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+    toast('엑셀을 만들었어요 · SKB '+S.all.length+'건 (시트 5개)');
+  }catch(err){toast('엑셀을 만들지 못했어요 : '+(err.message||err),true);}
+  if(btn){btn.disabled=false;btn.textContent='엑셀 다운로드 ↓';}
+}
 async function skbBuild(mark){
   const t=await tplGet('SKB');if(!t)throw new Error('원본 양식이 없어요');
   const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(t.buf);   /* 매번 원본에서 새로 */
@@ -3460,7 +3519,8 @@ async function skbDownload(){
 }
 document.getElementById('skbWin').addEventListener('click',e=>{
   const b=e.target.closest('[data-sw]');
-  if(b){if(b.dataset.sw==='tpl')document.getElementById('skbTplFile').click();else if(b.dataset.sw==='dl')skbDownload();return;}
+  if(b){if(b.dataset.sw==='tpl')document.getElementById('skbTplFile').click();else if(b.dataset.sw==='dl')skbDownload();else if(b.dataset.sw==='dlsys')skbSysDownload();return;}
+  const sg=e.target.closest('[data-swg]');if(sg){SKBWIN.sg=sg.dataset.swg;renderSkbWin();return;}
   const s=e.target.closest('[data-swsh]');if(s){SKBWIN.sheet=s.dataset.swsh;renderSkbWin();return;}
   const r=e.target.closest('tr[data-card]');if(r)openCard(r.dataset.card);
 });
