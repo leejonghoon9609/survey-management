@@ -260,6 +260,9 @@ header .spacer{flex:1;}
 .gcard.sub .gh b{font-size:12.5px;}
 .gcard.sub .gh .n{font-size:15px;}
 .gcard.skball{margin-bottom:0;}
+.gfold{margin-left:6px;width:24px;height:22px;border:1.5px solid var(--c);border-radius:6px;background:#fff;color:var(--c);font-size:13px;font-weight:800;line-height:1;cursor:pointer;padding:0;flex:none;}
+.gfold:hover{background:var(--c);color:#fff;}
+.gcard .gh{align-items:center;}
 .gcard .gl button.z{opacity:.4;}
 .gcard .gl button.on{background:var(--s);border-color:var(--s);opacity:1;}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff !important;}
@@ -1168,8 +1171,10 @@ td.left{text-align:left;}
    BUILD 78: 월간 칸 배경 연한 초록
    BUILD 79: 리스트관리 3분할 화면 전체 글자·버튼을 조금 작게 (94%), 높이는 화면에 맞춤
    BUILD 80: 조금 더 작게 (90%)
+   BUILD 81: 사업현황 SKT를 지사별(수도권·경북·경남·강원·충청·서부)로 나누고,
+             SKT·SKB 하위 카드를 접고 펴는 버튼 (상태 기억)
    ======================================================================== */
-const BUILD_NO='80';
+const BUILD_NO='81';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2715,20 +2720,32 @@ function restoreUpload(){
 }
 
 /* ======================= 리스트관리 3분할 (BUILD 65) ======================= */
+const JISA_ORDER=['수도권지사','경북지사','경남지사','강원지사','충청지사','서부지사'];
 const GROUPS=[
-  {k:'SKT',          c:'#EA002C'},
+  {k:'SKT',          c:'#EA002C', all:true},
+  ...JISA_ORDER.map(j=>({k:'SKT·'+j, c:'#E11D48', sub:'SKT', name:j})),
+  {k:'SKT·기타',     c:'#E11D48', sub:'SKT', name:'지사 미입력'},
   {k:'SKB',          c:'#1D4ED8', all:true},
-  {k:'SKB·SK TNS',   c:'#2563EB', sub:true, name:'SK TNS'},
-  {k:'SKB·팬텍',     c:'#0891B2', sub:true, name:'팬텍'},
-  {k:'SKB·유엔에이', c:'#7C3AED', sub:true, name:'유엔에이'},
-  {k:'SKB·확인필요', c:'#64748b', sub:true, name:'사업자 확인필요', note:'사업자 칸이 SKB·빈칸·정산제외인 건'},
+  {k:'SKB·SK TNS',   c:'#2563EB', sub:'SKB', name:'SK TNS'},
+  {k:'SKB·팬텍',     c:'#0891B2', sub:'SKB', name:'팬텍'},
+  {k:'SKB·유엔에이', c:'#7C3AED', sub:'SKB', name:'유엔에이'},
+  {k:'SKB·확인필요', c:'#64748b', sub:'SKB', name:'사업자 확인필요', note:'사업자 칸이 SKB·빈칸·정산제외인 건'},
   {k:'원인자',       c:'#B45309'}
 ];
+/* 접기·펴기 상태 (true = 접힘) */
+const LS_FOLD='gongjeong_fold_v1';
+let GFOLD={SKT:true,SKB:false};
+try{const r=JSON.parse(localStorage.getItem(LS_FOLD)||'null');if(r&&typeof r==='object')GFOLD=Object.assign(GFOLD,r);}catch(e){}
+function saveFold(){try{localStorage.setItem(LS_FOLD,JSON.stringify(GFOLD));}catch(e){}}
 function bizIdx(){const c=DISP.find(x=>x.label==='사업자');return c?c.idx:-1;}
 function grpOf(d,bi){
   const src=d._src||d.baal;
   if(src==='원인자')return '원인자';
-  if(src==='SKT')return 'SKT';
+  if(src==='SKT'){
+    const j=String(d.jisa||'').replace(/\s/g,'');
+    const hit=JISA_ORDER.find(x=>x===j)||JISA_ORDER.find(x=>j&&x.indexOf(j.replace(/지사$/,''))===0);
+    return 'SKT·'+(hit||'기타');
+  }
   if(src==='SKB'){
     const v=String(bi>=0?(d.row[bi]==null?'':d.row[bi]):'').replace(/\s/g,'');
     if(/팬텍|펜텍/.test(v))return 'SKB·팬텍';
@@ -2738,26 +2755,31 @@ function grpOf(d,bi){
   }
   return src||'기타';
 }
-function grpMatch(d,g){if(!g||g==='*')return true;if(g==='SKB')return (d._grp||'').indexOf('SKB')===0;return d._grp===g;}
+function grpMatch(d,g){if(!g||g==='*')return true;if(g==='SKB'||g==='SKT')return (d._grp||'').indexOf(g)===0;return d._grp===g;}
 let GSEL={g:'',ph:''};   /* 왼쪽에서 고른 묶음 → 오른쪽 리스트 필터 */
 function renderGroups(){
   const box=document.getElementById('gBody');if(!box)return;
   const bi=bizIdx();
-  const cnt={},tot={n:0};
+  const cnt={};
   DATA.forEach(d=>{const g=grpOf(d,bi),p=workStage(d);d._grp=g;d._ws=p;
-    [g,(g.indexOf('SKB')===0?'SKB':null),'*'].forEach(k=>{if(!k)return;cnt[k]=cnt[k]||{n:0};cnt[k].n++;cnt[k][p]=(cnt[k][p]||0)+1;});});
+    const par=g.indexOf('SKT')===0?'SKT':(g.indexOf('SKB')===0?'SKB':null);
+    [g,par,'*'].forEach(k=>{if(!k)return;cnt[k]=cnt[k]||{n:0};cnt[k].n++;cnt[k][p]=(cnt[k][p]||0)+1;});});
   const line=(g,o)=>'<div class="gl">'+WSTAGES.map(p=>{const n=o[p.k]||0;return '<button class="'+(n?'':'z')+(GSEL.g===g&&GSEL.ph===p.k?' on':'')+'" data-g="'+esc(g)+'" data-ph="'+esc(p.k)+'" style="--s:'+p.c+';background:'+p.bg+'" title="'+esc(p.k)+'"><span>'+p.sh+'</span><b>'+n+'</b></button>';}).join('')+'</div>';
   const all=cnt['*']||{n:0};
   let h='<div class="gcard all'+(GSEL.g==='*'&&!GSEL.ph?' on':'')+'" data-g="*"><div class="gh"><b>전체 물량</b><span class="n">'+all.n+'<small>건</small></span></div>'+line('*',all)+'</div>';
   GROUPS.forEach(G=>{
     const o=cnt[G.k]||{n:0};
-    if(G.sub&&!o.n)return;
-    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span></div>'+line(G.k,o)+'</div>';
+    if(G.sub&&(!o.n||GFOLD[G.sub]))return;
+    const kids=G.all?GROUPS.filter(x=>x.sub===G.k&&(cnt[x.k]||{}).n).length:0;
+    const fold=G.all&&kids?'<button class="gfold" data-fold="'+G.k+'" title="'+(GFOLD[G.k]?'펴기':'접기')+' — '+kids+'개">'+(GFOLD[G.k]?'▸':'▾')+'</button>':'';
+    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
   });
   box.innerHTML=h;
   document.getElementById('gTotal').textContent='진행 '+(all.n-(all['완료']||0))+' · 완료 '+(all['완료']||0);
 }
 document.getElementById('gBody').addEventListener('click',e=>{
+  const f=e.target.closest('[data-fold]');
+  if(f){e.stopPropagation();GFOLD[f.dataset.fold]=!GFOLD[f.dataset.fold];saveFold();renderGroups();return;}
   const b=e.target.closest('button[data-ph]');
   if(b){const g=b.dataset.g,p=b.dataset.ph;GSEL=(GSEL.g===g&&GSEL.ph===p)?{g:'',ph:''}:{g,ph:p};renderDash();return;}
   const c=e.target.closest('.gcard');
@@ -2862,7 +2884,7 @@ function renderPeriods(){
     if(rows.length)h+='<div class="plh"><span>'+(({add:'추가',start:'착수',done:'완료'})[st.kind])+'일</span><span>사업명</span><span>거리</span><span>단계</span></div>';
     if(!rows.length)h+='<div class="pempty">'+({add:'이 기간에 추가된 사업이 없어요',start:'이 기간에 착수한 사업이 없어요<br><span style="font-size:11.5px">착수일 = 굴착완료 통보일 또는 1차·2차 측량일</span>',done:'이 기간에 완료(Tango 업로드)된 사업이 없어요'}[st.kind])+'</div>';
     rows.slice(0,200).forEach(d=>{const dt=dfn(d);
-      h+='<div class="prow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><span class="dt"><b>'+(dt?(dt.getMonth()+1)+'/'+dt.getDate():'')+'</b>'+esc(d._grp||'')+'</span><span class="wk" title="'+esc(d.work)+'">'+esc(d.work)+'</span>'+kmCell(d)+wsBadge(d)+'</div>';});
+      h+='<div class="prow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><span class="dt"><b>'+(dt?(dt.getMonth()+1)+'/'+dt.getDate():'')+'</b>'+esc((d._grp||'').replace(/지사$/,''))+'</span><span class="wk" title="'+esc(d.work)+'">'+esc(d.work)+'</span>'+kmCell(d)+wsBadge(d)+'</div>';});
     const kn=(PKIND.find(K=>K.k===st.kind)||{}).name||'';
     h+='</div><div class="per-st"><div class="hd">진행현황 <span style="font-weight:500;color:#64748b">'+kn+' '+rows.length+'건</span></div>';
     const tc={};rows.forEach(d=>{const w=d._ws||workStage(d);tc[w]=(tc[w]||0)+1;});
