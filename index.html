@@ -347,8 +347,21 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .gsub{display:none;}
 .per{--pc:#be185d;--pbg:#fff;--phd:#fff;border:2px solid var(--pc);border-radius:10px;margin:0;display:flex;flex-direction:column;background:var(--pbg);overflow:hidden;flex:1 1 0;min-height:0;}
 #pBody{display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:8px 10px;}
-.mstat{flex:1 1 0;min-height:0;border:2px dashed #e2e8f0;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;}
-.mstat span{font-size:12px;color:#cbd5e1;}
+.mstat{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:10px;}
+.ms-box{border:3px solid var(--c,#EC4899);border-radius:10px;background:var(--bg,#FDF4FA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;padding:6px;}
+.ms-all{--c:#F472B6;--bg:#FDF2F8;cursor:pointer;}
+.ms-all:hover{box-shadow:0 0 0 3px #FBCFE8;}
+.ms-col{display:flex;flex-direction:column;gap:6px;min-height:0;}
+.ms-col .ms-box{flex:1;}
+.ms-h{border:3px solid var(--c);border-radius:8px;background:#fff;text-align:center;font-size:17px;font-weight:800;color:var(--c);padding:2px 0;}
+.ms-t{font-size:16px;font-weight:800;color:#0f172a;text-align:center;}
+.ms-nav{display:flex;align-items:center;gap:4px;font-size:12px;color:#475569;font-weight:700;}
+.ms-nav button{border:1px solid #e2e8f0;background:#fff;border-radius:5px;width:20px;height:20px;font-size:10px;cursor:pointer;color:#475569;}
+.ms-n{font-size:13px;color:#475569;}
+.ms-n b{font-size:28px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;}
+.ms-k{font-size:12.5px;color:#475569;}
+.ms-k b{font-size:17px;font-weight:800;color:var(--c,#DB2777);font-variant-numeric:tabular-nums;}
+.ms-s{font-size:11px;color:#A16207;font-weight:700;}
 .per.one{flex:1.6 1 0;}
 .per-h .psel{display:inline-flex;gap:5px;}
 .per-h .psel button{border:1.5px solid var(--c);border-radius:7px;background:#fff;color:var(--c);font-family:inherit;font-size:13px;font-weight:800;padding:3px 12px;cursor:pointer;}
@@ -1343,8 +1356,9 @@ td.left{text-align:left;}
    BUILD 99: 사업 카드 진행 막대 — 실시간 8단계 / 탐사 5단계로 나눠 지금 단계에 정확히 빨간 글자
    BUILD 100: 추가사업 현황 — 일별·주간·월간 3칸을 한 칸으로 합치고 위에서 고르기 · 위쪽은 월간 통계 자리(빈 칸)
    BUILD 101: 일별·주간·월간을 붙은 칸 대신 따로 떨어진 버튼 3개로
+   BUILD 102: 월간 통계 — 그 달 추가 사업 건수·거리 + 미착수 / 진행중 / 완료 건수·거리
    ======================================================================== */
-const BUILD_NO='101';
+const BUILD_NO='102';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3099,9 +3113,26 @@ function perRows(k,off){
   });
   return {r,sets};
 }
+/* 월간 통계 (BUILD 102) : 그 달에 추가된 사업 → 미착수(대기 포함) / 진행중 / 완료 */
+function monthStatHTML(){
+  const st=PST.m,o=perRows('m',st.off),rows=o.sets.add;
+  const km=a=>a.reduce((t,d)=>{const x=distOf(d);return t+(x?x.v:0);},0);
+  const pre=rows.filter(d=>d._ws==='미착수'||d._ws==='대기(불가)'),fin=rows.filter(d=>d._ws==='완료'),ing=rows.filter(d=>!pre.includes(d)&&!fin.includes(d));
+  const wait=pre.filter(d=>d._ws==='대기(불가)').length;
+  const body=(a,extra)=>'<div class="ms-n"><b>'+a.length+'</b>건</div><div class="ms-k"><b>'+km(a).toFixed(3)+'</b> km</div>'+(extra||'');
+  return '<div class="mstat" id="mStat">'+
+    '<div class="ms-box ms-all" data-msopen="1" title="눌러서 이 달 추가 목록 창 열기">'+
+      '<div class="ms-t">월별 추가 사업 리스트</div>'+
+      '<div class="ms-nav"><button data-pm="m" data-dv="-1" aria-label="이전 달">◀</button><span>'+perLabel('m',o.r)+'</span><button data-pm="m" data-dv="1" aria-label="다음 달">▶</button></div>'+
+      body(rows)+'</div>'+
+    '<div class="ms-col" style="--c:#15803D;--bg:#F3FBF6"><div class="ms-h">미착수</div><div class="ms-box">'+body(pre,wait?'<div class="ms-s">대기(불가) '+wait+'건 포함</div>':'')+'</div></div>'+
+    '<div class="ms-col" style="--c:#D69E00;--bg:#FFFBEB"><div class="ms-h">진행중</div><div class="ms-box">'+body(ing)+'</div></div>'+
+    '<div class="ms-col" style="--c:#EA002C;--bg:#FFF5F6"><div class="ms-h">완료</div><div class="ms-box">'+body(fin)+'</div></div>'+
+  '</div>';
+}
 function renderPeriods(){
   const box=document.getElementById('pBody');if(!box)return;
-  let h='<div class="mstat" id="mStat"><span>월간 통계 자리 (준비 중)</span></div>';
+  let h=monthStatHTML();
   [PERS.find(x=>x.k===PSEL)||PERS[1]].forEach(P=>{
     const st=PST[P.k],o=perRows(P.k),rows=o.sets[st.kind];
     const dfn={add:addedDate,start:startDate,done:doneDate}[st.kind];
@@ -3135,6 +3166,7 @@ function renderPeriods(){
   document.getElementById('pNote').textContent=nAdded?('등록일 기록 '+nAdded+'건 · 나머지는 요청일 기준'):'추가 = 요청일 기준 (기준 리스트 이후 들어온 건은 등록일)';
 }
 document.getElementById('pBody').addEventListener('click',e=>{
+  if(e.target.closest('[data-msopen]')&&!e.target.closest('[data-pm]')){PST.m.kind='add';openPerWin('m');return;}
   const ps=e.target.closest('[data-psel]');
   if(ps){PSEL=ps.dataset.psel;try{localStorage.setItem('gongjeong_psel_v1',PSEL);}catch(x){}renderPeriods();return;}
   const pw=e.target.closest('[data-pw]');
