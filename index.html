@@ -290,7 +290,8 @@ body.gated{overflow:hidden;}
 .gcard .gl button span{display:block;font-size:10px;color:#64748b;}
 .gcard .gl button b{display:block;font-size:13px;font-variant-numeric:tabular-nums;color:#1e293b;}
 .gcard .gl button.z b{color:#cbd5e1;font-weight:500;}
-.gcard .gl{grid-template-columns:repeat(6,1fr) !important;}
+.gcard .gl{grid-template-columns:repeat(8,1fr) !important;gap:2px !important;}
+.gcard .gl button span{font-size:9.5px !important;letter-spacing:-.4px;white-space:nowrap;}
 .gcard .gl button[data-ph]{border:1.5px solid var(--s);}
 .gcard .gl button span{color:var(--s) !important;font-weight:700;}
 .gcard .gl button b{color:#0f172a !important;font-weight:800;}
@@ -1317,8 +1318,10 @@ td.left{text-align:left;}
    BUILD 92: 「관리자로 접속」 버튼만 전 색(진보라)으로
    BUILD 93: 로그인 화면에서 서버 연결 실패 이유를 보여 줌 (SQL 미실행 등)
    BUILD 94: SKB 목록 창 — 원본 양식이 없어도 시스템 목록으로 바로 보기 · 엑셀 다운로드
+   BUILD 95: 진행 단계 8개 (미착수·대기(불가)·실시간측량·결선·후측량·탱고·정위치DB·완료) — 측량예정일·실측거리·성과심사신청 기준
+             · 큰 창이 새 버전이 되면 열려 있는 목록 창도 스스로 새로고침
    ======================================================================== */
-const BUILD_NO='94';
+const BUILD_NO='95';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2963,32 +2966,46 @@ document.getElementById('gBody').addEventListener('click',e=>{
    성과심사   = Tango 끝, 성과심사 필요·진행중
    완료       = Tango·심사까지 끝 (정산완료·제외 포함) */
 const WSTAGES=[
-  {k:'실시간측량',sh:'실시간',c:'#E11D48',bg:'#FFF7F8'},
-  {k:'결선',     sh:'결선',  c:'#0D9488',bg:'#F4FCFB'},
-  {k:'후측량',   sh:'후측량',c:'#EA580C',bg:'#FFFAF5'},
-  {k:'탱고',     sh:'탱고',  c:'#2563EB',bg:'#F7FAFF'},
-  {k:'성과심사', sh:'심사',  c:'#7C3AED',bg:'#FAF8FF'},
-  {k:'완료',     sh:'완료',  c:'#15803D',bg:'#F6FDF8'}
+  {k:'미착수',    sh:'미착수', c:'#64748B',bg:'#F8FAFC'},
+  {k:'대기(불가)',sh:'대기',   c:'#A16207',bg:'#FFFCF2'},
+  {k:'실시간측량',sh:'실시간', c:'#E11D48',bg:'#FFF7F8'},
+  {k:'결선',      sh:'결선',   c:'#0D9488',bg:'#F4FCFB'},
+  {k:'후측량',    sh:'후측량', c:'#EA580C',bg:'#FFFAF5'},
+  {k:'탱고',      sh:'탱고',   c:'#2563EB',bg:'#F7FAFF'},
+  {k:'정위치DB',  sh:'정위치', c:'#7C3AED',bg:'#FAF8FF'},
+  {k:'완료',      sh:'완료',   c:'#15803D',bg:'#F6FDF8'}
 ];
 function wsColor(k){const x=WSTAGES.find(z=>z.k===k);return x?x.c:'#64748b';}
-/* 측량예정일 칸(진행상황)을 먼저 보고, 측량이 끝났으면 Tango → 성과심사 순으로 본다 */
+/* 진행 단계 (BUILD 95) : 「측량예정일」 칸 글자로 정한다
+   · 빈칸·날짜(예정)·견적 → 미착수
+   · 미굴착·본복구 완료 후·착공시 실시간 참여·공사미진행·공사중지·측량불가·공사완료후 탐사예정·이월 → 대기(불가)
+   · 실시간진행중·실시간측량중 → 실시간측량 / 결선중·실시간완료 → 결선 / 후측량·후측량 진행중·탐사 → 후측량
+   · 측량완료·탱고·탱고작업중 → 탱고 … 「실측거리(정산거리)」가 들어오면 탱고 완료
+       → 「성과심사신청」이 필요·진행중이면 정위치DB, 성과심사완료·불필요·빈칸이면 완료
+   · 취소·측량제외·정산제외 → 완료 (취소 표시) */
 function workStage(d){
-  const jin=ns(d.jin),gul=ns(colv(d,'굴착')),sim=ns(d.simsa),tupRaw=ns(d.tup),tupD=parseDate(d.tup);
-  const simLeft=(/필요/.test(sim)&&!/불필요/.test(sim))||/진행중/.test(sim);
-  d._cancel=d.jeongKey==='정산제외'||/취소|측량제외|측량불가/.test(jin+' '+gul);
+  const jin=ns(d.jin).replace(/\s/g,''),sim=ns(d.simsa).replace(/\s/g,'');
+  const distIn=typeof d.tango==='number'&&d.tango>0;
+  d._cancel=/취소|측량제외|정산제외/.test(jin);
   if(d._cancel)return '완료';
-  if(d.turn==='완료'&&!simLeft)return '완료';
-  const rtDone=/실시간완료/.test(jin)||!!parseDate(colv(d,'측량1'));
-  const fullDone=/(측량|탐사)완료|성과심사/.test(jin)||!!parseDate(colv(d,'측량2'))||!!tupD||(typeof d.tango==='number'&&d.tango>0);
-  if(!fullDone){
-    if(/후측량|본복구|탐사예정|완료후/.test(jin))return '후측량';
-    if(/실시간/.test(jin))return rtDone?'결선':'실시간측량';      /* 실시간진행중 · 착공시 실시간 참여 */
-    if(rtDone)return '결선';
-    return d.mKey==='실시간'?'실시간측량':'후측량';                 /* 견적·공사미진행·예정일·빈칸 → 측량방법으로 */
-  }
-  if(!tupD&&!/불필요/.test(tupRaw))return '탱고';
-  if(simLeft)return '성과심사';
-  return '완료';
+  const st=workStage0(d,jin,sim,distIn);
+  /* 정산제외 : 측량이 끝난 건만 취소로 본다 (진행 중인 건은 그 단계 그대로) */
+  if(d.jeongKey==='정산제외'&&/탱고|정위치DB|완료/.test(st)){d._cancel=true;return '완료';}
+  return st;
+}
+function workStage0(d,jin,sim,distIn){
+  const afterTango=()=>{
+    if(/완료/.test(sim))return '완료';
+    if((/필요/.test(sim)&&!/불필요/.test(sim))||/진행중|신청/.test(sim))return '정위치DB';
+    return '완료';
+  };
+  if(!jin||/^\d{4}[-.\/]\d{1,2}[-.\/]\d{1,2}$/.test(jin)||/^견적/.test(jin))return '미착수';
+  if(/미굴착|본복|착공시|공사미진행|공사중지|측량불가|불가|공사완료후|이월|대기/.test(jin))return '대기(불가)';
+  if(/결선|실시간완료/.test(jin))return '결선';
+  if(/실시간/.test(jin))return '실시간측량';
+  if(/후측량|^탐사$|탐사진행|탐사중/.test(jin))return '후측량';
+  if(/측량완료|탐사완료|탱고|성과심사|정위치/.test(jin))return distIn?afterTango():'탱고';
+  return '대기(불가)';   /* 처음 보는 글자 → 대기로 두고 확인 */
 }
 /* 거리 : 정산거리(실측) → 없으면 측량 심사내역·도면거리 */
 function distOf(d){
@@ -3596,6 +3613,7 @@ document.getElementById('lWin').addEventListener('click',()=>{
 });
 window.addEventListener('storage',e=>{
   if(e.key!==LS_KEY||!e.newValue)return;
+  try{const b=(e.newValue.match(/^\{"b":"?(\d+)/)||[])[1];if(b&&+b>+BUILD_NO){location.reload();return;}}catch(x){}
   const keep={};DISP.forEach(c=>{keep[c.label]=c.vis;});
   const st=document.querySelector('.mgr .tblwrap');const top=st?st.scrollTop:0;
   loadState({keepUI:true,keepVis:keep});
