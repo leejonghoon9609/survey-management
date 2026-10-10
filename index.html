@@ -138,7 +138,32 @@ header .spacer{flex:1;}
 .savebar .cloudchip.wait i{background:#FFB400;}
 .savebar .cloudchip.err,.savebar .cloudchip.need{border-color:#FECACA;background:#FEF2F2;color:#B91C1C;}
 .savebar .cloudchip.err i,.savebar .cloudchip.need i{background:#DC2626;}
-#askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
+#loginGate{position:fixed;inset:0;background:linear-gradient(160deg,#FDFBFF 0%,#FAF8FF 45%,#F5F2FE 100%);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;}
+body.gated{overflow:hidden;}
+.lg-card{width:300px;max-width:100%;background:#fff;border-radius:12px;border:1px solid #F0E7FF;box-shadow:0 14px 44px rgba(109,40,217,.10),0 2px 6px rgba(109,40,217,.04);padding:0 30px 26px;position:relative;overflow:hidden;text-align:center;}
+.lg-bar{height:4px;margin:0 -30px 22px;background:linear-gradient(90deg,#A78BFA,#C4B5FD 50%,#E9D5FF);}
+.lg-slogan{margin:0 0 8px;font-size:9.5px;font-style:italic;color:#A78BFA;}
+.lg-logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
+.lg-logo b{font-size:18px;font-weight:800;color:#1e293b;letter-spacing:-.3px;}
+.lg-title{margin:0 0 16px;font-size:14.5px;font-weight:800;color:#6D28D9;}
+.lg-sel,.lg-pw{display:block;width:100%;box-sizing:border-box;height:38px;padding:0 12px;border:1.5px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:13px;color:#334155;background:#fff;margin-bottom:12px;}
+.lg-sel.adm{background:#FCFAFF;border-color:#DDD6FE;}
+.lg-sel:focus,.lg-pw:focus{outline:none;border-color:#7C3AED;box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+.lg-pw{margin-top:-4px;}
+.lg-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:42px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;}
+.lg-btn.red{background:#6D28D9;border:1px solid #6D28D9;color:#fff;}
+.lg-btn.red:hover{background:#5B21B6;}
+.lg-btn.yel{background:#F7F4FF;border:1px solid #E4DCFD;color:#6D28D9;}
+.lg-btn.yel:hover{background:#EFEAFE;}
+.lg-btn:disabled{opacity:.6;cursor:wait;}
+.lg-or{display:flex;align-items:center;gap:8px;margin:22px 0 18px;font-size:10px;color:#A78BFA;}
+.lg-or::before,.lg-or::after{content:'';flex:1;height:1px;background:#F3EFFE;}
+.lg-msg{margin:12px 0 0;font-size:12px;color:#DC2626;font-weight:600;}
+.lg-local{margin-top:10px;border:1px solid #e2e8f0;background:#fff;border-radius:7px;padding:6px 10px;font-family:inherit;font-size:11.5px;color:#475569;cursor:pointer;}
+.lg-link{display:inline-block;margin-top:18px;font-size:10.5px;color:#A78BFA;text-decoration:underline;}
+.cp-who{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;color:#334155;}
+.cp-row{display:flex;gap:8px;margin-bottom:8px;}
+#askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px;}
 .ask-card{max-width:460px;}
 .ask-b{padding:16px 18px 6px;font-size:14px;line-height:1.7;color:#1e293b;white-space:pre-wrap;word-break:keep-all;}
 .ask-f{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px 16px;}
@@ -998,27 +1023,53 @@ td.left{text-align:left;}
 </div>
 <div id="stVfPop" class="hide"></div>
 <div id="cloudPop" class="hide"><div class="view-card" style="max-width:440px;">
-  <div class="cell-h"><b>공용 저장소</b><span class="cell-x" id="cpX">✕</span></div>
+  <div class="cell-h"><b>공용 저장소 · 로그인</b><span class="cell-x" id="cpX">✕</span></div>
   <div class="view-b">
     <p id="cpWarn" class="cp-warn hide"></p>
     <p class="note" id="cpState" style="margin:12px 0 0;"></p>
-    <div class="vp-sec">작업자 이름</div>
-    <input type="text" id="cpMe" class="cp-in" placeholder="예) 홍길동" maxlength="20" autocomplete="name">
-    <div class="vp-sec">팀 비밀번호 <span style="color:#94a3b8;font-weight:400;">(설정했을 때만)</span></div>
-    <input type="password" id="cpTeam" class="cp-in" placeholder="팀 비밀번호" autocomplete="current-password">
-    <p class="note" style="margin-top:6px;">이 PC에서 한 번만 넣으면 돼요. 누가 고쳤는지 이름으로 남아요.</p>
-    <details id="cpAdv" class="cp-adv"><summary>저장소 (처음 한 번 · 관리자)</summary>
-      <div class="vp-sec" style="margin-top:8px;">주소</div>
-      <input type="text" id="cpUrl" class="cp-in" placeholder="https://xxxx.supabase.co">
-      <div class="vp-sec">anon public 키</div>
-      <input type="text" id="cpKey" class="cp-in" placeholder="Supabase anon public 키" autocomplete="off">
-    </details>
-    <div class="vp-save" style="margin-top:16px;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-      <button class="btn" id="cpOff" style="padding:7px 12px;color:#64748b;">이 브라우저만 쓰기</button>
-      <span style="display:flex;gap:8px;"><button class="btn hide" id="cpSync" style="padding:7px 12px;">지금 맞추기</button>
-      <button class="btn btn-primary" id="cpGo" style="padding:7px 20px;">연결</button></span>
+    <div class="vp-sec">로그인</div>
+    <div class="cp-who"><span id="cpWho"></span><button class="btn" id="cpOut" style="padding:5px 12px;">로그아웃</button></div>
+    <div id="cpPwBox">
+      <div class="vp-sec">내 비밀번호 바꾸기</div>
+      <div class="cp-row"><input type="password" id="cpOld" class="cp-in" placeholder="지금 비밀번호" autocomplete="current-password"></div>
+      <div class="cp-row"><input type="password" id="cpNew" class="cp-in" placeholder="새 비밀번호 (4자 이상)" autocomplete="new-password"><input type="password" id="cpNew2" class="cp-in" placeholder="한 번 더" autocomplete="new-password"></div>
+      <div class="cp-row" style="justify-content:flex-end;"><button class="btn" id="cpPwGo" style="padding:6px 14px;">비밀번호 바꾸기</button></div>
+    </div>
+    <div id="cpAdmin">
+      <div id="cpRbox">
+        <div class="vp-sec">직원 비밀번호 초기화 <span style="color:#94a3b8;font-weight:400;">(관리자)</span></div>
+        <div class="cp-row"><select id="cpRuser" class="cp-in"></select><input type="text" id="cpRpw" class="cp-in" placeholder="새 비밀번호 (비우면 1212)" style="max-width:170px;"></div>
+        <div class="cp-row" style="justify-content:flex-end;"><button class="btn" id="cpRgo" style="padding:6px 14px;">초기화</button></div>
+      </div>
+      <details id="cpAdv" class="cp-adv"><summary>저장소 설정 (관리자)</summary>
+        <div class="vp-sec" style="margin-top:8px;">주소</div>
+        <input type="text" id="cpUrl" class="cp-in" placeholder="https://xxxx.supabase.co">
+        <div class="vp-sec">Publishable 키</div>
+        <input type="text" id="cpKey" class="cp-in" autocomplete="off">
+        <div class="cp-row" style="justify-content:space-between;margin-top:10px;"><button class="btn" id="cpOff" style="padding:6px 12px;color:#64748b;">이 브라우저만 쓰기</button><button class="btn btn-primary" id="cpSave" style="padding:6px 14px;">저장소 저장</button></div>
+      </details>
+    </div>
+    <div class="vp-save" style="margin-top:16px;justify-content:flex-end;gap:8px;">
+      <button class="btn hide" id="cpSync" style="padding:7px 12px;">지금 맞추기</button>
+      <button class="btn btn-primary" id="cpClose" style="padding:7px 20px;">닫기</button>
     </div>
   </div>
+</div></div>
+<div id="loginGate" class="hide"><div class="lg-card">
+  <div class="lg-bar"></div>
+  <p class="lg-slogan">『국가공간정보 기반기술, 대원항업이 함께합니다.』</p>
+  <div class="lg-logo"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DDD6FE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><circle cx="16" cy="16" r="14" fill="url(#lgG)"/><path d="M6 13c4-3 7 1 10-1s5-5 9-2M5 19c5-2 8 2 12 0s6-4 10-1" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/></svg><b>대원항업 주식회사</b></div>
+  <h2 class="lg-title">공정관리 현황</h2>
+  <select id="lgAdmin" class="lg-sel adm"><option value="">— 관리자 선택 —</option></select>
+  <input type="password" id="lgPwA" class="lg-pw hide" placeholder="비밀번호" autocomplete="current-password">
+  <button id="lgGoA" class="lg-btn red" type="button"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="#fff"/><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#fff" stroke-width="1.6"/></svg>관리자로 접속</button>
+  <div class="lg-or"><span>또는 직원으로 접속</span></div>
+  <select id="lgStaff" class="lg-sel"><option value="">— 직원 선택 —</option></select>
+  <input type="password" id="lgPwS" class="lg-pw hide" placeholder="비밀번호" autocomplete="current-password">
+  <button id="lgGoS" class="lg-btn yel" type="button"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="5" r="3" fill="#8B5CF6"/><path d="M2.5 14c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5z" fill="#8B5CF6"/></svg>직원/팀장으로 접속</button>
+  <p id="lgMsg" class="lg-msg hide"></p>
+  <button id="lgLocal" class="lg-local hide" type="button">이 브라우저 목록으로 열기 (서버 연결 안 됨)</button>
+  <a id="lgForget" class="lg-link" href="#">이 기기 자동로그인 해제</a>
 </div></div>
 <div id="askPop" class="hide"><div class="view-card ask-card">
   <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
@@ -1258,8 +1309,12 @@ td.left{text-align:left;}
              바뀐 줄만 올리고 15초마다 받기, 같은 사업 동시 수정은 칸 단위로 합치기, SKB 원본 양식 공용
    BUILD 87: 팀 비밀번호 없이도 연결 (비밀번호는 나중에 서버에서 켜면 그때 묻는다)
    BUILD 88: 공용 저장소 키를 넣어 둠 → 각 PC에서 작업자 이름만 넣으면 연결
+   BUILD 89: 직원 로그인 (관리자/직원 선택 + 비밀번호) · 로그인한 직원만 공용 목록을 읽고 쓴다
+   BUILD 90: 로그인 화면 보라색 계열
+   BUILD 91: 로그인 화면 보라를 더 연하게
+   BUILD 92: 「관리자로 접속」 버튼만 전 색(진보라)으로
    ======================================================================== */
-const BUILD_NO='88';
+const BUILD_NO='92';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1763,6 +1818,7 @@ document.getElementById('btnDedup').addEventListener('click',()=>{
   return;
   });
 document.getElementById('btnWipe').addEventListener('click',()=>{
+  if(SYNC&&SYNC.on&&!cIsAdmin()){toast('공용 목록 비우기는 관리자만 할 수 있어요',true);return;}
   if(!DATA.length){toast('이미 목록이 비어 있습니다');return;}
   askConfirm('지금 목록 '+DATA.length+'건을 모두 비웁니다.'+(SYNC&&SYNC.on?'\n★ 공용 저장소 목록도 함께 비워져서 모든 작업자 화면에서 사라져요.':'')+'\n칸 구성도 함께 초기화됩니다.\n\n(저장해 둔 보기 설정과 요율은 그대로 남습니다)\n(비운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
   stashPrev();
@@ -5218,7 +5274,13 @@ function cCfg(){
   return {url:(o.url||CLOUD_DEF.url||'').replace(/\/+$/,''),key:o.key||CLOUD_DEF.key||'',team:o.team||'',off:!!o.off};
 }
 function cCfgSave(p){const c=Object.assign(cCfg(),p);try{localStorage.setItem(LS_CLOUD,JSON.stringify({url:c.url===CLOUD_DEF.url?'':c.url,key:c.key===CLOUD_DEF.key?'':c.key,team:c.team,off:c.off}));}catch(e){}}
-function cMe(){try{return localStorage.getItem(LS_ME)||'';}catch(e){return '';}}
+const LS_AUTH='gj_auth_v1';            /* {token,name,role,title,dept} — 이 기기 자동로그인 */
+const LS_LAST='gj_last_v1';            /* 마지막으로 고른 이름 */
+function cAuth(){try{return JSON.parse(localStorage.getItem(LS_AUTH)||'null');}catch(e){return null;}}
+function cAuthSave(a){try{if(a)localStorage.setItem(LS_AUTH,JSON.stringify(a));else localStorage.removeItem(LS_AUTH);}catch(e){}}
+function cMe(){const a=cAuth();return a&&a.name||'';}
+function cIsAdmin(){const a=cAuth();return !!a&&a.role==='admin';}
+const ROLE_NM={admin:'관리자',lead:'팀장',viewer:'팀장(뷰어)',staff:'직원'};
 function cB64(s){return btoa(unescape(encodeURIComponent(s)));}
 function cHash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return (h>>>0).toString(36)+'.'+s.length.toString(36);}
 function cUid(){const a=new Uint8Array(6);(window.crypto||{getRandomValues:x=>{for(let i=0;i<x.length;i++)x[i]=Math.random()*256|0;return x;}}).getRandomValues(a);
@@ -5227,7 +5289,7 @@ function cUid(){const a=new Uint8Array(6);(window.crypto||{getRandomValues:x=>{f
 async function cRpc(fn,args){
   const c=cCfg();
   const r=await fetch(c.url+'/rest/v1/rpc/'+fn,{method:'POST',
-    headers:Object.assign({'apikey':c.key,'Content-Type':'application/json','x-gj-team':c.team},/^eyJ/.test(c.key)?{'Authorization':'Bearer '+c.key}:{}),
+    headers:Object.assign({'apikey':c.key,'Content-Type':'application/json','x-gj-token':(cAuth()||{}).token||''},/^eyJ/.test(c.key)?{'Authorization':'Bearer '+c.key}:{}),
     body:JSON.stringify(args||{})});
   const t=await r.text();let j=null;try{j=t?JSON.parse(t):null;}catch(e){}
   if(!r.ok){const e=new Error((j&&(j.message||j.hint))||('HTTP '+r.status));e.code=j&&j.code;e.status=r.status;throw e;}
@@ -5473,8 +5535,8 @@ async function cPull(force){
 function cFail(e){
   SYNC.fail++;
   if(e&&(e.code==='28000'||/team password/.test(e.message||''))){
-    SYNC.on=false;stopPoll();cDot('need','팀 비밀번호가 맞지 않아요');
-    openCloudPop('팀 비밀번호가 맞지 않아요. 다시 넣어 주세요.');return;
+    SYNC.on=false;stopPoll();cAuthSave(null);cDot('need','로그인이 필요해요');
+    showGate('다시 로그인해 주세요 (로그아웃됐거나 비밀번호가 바뀌었어요)');return;
   }
   cDot('err','연결 안 됨 · '+(e&&e.message||e)+' — 바뀐 내용은 이 브라우저에 저장돼 있고, 다시 연결되면 올려요');
 }
@@ -5486,13 +5548,15 @@ window.addEventListener('focus',()=>{if(SYNC.on&&SYNC.last&&Date.now()-SYNC.last
 /* ---- 처음 연결 ---- */
 async function cloudInit(){
   const c=cCfg();
-  if(IS_SUBWIN){cDot(c.key&&!c.off?'ok':'off',c.key&&!c.off?'공용 저장소 사용 중 (이 창은 큰 창을 따라와요)':'');return;}
-  if(!c.url||!c.key||c.off){cDot('off',c.key?'이 브라우저에만 저장하고 있어요':'공용 저장소 키가 아직 없어요');return;}
-  if(!cMe()){cDot('need','작업자 이름을 넣어 주세요');openCloudPop();return;}
+  if(!c.url||!c.key||c.off){hideGate();cDot('off',c.key?'이 브라우저에만 저장하고 있어요':'공용 저장소 키가 아직 없어요');return;}
+  if(!cAuth()){cDot('need','로그인이 필요해요');showGate();return;}
+  hideGate();
+  if(IS_SUBWIN){cDot('ok','공용 저장소 사용 중 (이 창은 큰 창을 따라와요)');return;}
   cDot('wait','공용 저장소 연결 중');
   try{
     const p=await cRpc('gj_ping',{});
-    if(!p||!p.ok){cDot('need','팀 비밀번호가 맞지 않아요');openCloudPop('팀 비밀번호가 맞지 않아요. 다시 넣어 주세요.');return;}
+    if(!p||!p.ok){cAuthSave(null);cDot('need','로그인이 필요해요');showGate('다시 로그인해 주세요 (로그아웃됐거나 비밀번호가 바뀌었어요)');return;}
+    const a=cAuth();if(a&&p.role&&a.role!==p.role){a.role=p.role;cAuthSave(a);}
   }catch(e){cFail(e);setTimeout(cloudInit,20000);return;}
   if(cLoadMeta()){SYNC.on=true;startPoll();cloudSchedule(true);cPull(true);return;}
   /* 이 브라우저는 처음 → 공용 목록과 맞추는 방법을 고른다 */
@@ -5562,55 +5626,143 @@ async function cTplGet(k){
   }catch(e){return loc;}
 }
 
-/* ---- 설정 창 ---- */
+/* ---- 로그인 화면 (BUILD 89) : 관리자/직원 고르고 비밀번호 ---- */
+let GATE_USERS=null;
+async function gateLoad(){
+  const msg=document.getElementById('lgMsg');
+  try{
+    GATE_USERS=await cRpc('gj_users_public',{});
+    const last=(()=>{try{return localStorage.getItem(LS_LAST)||'';}catch(e){return '';}})();
+    const opt=u=>'<option value="'+esc(u.n)+'"'+(u.n===last?' selected':'')+'>'+esc(u.n)+' '+esc(u.t||'')+(u.r==='admin'?'':' · '+esc(u.d||''))+'</option>';
+    document.getElementById('lgAdmin').innerHTML='<option value="">— 관리자 선택 —</option>'+GATE_USERS.filter(u=>u.r==='admin').map(opt).join('');
+    document.getElementById('lgStaff').innerHTML='<option value="">— 직원 선택 —</option>'+GATE_USERS.filter(u=>u.r!=='admin').map(opt).join('');
+    ['A','S'].forEach(k=>{const sel=document.getElementById(k==='A'?'lgAdmin':'lgStaff');document.getElementById('lgPw'+k).classList.toggle('hide',!sel.value);});
+  }catch(e){
+    msg.textContent='서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.';msg.classList.remove('hide');
+    document.getElementById('lgLocal').classList.toggle('hide',!DATA.length);
+  }
+}
+function showGate(warn){
+  const g=document.getElementById('loginGate');if(!g)return;
+  g.classList.remove('hide');document.body.classList.add('gated');
+  const m=document.getElementById('lgMsg');m.textContent=warn||'';m.classList.toggle('hide',!warn);
+  document.getElementById('lgLocal').classList.add('hide');
+  ['lgPwA','lgPwS'].forEach(id=>{const e=document.getElementById(id);e.value='';});
+  gateLoad();
+}
+function hideGate(){const g=document.getElementById('loginGate');if(g)g.classList.add('hide');document.body.classList.remove('gated');}
+async function gateLogin(k){
+  const sel=document.getElementById(k==='A'?'lgAdmin':'lgStaff'),pw=document.getElementById('lgPw'+k),msg=document.getElementById('lgMsg');
+  if(!sel.value){msg.textContent=(k==='A'?'관리자':'직원')+' 이름을 골라 주세요';msg.classList.remove('hide');sel.focus();return;}
+  if(!pw.value){pw.classList.remove('hide');pw.focus();msg.textContent='비밀번호를 넣어 주세요';msg.classList.remove('hide');return;}
+  const btn=document.getElementById('lgGo'+k);btn.disabled=true;
+  try{
+    const r=await cRpc('gj_login',{p_name:sel.value,p_pw:pw.value});
+    if(!r||!r.ok){msg.textContent='비밀번호가 맞지 않아요';msg.classList.remove('hide');pw.select();return;}
+    cAuthSave({token:r.token,name:r.name,role:r.role,title:r.title,dept:r.dept});
+    try{localStorage.setItem(LS_LAST,r.name);}catch(e){}
+    pw.value='';hideGate();
+    if(IS_SUBWIN){location.reload();return;}
+    toast(r.name+' '+(r.title||'')+' 님 접속했어요');
+    SYNC.on=false;stopPoll();await cloudInit();
+  }catch(e){msg.textContent='접속하지 못했어요 · '+(e.message||e);msg.classList.remove('hide');}
+  finally{btn.disabled=false;}
+}
+async function cLogout(){
+  try{await cRpc('gj_logout',{});}catch(e){}
+  cAuthSave(null);SYNC.on=false;stopPoll();closeCloudPop();cDot('need','로그인이 필요해요');showGate();
+}
+function bindGate(){
+  if(!document.getElementById('loginGate'))return;
+  ['A','S'].forEach(k=>{
+    const sel=document.getElementById(k==='A'?'lgAdmin':'lgStaff'),other=document.getElementById(k==='A'?'lgStaff':'lgAdmin');
+    sel.addEventListener('change',()=>{
+      if(sel.value){other.value='';document.getElementById('lgPw'+(k==='A'?'S':'A')).classList.add('hide');}
+      const pw=document.getElementById('lgPw'+k);pw.classList.toggle('hide',!sel.value);pw.value='';if(sel.value)pw.focus();
+      document.getElementById('lgMsg').classList.add('hide');
+    });
+    document.getElementById('lgPw'+k).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();gateLogin(k);}});
+    document.getElementById('lgGo'+k).addEventListener('click',()=>gateLogin(k));
+  });
+  document.getElementById('lgForget').addEventListener('click',e=>{
+    e.preventDefault();
+    try{localStorage.removeItem(LS_LAST);}catch(x){}
+    cAuthSave(null);document.getElementById('lgAdmin').value='';document.getElementById('lgStaff').value='';
+    ['lgPwA','lgPwS'].forEach(id=>document.getElementById(id).classList.add('hide'));
+    toast('이 기기의 자동로그인을 해제했어요');
+  });
+  document.getElementById('lgLocal').addEventListener('click',()=>{hideGate();cDot('err','서버 연결 안 됨 · 이 브라우저 목록만 보고 있어요');});
+}
+
+/* ---- 공용 저장소 창 : 로그인 정보 · 비밀번호 · (관리자) 직원 비밀번호 초기화 · 저장소 ---- */
 function openCloudPop(warn){
-  const c=cCfg(),pop=document.getElementById('cloudPop');if(!pop)return;
-  document.getElementById('cpMe').value=cMe();
-  document.getElementById('cpTeam').value='';
-  document.getElementById('cpTeam').placeholder=c.team?'(저장돼 있어요 · 바꿀 때만 입력)':'설정했을 때만 입력 (지금은 비워 두세요)';
+  const c=cCfg(),a=cAuth(),pop=document.getElementById('cloudPop');if(!pop)return;
+  if(!a&&c.key&&!c.off){showGate();return;}
+  const w=document.getElementById('cpWarn');w.textContent=warn||'';w.classList.toggle('hide',!warn);
+  document.getElementById('cpState').innerHTML=SYNC.on
+    ?'<b style="color:#059669">● 연결됨</b> · 공용 목록 '+SYNC.base.size+'건'+(SYNC.last?' · 마지막 맞춤 '+hhmm(SYNC.last):'')
+    :(c.off?'<b style="color:#64748b">● 이 브라우저에만 저장 중</b>':'<b style="color:#B45309">● 아직 연결 안 됨</b>');
+  document.getElementById('cpWho').innerHTML=a?('<b>'+esc(a.name)+'</b> '+esc(a.title||'')+' · '+esc(ROLE_NM[a.role]||a.role)+(a.dept&&a.role!=='admin'?' · '+esc(a.dept):'')):'로그인 안 함';
+  document.getElementById('cpOut').classList.toggle('hide',!a);
+  document.getElementById('cpPwBox').classList.toggle('hide',!a);
+  ['cpOld','cpNew','cpNew2','cpRpw'].forEach(id=>{document.getElementById(id).value='';});
+  const adm=cIsAdmin()||!c.key||c.off;
+  document.getElementById('cpAdmin').classList.toggle('hide',!adm);
   document.getElementById('cpUrl').value=c.url;
   document.getElementById('cpKey').value=c.key===CLOUD_DEF.key?'':c.key;
-  document.getElementById('cpKey').placeholder=CLOUD_DEF.key?'(기본 키 사용 중)':'Supabase anon public 키';
-  const w=document.getElementById('cpWarn');w.textContent=warn||'';w.classList.toggle('hide',!warn);
-  const st=document.getElementById('cpState');
-  st.innerHTML=SYNC.on
-    ?'<b style="color:#059669">● 연결됨</b> · 공용 목록 '+SYNC.base.size+'건'+(SYNC.last?' · 마지막 맞춤 '+hhmm(SYNC.last):'')
-    :(c.off?'<b style="color:#64748b">● 이 브라우저에만 저장 중</b>':'<b style="color:#B45309">● 아직 연결 안 됨</b>')+(c.key?'':' · 저장소 키가 없어요 (아래 「저장소」에 넣어 주세요)');
+  document.getElementById('cpKey').placeholder=CLOUD_DEF.key?'(기본 키 사용 중)':'Supabase Publishable 키';
   document.getElementById('cpSync').classList.toggle('hide',!SYNC.on);
-  document.getElementById('cpOff').textContent=SYNC.on?'연결 끊기 (이 브라우저만 쓰기)':'이 브라우저만 쓰기';
-  document.getElementById('cpAdv').open=!c.key;
+  document.getElementById('cpOff').textContent=c.off?'공용 저장소 다시 쓰기':'이 브라우저만 쓰기';
+  const rs=document.getElementById('cpRuser');rs.innerHTML='<option value="">— 직원 선택 —</option>';
+  document.getElementById('cpRbox').classList.toggle('hide',!cIsAdmin());
+  if(cIsAdmin())cRpc('gj_users_public',{}).then(us=>{rs.innerHTML='<option value="">— 직원 선택 —</option>'+us.map(u=>'<option value="'+esc(u.n)+'">'+esc(u.n)+' '+esc(u.t||'')+' · '+esc(u.d||'')+'</option>').join('');}).catch(()=>{});
   pop.classList.remove('hide');
-  setTimeout(()=>{document.getElementById(c.key?'cpMe':'cpKey').focus();},0);
 }
 function closeCloudPop(){document.getElementById('cloudPop').classList.add('hide');}
 function bindCloudPop(){
   const pop=document.getElementById('cloudPop');if(!pop)return;
+  bindGate();
   document.getElementById('btnCloud').addEventListener('click',()=>openCloudPop());
   document.getElementById('cpX').addEventListener('click',closeCloudPop);
+  document.getElementById('cpClose').addEventListener('click',closeCloudPop);
   pop.addEventListener('click',e=>{if(e.target===pop)closeCloudPop();});
-  pop.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();document.getElementById('cpGo').click();}else if(e.key==='Escape')closeCloudPop();});
-  document.getElementById('cpGo').addEventListener('click',async()=>{
-    const me=document.getElementById('cpMe').value.trim(),pw=document.getElementById('cpTeam').value;
+  pop.addEventListener('keydown',e=>{if(e.key==='Escape')closeCloudPop();});
+  document.getElementById('cpOut').addEventListener('click',()=>askConfirm('로그아웃할까요?\n이 기기의 자동로그인도 풀려요.',cLogout,{title:'로그아웃',ok:'로그아웃'}));
+  document.getElementById('cpPwGo').addEventListener('click',async()=>{
+    const o=document.getElementById('cpOld').value,n=document.getElementById('cpNew').value,n2=document.getElementById('cpNew2').value;
+    if(n.length<4){toast('새 비밀번호는 4자 이상으로 해 주세요',true);return;}
+    if(n!==n2){toast('새 비밀번호 두 칸이 서로 달라요',true);return;}
+    try{const ok=await cRpc('gj_set_pw',{p_old:o,p_new:n});
+      if(ok){toast('비밀번호를 바꿨어요');['cpOld','cpNew','cpNew2'].forEach(id=>document.getElementById(id).value='');}
+      else toast('지금 비밀번호가 맞지 않아요',true);
+    }catch(e){toast('바꾸지 못했어요 · '+(e.message||e),true);}
+  });
+  document.getElementById('cpRgo').addEventListener('click',()=>{
+    const u=document.getElementById('cpRuser').value,n=document.getElementById('cpRpw').value||'1212';
+    if(!u){toast('직원을 골라 주세요',true);return;}
+    askConfirm(u+' 님 비밀번호를 「'+n+'」(으)로 초기화할까요?\n그 직원은 다시 로그인해야 해요.',async()=>{
+      try{const ok=await cRpc('gj_admin_pw',{p_name:u,p_new:n});toast(ok?u+' 님 비밀번호를 초기화했어요':'초기화하지 못했어요 (관리자만 · 4자 이상)',!ok);}
+      catch(e){toast('초기화하지 못했어요 · '+(e.message||e),true);}
+    },{title:'비밀번호 초기화',ok:'초기화'});
+  });
+  document.getElementById('cpSave').addEventListener('click',async()=>{
     const url=document.getElementById('cpUrl').value.trim().replace(/\/+$/,''),key=document.getElementById('cpKey').value.trim();
-    if(!me){toast('작업자 이름을 넣어 주세요',true);document.getElementById('cpMe').focus();return;}
     const c=cCfg();
-    try{localStorage.setItem(LS_ME,me);}catch(e){}
-    cCfgSave({url:url||CLOUD_DEF.url,key:key||CLOUD_DEF.key,team:pw?cB64(pw):c.team,off:false});
+    cCfgSave({url:url||CLOUD_DEF.url,key:key||CLOUD_DEF.key,off:false});
     closeCloudPop();
-    if(SYNC.on&&!pw&&url===c.url){cDot('ok','공용 저장소와 맞춤');toast('작업자 이름을 바꿨어요 · '+me);return;}
-    SYNC.on=false;stopPoll();
-    if(cLoadMeta()===false||url!==c.url){SYNC.base=new Map();}
-    await cloudInit();
+    if(url!==c.url){try{localStorage.removeItem(LS_SYNC);}catch(e){}SYNC.base=new Map();cAuthSave(null);}
+    SYNC.on=false;stopPoll();await cloudInit();
   });
   document.getElementById('cpOff').addEventListener('click',()=>{
-    askConfirm('공용 저장소 연결을 끊고 이 브라우저에만 저장할까요?\n\n· 지금 목록은 이 브라우저에 그대로 남아요\n· 다른 작업자가 고친 내용은 더는 들어오지 않아요\n· 다시 연결하면 공용 목록으로 맞춰요',()=>{
+    const c=cCfg();
+    if(c.off){cCfgSave({off:false});closeCloudPop();cloudInit();return;}
+    askConfirm('공용 저장소 연결을 끊고 이 브라우저에만 저장할까요?\n\n· 지금 목록은 이 브라우저에 그대로 남아요\n· 다른 직원이 고친 내용은 더는 들어오지 않아요\n· 다시 연결하면 공용 목록으로 맞춰요',()=>{
       SYNC.on=false;stopPoll();cCfgSave({off:true});try{localStorage.removeItem(LS_SYNC);}catch(e){}
       SYNC.base=new Map();closeCloudPop();cDot('off','이 브라우저에만 저장하고 있어요');
     },{title:'연결 끊기',ok:'끊기'});
   });
   document.getElementById('cpSync').addEventListener('click',async()=>{await cPush();await cPull(true);openCloudPop();toast('공용 저장소와 맞췄어요');});
 }
-
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
