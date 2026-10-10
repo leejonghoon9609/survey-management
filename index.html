@@ -1313,8 +1313,9 @@ td.left{text-align:left;}
    BUILD 90: 로그인 화면 보라색 계열
    BUILD 91: 로그인 화면 보라를 더 연하게
    BUILD 92: 「관리자로 접속」 버튼만 전 색(진보라)으로
+   BUILD 93: 로그인 화면에서 서버 연결 실패 이유를 보여 줌 (SQL 미실행 등)
    ======================================================================== */
-const BUILD_NO='92';
+const BUILD_NO='93';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -5638,7 +5639,10 @@ async function gateLoad(){
     document.getElementById('lgStaff').innerHTML='<option value="">— 직원 선택 —</option>'+GATE_USERS.filter(u=>u.r!=='admin').map(opt).join('');
     ['A','S'].forEach(k=>{const sel=document.getElementById(k==='A'?'lgAdmin':'lgStaff');document.getElementById('lgPw'+k).classList.toggle('hide',!sel.value);});
   }catch(e){
-    msg.textContent='서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.';msg.classList.remove('hide');
+    const noFn=e&&(e.status===404||e.code==='PGRST202'||/Could not find the function|gj_users_public/.test(e.message||''));
+    msg.textContent=noFn?'서버 설정이 아직 안 됐어요. Supabase SQL Editor에서 BUILD 89 이후의 「공용저장소_설정.sql」을 실행해 주세요.'
+      :'서버에 연결하지 못했어요 ('+((e&&e.message)||e)+'). 인터넷 연결을 확인하고 다시 열어 주세요.';
+    msg.classList.remove('hide');
     document.getElementById('lgLocal').classList.toggle('hide',!DATA.length);
   }
 }
