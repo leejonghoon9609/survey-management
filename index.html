@@ -1320,8 +1320,9 @@ td.left{text-align:left;}
    BUILD 94: SKB 목록 창 — 원본 양식이 없어도 시스템 목록으로 바로 보기 · 엑셀 다운로드
    BUILD 95: 진행 단계 8개 (미착수·대기(불가)·실시간측량·결선·후측량·탱고·정위치DB·완료) — 측량예정일·실측거리·성과심사신청 기준
              · 큰 창이 새 버전이 되면 열려 있는 목록 창도 스스로 새로고침
+   BUILD 96: 「누구 차례 · 다음 할 일」 대신 작업자(측량작업자 이름) — 기간 목록 창·오른쪽 리스트·사업 카드
    ======================================================================== */
-const BUILD_NO='95';
+const BUILD_NO='96';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3014,10 +3015,17 @@ function distOf(d){
   return null;
 }
 function kmCell(d){const o=distOf(d);return o?'<span class="km" title="'+o.t+'">'+o.v.toFixed(3)+' km</span>':'<span class="km z" title="거리 없음">— km</span>';}
+/* 측량작업자 이름 : 「측량작업자 이름/연락처」 칸에서 이름만 (여러 명이면 쉼표로) */
+function workerOf(d){
+  const c=DISP.find(x=>/작업자/.test(x.label));if(!c)return {n:'',full:''};
+  const v=String(d.row[c.idx]==null?'':d.row[c.idx]).trim();
+  const n=v.split(/[,\n]/).map(p=>p.split('/')[0].replace(/0\d{1,2}[-.]?\d{3,4}[-.]?\d{4}/g,'').trim()).filter(Boolean).join(', ');
+  return {n:n,full:v};
+}
 function wsBadge(d){
   const k=d._ws||workStage(d);
   if(d._cancel)return '<span class="turn" style="--c:#94a3b8" title="'+esc(ns(d.jin)||'취소·제외')+' — 단계 숫자는 완료에 포함">취소</span>';
-  return '<span class="turn" style="--c:'+wsColor(k)+'" title="누구 차례: '+esc(d.turn)+(d.next?' · '+esc(d.next):'')+'">'+esc(k)+'</span>';
+  return '<span class="turn" style="--c:'+wsColor(k)+'" title="측량예정일: '+esc(ns(d.jin)||'(빈칸)')+'">'+esc(k)+'</span>';
 }
 
 /* ---- 추가사업 현황 : 일별·주간·월간 ---- */
@@ -3143,10 +3151,10 @@ function renderPerWin(){
   h+='<div class="pw-st">'+WSTAGES.map(T=>'<span style="--c:'+T.c+'">'+T.k+' <b>'+(tc[T.k]||0)+'</b></span>').join('')+'</div>';
   if(!rows.length){h+='<div class="pempty" style="padding:40px">이 기간에 해당하는 사업이 없어요</div>';}
   else{
-    h+='<div class="pw-wrap"><table class="pw-t"><thead><tr><th>'+K.name+'일</th><th>발주처</th><th>관리번호·공사코드</th><th>공사명</th><th>협력사</th><th>지사</th><th>측량방법</th><th class="num">거리</th><th>단계</th><th>누구 차례 · 다음 할 일</th><th class="num">경과</th></tr></thead><tbody>';
+    h+='<div class="pw-wrap"><table class="pw-t"><thead><tr><th>'+K.name+'일</th><th>발주처</th><th>관리번호·공사코드</th><th>공사명</th><th>협력사</th><th>지사</th><th>측량방법</th><th class="num">거리</th><th>단계</th><th>작업자</th><th class="num">경과</th></tr></thead><tbody>';
     rows.forEach(d=>{const dt=dfn(d),x=distOf(d);
       h+='<tr class="r" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><td class="num">'+(dt?fmtDate(dt):'')+'</td><td>'+esc(d._grp||'')+'</td><td>'+esc(d.seq||d.eng||'')+'</td><td class="wk">'+esc(d.work)+'</td><td>'+esc(String(colv(d,'협력사')||'').trim())+'</td><td>'+esc(d.jisa)+'</td><td>'+esc(d.mKey||d.method||'')+'</td>'+
-        '<td class="num">'+(x?x.v.toFixed(3)+' km':'—')+'</td><td>'+wsBadge(d)+'</td><td>'+esc(d.turn)+(d.next?' · '+esc(d.next):'')+'</td><td class="num">'+(d.wait!=null?d.wait+'일':'')+'</td></tr>';});
+        '<td class="num">'+(x?x.v.toFixed(3)+' km':'—')+'</td><td>'+wsBadge(d)+'</td><td title="'+esc(workerOf(d).full)+'">'+(workerOf(d).n?esc(workerOf(d).n):'<span style="color:#cbd5e1">—</span>')+'</td><td class="num">'+(d.wait!=null?d.wait+'일':'')+'</td></tr>';});
     h+='</tbody></table></div>';
   }
   box.innerHTML=h;
@@ -3579,7 +3587,7 @@ function renderLeftList(){
   if(!rows.length){box.innerHTML='<div class="pempty">해당하는 사업이 없어요</div>';return;}
   box.innerHTML=rows.slice(0,300).map(d=>{
     const live=turnGroup(d.turn)==='live';
-    return '<div class="lrow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><div style="min-width:0"><div class="w" title="'+esc(d.work)+'">'+esc(d.work)+'</div><div class="m">'+esc([d.seq||d.eng,d._grp,d.next].filter(Boolean).join(' · '))+'</div></div>'+
+    return '<div class="lrow" data-card="'+d._id+'" style="--c:'+(d._cancel?'#94a3b8':wsColor(d._ws))+'"><div style="min-width:0"><div class="w" title="'+esc(d.work)+'">'+esc(d.work)+'</div><div class="m">'+esc([d.seq||d.eng,d._grp,workerOf(d).n?'작업자 '+workerOf(d).n:''].filter(Boolean).join(' · '))+'</div></div>'+
       '<div class="r">'+wsBadge(d)+(d.wait!=null?'<span class="elap'+(live&&d.wait>20?' over':(live&&d.wait>15?' warn':''))+'">'+d.wait+'일</span>':'')+'</div></div>';
   }).join('')+(rows.length>300?'<div class="pempty">… 외 '+(rows.length-300)+'건 — 「전체 창」에서 보세요</div>':'');
 }
@@ -3682,8 +3690,9 @@ function openCard(id){
   document.getElementById('tcMeta').textContent=[d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
   const st=cardSteps(d),seg=cardSegments(d);
   const tot=seg.reduce((s,x)=>s+x.n,0);
-  let h='<div class="tc-now"><span class="turn solid" style="--c:'+turnColor(d.turn)+';cursor:default">'+esc(d.turn)+'</span>'+
-        (d.next?'<b>'+esc(d.next)+'</b>':'')+(d.wait!=null?'<span class="elap'+(turnGroup(d.turn)==='live'&&d.wait>20?' over':'')+'">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
+  const W=workerOf(d),K0=d._ws||workStage(d);
+  let h='<div class="tc-now"><span class="turn solid" style="--c:'+(d._cancel?'#94a3b8':wsColor(K0))+';cursor:default">'+esc(d._cancel?'취소':K0)+'</span>'+
+        (W.n?'<b title="'+esc(W.full)+'">작업자 '+esc(W.n)+'</b>':'')+(d.wait!=null?'<span class="elap'+(turnGroup(d.turn)==='live'&&d.wait>20?' over':'')+'">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
   h+='<div class="tl">';
   h+='<div class="tl-bar">'+(tot>0?seg.map(x=>'<span style="width:'+(100*x.n/tot)+'%;background:'+x.c+'" title="'+esc(x.from+' → '+x.to+' '+x.n+'일')+'"></span>').join(''):'')+'</div>';
   h+='<div class="tl-steps">'+st.map(x=>'<div class="tl-step'+(x.d?'':' miss')+'">'+esc(x.k)+'<b>'+(x.d?fd(x.d):(x.raw?esc(x.raw.slice(0,10)):'—'))+'</b></div>').join('')+'</div>';
