@@ -455,6 +455,12 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc-now b{font-size:14px;}
 .tl{position:relative;}
 .tl-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#eef2f7;}
+.tl-prog{height:14px;border-radius:7px;background:#fff;border:1.5px solid #FCA5A5;overflow:hidden;}
+.tl-prog i{display:block;height:100%;background:#EA002C;border-radius:6px 0 0 6px;}
+.tc-pct{font-size:13px;color:#475569;}
+.tc-pct b{color:#EA002C;font-size:14px;}
+.tl-step.cur{color:#EA002C;font-weight:700;}
+.tl-step b.now{color:#EA002C !important;font-weight:800;}
 .tl-bar span{display:block;height:100%;}
 .tl-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
 .tl-step{font-size:11.5px;color:#64748b;line-height:1.35;}
@@ -1323,8 +1329,9 @@ td.left{text-align:left;}
              · 큰 창이 새 버전이 되면 열려 있는 목록 창도 스스로 새로고침
    BUILD 96: 「누구 차례 · 다음 할 일」 대신 작업자(측량작업자 이름) — 기간 목록 창·오른쪽 리스트·사업 카드
    BUILD 97: 기간 목록 창 — 완료 목록은 「정산유무」(정산 상황) · 대기(불가) 배지 밑에 사유(빨간 글자)
+   BUILD 98: 사업 카드 — 작업자 글자·20일 판정·이슈·회신 문구 빼고, 진행률 막대(빨강/흰색) + 지금 단계 날짜를 빨간 글자로
    ======================================================================== */
-const BUILD_NO='97';
+const BUILD_NO='98';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3705,30 +3712,27 @@ function openCard(id){
   document.getElementById('tcMeta').textContent=[d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
   const st=cardSteps(d),seg=cardSegments(d);
   const tot=seg.reduce((s,x)=>s+x.n,0);
-  const W=workerOf(d),K0=d._ws||workStage(d);
+  const K0=d._ws||workStage(d);
+  const PCT={'미착수':0,'대기(불가)':5,'실시간측량':25,'결선':40,'후측량':50,'탱고':65,'정위치DB':85,'완료':100};
+  const pct=d._cancel?100:(PCT[K0]!=null?PCT[K0]:0);
+  /* 지금 단계가 걸린 칸 : 요청 · 굴착완료 통보 · 측량 · Tango · 심사 신청 · 정산 */
+  const CUR={'미착수':1,'대기(불가)':1,'실시간측량':2,'결선':2,'후측량':2,'탱고':3,'정위치DB':4,'완료':(d.jeongKey==='정산완료'?-1:5)};
+  const cur=d._cancel?-1:(CUR[K0]!=null?CUR[K0]:-1);
   let h='<div class="tc-now"><span class="turn solid" style="--c:'+(d._cancel?'#94a3b8':wsColor(K0))+';cursor:default">'+esc(d._cancel?'취소':K0)+'</span>'+
-        (W.n?'<b title="'+esc(W.full)+'">작업자 '+esc(W.n)+'</b>':'')+(d.wait!=null?'<span class="elap'+(turnGroup(d.turn)==='live'&&d.wait>20?' over':'')+'">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
+        '<span class="tc-pct">진행률 <b>'+pct+'%</b></span>'+
+        (d.wait!=null?'<span class="elap">'+esc(d.sinceFrom||'')+'부터 '+d.wait+'일째</span>':'')+'</div>';
   h+='<div class="tl">';
-  h+='<div class="tl-bar">'+(tot>0?seg.map(x=>'<span style="width:'+(100*x.n/tot)+'%;background:'+x.c+'" title="'+esc(x.from+' → '+x.to+' '+x.n+'일')+'"></span>').join(''):'')+'</div>';
-  h+='<div class="tl-steps">'+st.map(x=>'<div class="tl-step'+(x.d?'':' miss')+'">'+esc(x.k)+'<b>'+(x.d?fd(x.d):(x.raw?esc(x.raw.slice(0,10)):'—'))+'</b></div>').join('')+'</div>';
+  h+='<div class="tl-prog" title="진행률 '+pct+'%"><i style="width:'+pct+'%;'+(d._cancel?'background:#94a3b8':'')+'"></i></div>';
+  const prevDate=i=>{for(let j=i-1;j>=0;j--)if(st[j].d)return st[j].d;return null;};
+  h+='<div class="tl-steps">'+st.map((x,i)=>{
+    let v;
+    if(i===cur){const pd=x.d||prevDate(i);v='<b class="now" title="지금 단계">'+(x.d?fd(x.d):(K0==='대기(불가)'&&ns(d.jin)?esc(String(d.jin).trim().slice(0,12)):(pd?fd(pd)+'~':'진행중')))+'</b>';}
+    else v='<b>'+(x.d?fd(x.d):(x.raw?esc(x.raw.slice(0,10)):'—'))+'</b>';
+    return '<div class="tl-step'+(x.d||i===cur?'':' miss')+(i===cur?' cur':'')+'">'+esc(x.k)+v+'</div>';
+  }).join('')+'</div>';
   if(seg.length)h+='<div class="tl-seg">'+seg.map(x=>'<span style="box-shadow:inset 3px 0 0 '+x.c+'">'+esc(x.from)+' → '+esc(x.to)+' <b>'+x.n+'일</b></span>').join('')+'</div>';
   h+='</div>';
-  /* 20일 판정 */
-  const reqD=st[0].d,gD=st[1].d,endD=st[3].d||st[2].d;
-  if(reqD){
-    const total=daysBetween(reqD,endD||new Date());
-    let msg='요청 후 '+(endD?(st[3].d?'Tango 업로드까지 ':'측량까지 '):'오늘까지 ')+total+'일.';
-    if(gD){const a=daysBetween(reqD,gD),b=daysBetween(gD,endD||new Date());msg+=' 그중 시공사 대기 '+a+'일, 우리 구간 '+b+'일.';}
-    else msg+=' 굴착완료 통보일이 없어 시공사 대기와 우리 구간을 나눌 수 없어요. 「굴착완료 통보일」 칸에 날짜를 적으면 나뉩니다.';
-    h+='<div class="tc-box '+(total>20?'red':'grey')+'"><b>20일 기한 판정</b>'+esc(msg)+'</div>';
-  }else{
-    h+='<div class="tc-box yel"><b>20일 기한 판정 불가</b>요청일이 날짜가 아니에요 ('+esc(ns(d.req)||'빈칸')+'). 날짜로 적으면 경과일과 구간이 계산됩니다.</div>';
-  }
-  const iss=String(colv(d,'이슈')==null?'':colv(d,'이슈')).trim();
-  h+='<div class="tc-box grey"><b>이슈사항</b>'+(iss?esc(iss):'없음')+'<div style="font-size:11.5px;color:#94a3b8;margin-top:4px;">표에서 이슈사항 칸을 더블클릭하면 고칠 수 있어요</div></div>';
-  if(d.flags&&d.flags.length)h+='<div class="tc-box yel"><b>데이터 점검 '+d.flags.length+'건</b>'+d.flags.map(esc).join(' · ')+'</div>';
-  h+='<div class="tc-reply"><div style="font-size:12.5px;font-weight:700;margin-bottom:4px;">회신 문구 (고쳐서 쓰세요)</div><textarea id="tcReply">'+esc(replyText(d))+'</textarea></div>';
-  h+='<div class="tc-f"><span class="stat" id="tcCopied"></span><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button><button class="btn btn-primary" id="tcCopy" style="padding:7px 18px;">회신 문구 복사</button></div>';
+  h+='<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div>';
   document.getElementById('tcBody').innerHTML=h;
   document.getElementById('cardPop').classList.remove('hide');
 }
