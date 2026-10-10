@@ -164,7 +164,7 @@ body.gated{overflow:hidden;}
 .cp-who{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;color:#334155;}
 .cp-row{display:flex;gap:8px;margin-bottom:8px;}
 td .why{margin-top:3px;font-size:11px;font-weight:700;color:#DC2626;line-height:1.3;}
-#askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px;}
+#askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;}
 .ask-card{max-width:460px;}
 .ask-b{padding:16px 18px 6px;font-size:14px;line-height:1.7;color:#1e293b;white-space:pre-wrap;word-break:keep-all;}
 .ask-f{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px 16px;}
@@ -532,11 +532,30 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-sv{font-size:11.5px;color:#94a3b8;margin-top:4px;min-height:15px;}
 .tc2-bot{flex:1;min-height:300px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;}
 .tc2-info{display:flex;flex-direction:column;min-height:0;border:2px solid #F9A8D4;border-radius:10px;padding:10px 12px;background:#fff;}
-.tc2-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-content:start;}
-.tc2-grid .kv{display:grid;grid-template-columns:112px minmax(0,1fr);gap:6px;padding:3px 0;border-bottom:1px dashed #f1f5f9;font-size:12px;line-height:1.35;}
-.tc2-grid .k{color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tc2-grid .v{color:#0f172a;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tc2-grid .kv.z .v{color:#cbd5e1;font-weight:400;}
+.tc2-ih{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.tc2-ih .tc2-h{margin:0;}
+.tc2-tip{font-size:11.5px;color:#94a3b8;flex:1;}
+#tcSave{padding:5px 14px;font-weight:800;border:1.5px solid #2563EB;color:#2563EB;background:#fff;}
+#tcSave:not(:disabled){background:#2563EB;color:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
+#tcSave:disabled{border-color:#e2e8f0;color:#cbd5e1;cursor:default;}
+.tc2-grid{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;}
+.ig{border:1px solid color-mix(in srgb,var(--g) 25%,#fff);border-radius:9px;overflow:hidden;flex:none;}
+.ig-h{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;background:color-mix(in srgb,var(--g) 9%,#fff);color:var(--g);font-size:12.5px;font-weight:800;border-bottom:1px solid color-mix(in srgb,var(--g) 18%,#fff);}
+.ig-h span{font-size:11px;font-weight:600;color:#94a3b8;}
+.ig-b{display:grid;grid-template-columns:1fr 1fr;}
+.ig .kv{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;min-height:22px;cursor:text;}
+.ig .kv:nth-child(odd){border-right:1px solid #f1f5f9;}
+.ig .kv:hover{background:#FAFAFF;}
+.ig .k{color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ig .v{color:#0f172a;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ig .kv.z .v i{color:#cbd5e1;font-weight:400;font-style:normal;font-size:11.5px;}
+.ig .kv.ch{background:#EFF6FF;}
+.ig .kv.ch .v{color:#1D4ED8;}
+.ig .kv.ch .k::before{content:'● ';color:#2563EB;}
+.kv-in{width:100%;box-sizing:border-box;border:1.5px solid #2563EB;border-radius:5px;padding:2px 6px;font-family:inherit;font-size:13px;font-weight:600;}
+.ig-add{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;background:#fcfcfd;}
+.ig-add button{border:1px dashed #cbd5e1;background:#fff;color:#94a3b8;border-radius:12px;padding:1px 9px;font-family:inherit;font-size:11px;cursor:pointer;}
+.ig-add button:hover{border-color:var(--g);color:var(--g);}
 .tc2-dwg{display:flex;flex-direction:column;min-height:0;}
 .tc2-dh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
 .tc2-dh b{font-size:15px;color:#0f172a;}
@@ -1415,8 +1434,9 @@ td.left{text-align:left;}
    BUILD 105: 월간 통계 — 0건 발주처 줄은 확실한 회색
    BUILD 106: 사업 카드 창을 크게 (화면 약 2/3) · 지금 내용은 같은 크기로 왼쪽 위에
    BUILD 107: 사업 카드 — 사업명 제목 · 작업 특이사항 입력 · 사업 정보 두 줄 · 준공도면 업로드/다운로드(공용)
+   BUILD 108: 사업 정보 — 묶음별(기본·일정/측량·거리/성과·정산·메모)로 깔끔하게 · 더블클릭 수정 · 빈 칸 추가 · 「수정 저장」 · 저장 안 하고 닫으면 물어봄
    ======================================================================== */
-const BUILD_NO='107';
+const BUILD_NO='108';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3778,7 +3798,7 @@ window.addEventListener('storage',e=>{
   const st=document.querySelector('.mgr .tblwrap');const top=st?st.scrollTop:0;
   loadState({keepUI:true,keepVis:keep});
   if(st)st.scrollTop=top;
-  if(CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
+  cardRemap();
   cloudSchedule();
   if(PWIN)renderPerWin();
   if(SKBWIN)renderSkbWin();
@@ -3789,7 +3809,13 @@ if(location.hash==='#list'){
 }
 
 /* ======================= 타임라인 카드 (BUILD 63) ======================= */
-let CARD_ID=null;
+let CARD_ID=null,CARD_UID=null,CARD_DRAFT={},CARD_SHOW=new Set();
+function cardRemap(){
+  if(CARD_ID==null)return;
+  const d=CARD_UID?DATA.find(x=>x._uid===CARD_UID):null;
+  if(d){if(d._id==null)d._id=++idSeq;CARD_ID=d._id;}
+  else if(!DATA.some(x=>String(x._id)===String(CARD_ID)))closeCard();
+}
 function fd(dt){return dt?fmtDate(dt):'';}
 /* 사업 카드 진행 단계 (BUILD 99)
    실시간 : 접수 → 실시간측량 → 결선 → 후측량 → Tango → 정위치DB → 성과심사완료 → 정산완료
@@ -3878,7 +3904,7 @@ function replyText(d){
 }
 function openCard(id){
   const d=DATA.find(x=>String(x._id)===String(id));if(!d)return;
-  CARD_ID=d._id;
+  CARD_ID=d._id;ensureIds();CARD_UID=d._uid;CARD_DRAFT={};CARD_SHOW=new Set();
   document.getElementById('tcTitle').textContent=d.work||'(사업명 없음)';
   document.getElementById('tcMeta').textContent=[d.seq,d.eng,d.baal,String(colv(d,'협력사')||'').trim(),d.jisa,d.method,d._src?('리스트: '+d._src):''].filter(Boolean).join(' · ');
   const st=cardSteps(d),seg=cardSegments(d);
@@ -3898,7 +3924,7 @@ function openCard(id){
   const nIdx=noteIdx(),note=nIdx!=null?String(d.row[nIdx]==null?'':d.row[nIdx]):'';
   let H='<div class="tc2-top"><div class="tc2-main">'+h+'<div class="tc-f"><button class="btn" id="tcClose" style="padding:7px 16px;">닫기</button></div></div>'+
     '<div class="tc2-note"><div class="tc2-h" style="--c:#D69E00">작업 특이사항</div><textarea id="tcNote" placeholder="작업 중 특이사항을 적어 주세요 · 적으면 자동 저장되고 공용으로 같이 보여요">'+esc(note)+'</textarea><div class="tc2-sv" id="tcNoteSv"></div></div></div>';
-  H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><div class="tc2-grid">'+cardInfoHTML(d)+'</div></div>'+
+  H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-ih"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><span class="tc2-tip">값을 더블클릭하면 고쳐요 · 「＋」는 빈 칸 추가</span><button class="btn" id="tcSave" disabled>수정 저장</button></div><div class="tc2-grid" id="tcInfo">'+cardInfoHTML(d)+'</div></div>'+
     '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><b>준공도면</b><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
     '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
   document.getElementById('tcBody').innerHTML=H;
@@ -3923,13 +3949,85 @@ document.getElementById('cardPop').addEventListener('input',e=>{
     if(sv)sv.textContent='저장됨 '+hhmm(new Date())+(SYNC&&SYNC.on?' · 공용':'');
   },700);
 });
-/* ---- 사업 정보 : 칸 이름 : 값 (두 줄) ---- */
+/* ---- 사업 정보 (BUILD 108) : 묶음별 · 더블클릭 수정 · 빈 칸은 ＋ 로 추가 · 「수정 저장」 ---- */
+const INFO_GROUPS=[
+  {k:'기본 정보',  c:'#DB2777', re:/관리번호|eng|공사코드|시행|지역본부|지사|행정|공사명|공구명|사업유형|사업구분|사업자|발주처|담당|협력사|연락처|구분/i},
+  {k:'정산',       c:'#2563EB', re:/정산|기성|금액|sap|tns|정례/i},
+  {k:'거리·성과',  c:'#7C3AED', re:/거리|심사|tango|탱고|업로딩|결과서|정위치|납품/i},
+  {k:'일정·측량',  c:'#EA580C', re:/요청|굴착|통보|측량|작업자|일정|예정/i},
+  {k:'메모',       c:'#475569', re:/./}
+];
+function infoGroupOf(l){
+  if(/작업자|측량방법|측량구분|측량예정/.test(l))return '일정·측량';
+  if(/비고|이슈|메모/.test(l))return '메모';
+  if(/거리|심사내역/.test(l))return '거리·성과';
+  if(/정산|기성|금액|sap|tns|정례/i.test(l))return /사업자/.test(l)?'기본 정보':'정산';
+  for(const G of INFO_GROUPS)if(G.re.test(l))return G.k;
+  return '메모';
+}
+function cardCells(){
+  return DISP.filter(c=>!isAutoIdx(c.idx)&&c.label!==NOTE_LABEL&&c.label!=='발주처(자동)');
+}
+function infoVal(d,c){
+  const v=(c.idx in CARD_DRAFT)?CARD_DRAFT[c.idx]:d.row[c.idx];
+  return v==null||v===''?'':(isDateObj(v)?fmtDate(v):String(v));
+}
 function cardInfoHTML(d){
-  return DISP.filter(c=>!isAutoIdx(c.idx)&&c.label!==NOTE_LABEL&&c.label!=='발주처(자동)').map(c=>{
-    const v=d.row[c.idx];const t=v==null||v===''?'':(isDateObj(v)?fmtDate(v):String(v));
-    return '<div class="kv'+(t?'':' z')+'"><span class="k" title="'+esc(c.label)+'">'+esc(c.label)+'</span><span class="v" title="'+esc(t)+'">'+(t?esc(t):'—')+'</span></div>';
+  const cells=cardCells(),used=new Set();
+  return INFO_GROUPS.map(G=>{
+    const mine=cells.filter(c=>!used.has(c.idx)&&infoGroupOf(c.label)===G.k);mine.forEach(c=>used.add(c.idx));
+    if(!mine.length)return '';
+    const full=mine.filter(c=>infoVal(d,c)!==''||CARD_SHOW.has(c.idx)),empty=mine.filter(c=>infoVal(d,c)===''&&!CARD_SHOW.has(c.idx));
+    let h='<div class="ig" style="--g:'+G.c+'"><div class="ig-h">'+G.k+'<span>'+full.length+' / '+mine.length+'</span></div><div class="ig-b">';
+    h+=full.map(c=>{const t=infoVal(d,c),ch=(c.idx in CARD_DRAFT);
+      return '<div class="kv'+(ch?' ch':'')+(t?'':' z')+'" data-ci="'+c.idx+'"><span class="k" title="'+esc(c.label)+'">'+esc(c.label)+'</span><span class="v" title="'+esc(t)+(ch?' (저장 전)':'')+'">'+(t?esc(t):'<i>더블클릭해서 입력</i>')+'</span></div>';}).join('');
+    h+='</div>';
+    if(empty.length)h+='<div class="ig-add">'+empty.map(c=>'<button data-cadd="'+c.idx+'" title="빈 칸 · 눌러서 입력">＋ '+esc(c.label)+'</button>').join('')+'</div>';
+    return h+'</div>';
   }).join('');
 }
+function renderCardInfo(){
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));const box=document.getElementById('tcInfo');if(!d||!box)return;
+  const st=box.scrollTop;box.innerHTML=cardInfoHTML(d);box.scrollTop=st;
+  const n=Object.keys(CARD_DRAFT).length,b=document.getElementById('tcSave');
+  if(b){b.disabled=!n;b.textContent=n?'수정 저장 ('+n+')':'수정 저장';}
+}
+function editCell(idx){
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(!d)return;
+  const kv=document.querySelector('#tcInfo .kv[data-ci="'+idx+'"]');if(!kv)return;
+  const c=DISP.find(x=>x.idx===+idx);const cur=infoVal(d,c);
+  const v=kv.querySelector('.v');v.innerHTML='<input class="kv-in" value="'+esc(cur)+'">';
+  const inp=v.querySelector('input');inp.focus();inp.select();
+  let done=false;
+  const fin=ok=>{if(done)return;done=true;
+    if(ok){const nv=inp.value.trim(),orig=d.row[c.idx],os=orig==null?'':(isDateObj(orig)?fmtDate(orig):String(orig));
+      if(nv===os)delete CARD_DRAFT[c.idx];else CARD_DRAFT[c.idx]=(typeof orig==='number'&&/^-?\d+(\.\d+)?$/.test(nv))?+nv:nv;}
+    if(!ok&&cur===''&&!(c.idx in CARD_DRAFT))CARD_SHOW.delete(c.idx);
+    renderCardInfo();};
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fin(true);}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();fin(false);}});
+  inp.addEventListener('blur',()=>fin(true));
+}
+function saveCardDraft(){
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));const n=Object.keys(CARD_DRAFT).length;if(!d||!n)return 0;
+  Object.keys(CARD_DRAFT).forEach(i=>{d.row[+i]=CARD_DRAFT[i];});
+  CARD_DRAFT={};deriveItem(d);afterDataChange();
+  toast('사업 정보 '+n+'곳을 저장했어요'+(SYNC&&SYNC.on?' · 공용':''));
+  return n;
+}
+function requestCloseCard(){
+  const n=Object.keys(CARD_DRAFT).length;
+  if(!n){closeCard();return;}
+  askConfirm('사업 정보에 저장 안 한 변경이 '+n+'곳 있어요.\n저장할까요?',()=>{saveCardDraft();closeCard();},
+    {title:'수정 저장',ok:'저장',cancel:'저장 안 함',onNo:()=>{CARD_DRAFT={};closeCard();}});
+}
+document.getElementById('cardPop').addEventListener('dblclick',e=>{
+  const kv=e.target.closest('#tcInfo .kv');if(kv&&!e.target.closest('input'))editCell(kv.dataset.ci);
+});
+document.getElementById('cardPop').addEventListener('click',e=>{
+  const ad=e.target.closest('[data-cadd]');
+  if(ad){CARD_SHOW.add(+ad.dataset.cadd);renderCardInfo();editCell(ad.dataset.cadd);return;}
+  if(e.target.id==='tcSave'){saveCardDraft();renderCardInfo();const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(d){document.getElementById('tcTitle').textContent=d.work||'(사업명 없음)';}return;}
+});
 /* ---- 준공도면 : 사업마다 파일 1개 · 공용 저장소(gj_files)에 'dwg:고유번호' 로 ---- */
 const DWG_MIME={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp'};
 let DWG_URL=null;
@@ -3966,16 +4064,16 @@ document.getElementById('cardPop').addEventListener('change',async e=>{
   };
   if(file.size>8*1024*1024)askConfirm('파일이 커요 ('+Math.round(file.size/1048576)+'MB). 올리는 데 시간이 걸릴 수 있어요.\n계속할까요?',go,{title:'준공도면 올리기',ok:'올리기'});else go();
 });
-function closeCard(){document.getElementById('cardPop').classList.add('hide');CARD_ID=null;}
+function closeCard(){document.getElementById('cardPop').classList.add('hide');CARD_ID=null;CARD_UID=null;CARD_DRAFT={};CARD_SHOW=new Set();}
 document.getElementById('cardPop').addEventListener('click',e=>{
-  if(e.target.id==='cardPop'||e.target.id==='tcX'||e.target.id==='tcClose'){closeCard();return;}
+  if(e.target.id==='cardPop'||e.target.id==='tcX'||e.target.id==='tcClose'){requestCloseCard();return;}
   if(e.target.id==='tcCopy'){
     const ta=document.getElementById('tcReply');const done=()=>{document.getElementById('tcCopied').textContent='복사했어요';};
     try{navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand&&document.execCommand('copy');done();});}
     catch(err){ta.select();try{document.execCommand('copy');}catch(e2){}done();}
   }
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CARD_ID!=null)closeCard();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CARD_ID!=null&&!e.target.closest('.tc2-grid')&&document.getElementById('askPop').classList.contains('hide'))requestCloseCard();});
 
 /* ======================= 편집 / 삭제 ======================= */
 function editFormHTML(d){
@@ -5831,7 +5929,7 @@ function cAfterApply(st,quiet){
   if(DATA.length)loadState({keepUI:true,keepVis:keep});
   else{buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();}
   if(st2)st2.scrollTop=top;
-  if(typeof CARD_ID!=='undefined'&&CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
+  cardRemap();
   updateUpMode();
   if(!quiet&&st.n){
     const who=[...st.who].filter(w=>w&&w!==cMe());
