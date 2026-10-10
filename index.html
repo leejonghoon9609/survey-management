@@ -484,7 +484,12 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .dgrp{display:inline-flex;align-items:center;gap:6px;padding:3px;border-radius:12px;background:#f8fafc;}
 .dgrp .gl{font-size:11px;color:#94a3b8;font-weight:600;padding:0 4px 0 6px;}
 #cardPop{position:fixed;inset:0;background:rgba(15,23,42,.38);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
-#cardPop .tc{background:#fff;border-radius:14px;width:min(760px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);}
+#cardPop .tc{background:#fff;border-radius:14px;width:min(1240px,100%);height:min(890px,92vh);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25);display:flex;flex-direction:column;}
+#cardPop .tc-h,#cardPop .tc-b{width:min(760px,100%);box-sizing:border-box;}
+#cardPop .tc-h{border-bottom:0;}
+#cardPop .tc-b{border-top:1px solid #e2e8f0;}
+#cardPop .tc-h .cell-x{position:absolute;right:22px;top:16px;}
+#cardPop .tc{position:relative;}
 .tc-h{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 10px;border-bottom:1px solid #eef2f7;}
 .tc-h .t{font-size:15px;font-weight:800;line-height:1.35;}
 .tc-h .m{font-size:12px;color:#64748b;margin-top:3px;}
@@ -1378,8 +1383,9 @@ td.left{text-align:left;}
    BUILD 103: 월간 통계에 SKT·SKB·원인자별 건수/km · 누르면 그 목록을 별도 창으로 (다른 모니터로 옮기기)
    BUILD 104: 월간 통계 — 월별 추가사업도 머리 상자+본 상자 · 달 이동 크게 · 발주처 줄 크게, 네 상자 같은 높이에 맞춤
    BUILD 105: 월간 통계 — 0건 발주처 줄은 확실한 회색
+   BUILD 106: 사업 카드 창을 크게 (화면 약 2/3) · 지금 내용은 같은 크기로 왼쪽 위에
    ======================================================================== */
-const BUILD_NO='105';
+const BUILD_NO='106';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
