@@ -1214,8 +1214,9 @@ td.left{text-align:left;}
    BUILD 84: SKB 정산리스트 창 — 원본 양식(엑셀 파일)을 등록해 두면 순서·배경색·메모 칸 그대로,
              시스템에서 바뀐 칸만 고치고 새 사업만 아래에 붙여 엑셀로 내려받기 (SKB 전체·SK TNS·팬텍·유엔에이·확인필요)
              · 한국 시간에서 엑셀 날짜가 하루 앞당겨 읽히던 문제 수정 (저장된 날짜도 한 번 바로잡음)
+   BUILD 85: SKB 카드 머리 — 건수를 앞으로, 「목록 창 ↗」을 건수 뒤(오른쪽)로
    ======================================================================== */
-const BUILD_NO='84';
+const BUILD_NO='85';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2830,7 +2831,7 @@ function renderGroups(){
     const kids=G.all?GROUPS.filter(x=>x.sub===G.k&&(cnt[x.k]||{}).n).length:0;
     const fold=G.all&&kids?'<button class="gfold" data-fold="'+G.k+'" title="'+(GFOLD[G.k]?'펴기':'접기')+' — '+kids+'개">'+(GFOLD[G.k]?'▸':'▾')+'</button>':'';
     const win=(G.k==='SKB'||G.sub==='SKB')?'<button class="gwin" data-skbwin="'+esc(G.k)+'" title="SKB 정산리스트 창 (원본 양식 그대로 · 엑셀 다운)">목록 창 ↗</button>':'';
-    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+(G.tc?';--tc:'+G.tc:'')+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b>'+win+'<span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
+    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+(G.tc?';--tc:'+G.tc:'')+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span>'+win+fold+'</div>'+line(G.k,o)+'</div>';
   });
   box.innerHTML=h;
   document.getElementById('gTotal').textContent='진행 '+(all.n-(all['완료']||0))+' · 완료 '+(all['완료']||0);
