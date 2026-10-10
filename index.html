@@ -256,8 +256,10 @@ header .spacer{flex:1;}
 .gcard .gl button b{color:#0f172a !important;font-weight:800;}
 .gcard .gl button.on{background:var(--s) !important;border-color:var(--s) !important;opacity:1 !important;box-shadow:0 0 0 2px color-mix(in srgb,var(--s) 35%,transparent);}
 .gcard .gl button.on span,.gcard .gl button.on b{color:#fff !important;}
-.gcard.sub{margin-left:16px !important;padding-top:3px;padding-bottom:4px;}
-.gcard.sub .gh b{font-size:12.5px;}
+.gcard.sub{margin-left:16px !important;padding-top:3px;padding-bottom:4px;background:#fff;}
+.gcard.sub.on{background:color-mix(in srgb,var(--tc,var(--c)) 12%,#fff);border-color:var(--tc,var(--c));box-shadow:0 0 0 3px color-mix(in srgb,var(--tc,var(--c)) 25%,transparent);}
+.gcard.sub:hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--tc,var(--c)) 18%,transparent);}
+.gcard.sub .gh b{font-size:12.5px;color:var(--tc,var(--c));}
 .gcard.sub .gh .n{font-size:15px;}
 .gcard.skball{margin-bottom:0;}
 .gfold{margin-left:6px;width:24px;height:22px;border:1.5px solid var(--c);border-radius:6px;background:#fff;color:var(--c);font-size:13px;font-weight:800;line-height:1;cursor:pointer;padding:0;flex:none;}
@@ -1173,8 +1175,9 @@ td.left{text-align:left;}
    BUILD 80: 조금 더 작게 (90%)
    BUILD 81: 사업현황 SKT를 지사별(수도권·경북·경남·강원·충청·서부)로 나누고,
              SKT·SKB 하위 카드를 접고 펴는 버튼 (상태 기억)
+   BUILD 82: 하위 카드(지사·SKB 사업자)는 흰 바탕, 고르면 색 바탕 · 이름 글자만 서로 다른 색 · 처음엔 SKT·SKB 모두 접힘
    ======================================================================== */
-const BUILD_NO='81';
+const BUILD_NO='82';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2721,20 +2724,21 @@ function restoreUpload(){
 
 /* ======================= 리스트관리 3분할 (BUILD 65) ======================= */
 const JISA_ORDER=['수도권지사','경북지사','경남지사','강원지사','충청지사','서부지사'];
+const JISA_TC={'수도권지사':'#DC2626','경북지사':'#EA580C','경남지사':'#A16207','강원지사':'#15803D','충청지사':'#0891B2','서부지사':'#7C3AED'};
 const GROUPS=[
   {k:'SKT',          c:'#EA002C', all:true},
-  ...JISA_ORDER.map(j=>({k:'SKT·'+j, c:'#E11D48', sub:'SKT', name:j})),
-  {k:'SKT·기타',     c:'#E11D48', sub:'SKT', name:'지사 미입력'},
+  ...JISA_ORDER.map(j=>({k:'SKT·'+j, c:'#EA002C', tc:JISA_TC[j], sub:'SKT', name:j})),
+  {k:'SKT·기타',     c:'#EA002C', tc:'#64748b', sub:'SKT', name:'지사 미입력'},
   {k:'SKB',          c:'#1D4ED8', all:true},
-  {k:'SKB·SK TNS',   c:'#2563EB', sub:'SKB', name:'SK TNS'},
-  {k:'SKB·팬텍',     c:'#0891B2', sub:'SKB', name:'팬텍'},
-  {k:'SKB·유엔에이', c:'#7C3AED', sub:'SKB', name:'유엔에이'},
-  {k:'SKB·확인필요', c:'#64748b', sub:'SKB', name:'사업자 확인필요', note:'사업자 칸이 SKB·빈칸·정산제외인 건'},
+  {k:'SKB·SK TNS',   c:'#1D4ED8', tc:'#2563EB', sub:'SKB', name:'SK TNS'},
+  {k:'SKB·팬텍',     c:'#1D4ED8', tc:'#0891B2', sub:'SKB', name:'팬텍'},
+  {k:'SKB·유엔에이', c:'#1D4ED8', tc:'#7C3AED', sub:'SKB', name:'유엔에이'},
+  {k:'SKB·확인필요', c:'#1D4ED8', tc:'#64748b', sub:'SKB', name:'사업자 확인필요', note:'사업자 칸이 SKB·빈칸·정산제외인 건'},
   {k:'원인자',       c:'#B45309'}
 ];
 /* 접기·펴기 상태 (true = 접힘) */
 const LS_FOLD='gongjeong_fold_v1';
-let GFOLD={SKT:true,SKB:false};
+let GFOLD={SKT:true,SKB:true};
 try{const r=JSON.parse(localStorage.getItem(LS_FOLD)||'null');if(r&&typeof r==='object')GFOLD=Object.assign(GFOLD,r);}catch(e){}
 function saveFold(){try{localStorage.setItem(LS_FOLD,JSON.stringify(GFOLD));}catch(e){}}
 function bizIdx(){const c=DISP.find(x=>x.label==='사업자');return c?c.idx:-1;}
@@ -2772,7 +2776,7 @@ function renderGroups(){
     if(G.sub&&(!o.n||GFOLD[G.sub]))return;
     const kids=G.all?GROUPS.filter(x=>x.sub===G.k&&(cnt[x.k]||{}).n).length:0;
     const fold=G.all&&kids?'<button class="gfold" data-fold="'+G.k+'" title="'+(GFOLD[G.k]?'펴기':'접기')+' — '+kids+'개">'+(GFOLD[G.k]?'▸':'▾')+'</button>':'';
-    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
+    h+='<div class="gcard'+(G.sub?' sub':'')+(G.all?' skball':'')+(GSEL.g===G.k&&!GSEL.ph?' on':'')+'" data-g="'+esc(G.k)+'" style="--c:'+G.c+(G.tc?';--tc:'+G.tc:'')+'"'+(G.note?' title="'+esc(G.note)+'"':'')+'><div class="gh"><b>'+(G.sub?'└ ':'')+esc(G.name||G.k)+(G.all?' <span style="font-size:11px;font-weight:500;color:#64748b">전체'+(kids?' · '+kids+'개':'')+'</span>':'')+'</b><span class="n">'+o.n+'<small>건</small></span>'+fold+'</div>'+line(G.k,o)+'</div>';
   });
   box.innerHTML=h;
   document.getElementById('gTotal').textContent='진행 '+(all.n-(all['완료']||0))+' · 완료 '+(all['완료']||0);
