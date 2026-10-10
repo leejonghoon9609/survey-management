@@ -123,6 +123,21 @@ header .spacer{flex:1;}
 .cchip.dragging{opacity:.4;}
 .cchip.dropL{box-shadow:-3px 0 0 #EA002C;}
 .cchip.dropR{box-shadow:3px 0 0 #EA002C;}
+#cloudPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:590;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cp-in{width:100%;box-sizing:border-box;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;}
+.cp-in:focus{outline:none;border-color:#EA002C;}
+.cp-warn{margin:12px 0 0;padding:8px 10px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;font-size:13px;}
+.cp-adv{margin-top:12px;font-size:13px;color:#475569;}
+.cp-adv summary{cursor:pointer;font-weight:600;}
+.savebar .cloudchip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:12px;}
+.savebar .cloudchip i{width:7px;height:7px;border-radius:50%;background:#cbd5e1;display:inline-block;}
+.savebar .cloudchip b{font-weight:700;color:inherit;}
+.savebar .cloudchip.ok{border-color:#A7F3D0;background:#ECFDF5;color:#065F46;}
+.savebar .cloudchip.ok i{background:#059669;}
+.savebar .cloudchip.wait{border-color:#FDE68A;background:#FFFBEB;color:#92400E;}
+.savebar .cloudchip.wait i{background:#FFB400;}
+.savebar .cloudchip.err,.savebar .cloudchip.need{border-color:#FECACA;background:#FEF2F2;color:#B91C1C;}
+.savebar .cloudchip.err i,.savebar .cloudchip.need i{background:#DC2626;}
 #askPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
 .ask-card{max-width:460px;}
 .ask-b{padding:16px 18px 6px;font-size:14px;line-height:1.7;color:#1e293b;white-space:pre-wrap;word-break:keep-all;}
@@ -669,6 +684,7 @@ td.left{text-align:left;}
   <span class="sub">지하시설물 통신관로 조사·측량 · 정산 포함</span>
   <span class="spacer"></span>
   <div class="savebar">
+    <button id="btnCloud" class="cloudchip off" type="button"><i></i>이 브라우저만</button>
     <span class="dotsave" id="saveDot"></span><span id="saveMsg">저장 안 함</span>
     <button id="btnSave">지금 저장</button>
     <button id="btnBackup">백업 내려받기</button>
@@ -981,6 +997,29 @@ td.left{text-align:left;}
 
 </div>
 <div id="stVfPop" class="hide"></div>
+<div id="cloudPop" class="hide"><div class="view-card" style="max-width:440px;">
+  <div class="cell-h"><b>공용 저장소</b><span class="cell-x" id="cpX">✕</span></div>
+  <div class="view-b">
+    <p id="cpWarn" class="cp-warn hide"></p>
+    <p class="note" id="cpState" style="margin:12px 0 0;"></p>
+    <div class="vp-sec">작업자 이름</div>
+    <input type="text" id="cpMe" class="cp-in" placeholder="예) 홍길동" maxlength="20" autocomplete="name">
+    <div class="vp-sec">팀 비밀번호</div>
+    <input type="password" id="cpTeam" class="cp-in" placeholder="팀 비밀번호" autocomplete="current-password">
+    <p class="note" style="margin-top:6px;">이 PC에서 한 번만 넣으면 돼요. 누가 고쳤는지 이름으로 남아요.</p>
+    <details id="cpAdv" class="cp-adv"><summary>저장소 (처음 한 번 · 관리자)</summary>
+      <div class="vp-sec" style="margin-top:8px;">주소</div>
+      <input type="text" id="cpUrl" class="cp-in" placeholder="https://xxxx.supabase.co">
+      <div class="vp-sec">anon public 키</div>
+      <input type="text" id="cpKey" class="cp-in" placeholder="Supabase anon public 키" autocomplete="off">
+    </details>
+    <div class="vp-save" style="margin-top:16px;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <button class="btn" id="cpOff" style="padding:7px 12px;color:#64748b;">이 브라우저만 쓰기</button>
+      <span style="display:flex;gap:8px;"><button class="btn hide" id="cpSync" style="padding:7px 12px;">지금 맞추기</button>
+      <button class="btn btn-primary" id="cpGo" style="padding:7px 20px;">연결</button></span>
+    </div>
+  </div>
+</div></div>
 <div id="askPop" class="hide"><div class="view-card ask-card">
   <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
   <div class="ask-b" id="askMsg"></div>
@@ -1215,8 +1254,10 @@ td.left{text-align:left;}
              시스템에서 바뀐 칸만 고치고 새 사업만 아래에 붙여 엑셀로 내려받기 (SKB 전체·SK TNS·팬텍·유엔에이·확인필요)
              · 한국 시간에서 엑셀 날짜가 하루 앞당겨 읽히던 문제 수정 (저장된 날짜도 한 번 바로잡음)
    BUILD 85: SKB 카드 머리 — 건수를 앞으로, 「목록 창 ↗」을 건수 뒤(오른쪽)로
+   BUILD 86: 공용 저장소(Supabase) — 여러 작업자가 같은 목록을 보고 고친다. 사업마다 고유번호(uid),
+             바뀐 줄만 올리고 15초마다 받기, 같은 사업 동시 수정은 칸 단위로 합치기, SKB 원본 양식 공용
    ======================================================================== */
-const BUILD_NO='85';
+const BUILD_NO='86';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1367,13 +1408,14 @@ function stateObj(){
     colWidth:colWidth,
     ui:uiObj(),
     dfix:1,   /* BUILD 84 : 날짜 하루 밀림을 바로잡은 목록 */
-    rows:DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone,o:d._src||'',a:d._added||null}))};
+    rows:(ensureIds(),DATA.map(d=>({r:d.row,p:!!d._pick,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone,o:d._src||'',a:d._added||null,u:d._uid,n:d._n})))};
 }
 function saveState(silent){
   if(!loaded||!DATA.length){setDot('','저장할 목록 없음');return;}
   try{
     localStorage.setItem(LS_KEY,JSON.stringify(stateObj()));
     savedAt=new Date();setDot('ok','저장됨 '+hhmm(savedAt));
+    cloudSchedule();
     if(!silent)toast('이 브라우저에 저장했습니다 ('+DATA.length+'건)');
   }catch(e){
     setDot('','저장 실패');
@@ -1401,7 +1443,7 @@ function loadState(opt){
     COL=s.COL||{};DISP=(s.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=s.colWidth||{};
     if(!s.dfix){const n=fixOldDates(s.rows);if(n)setTimeout(()=>{markDirty();toast('저장된 목록의 날짜 '+n+'곳을 하루씩 바로잡았어요 (엑셀 날짜 읽기 오류 수정)');},600);}
     const rep=repairCols();
-    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null};deriveItem(d);return d;});
+    DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null,_uid:o.u||'',_n:o.n};deriveItem(d);return d;});
     loaded=true;savedAt=s.at?new Date(s.at):null;
     markDup();buildColPanel();buildFilters();
     if(opt.keepVis){DISP.forEach(c=>{if(c.label in opt.keepVis)c.vis=opt.keepVis[c.label];});buildColPanel();}
@@ -1431,7 +1473,7 @@ function wipeAll(){
   return keys.length;
 }
 document.getElementById('btnClear').addEventListener('click',()=>{
-  askConfirm('이 브라우저에 저장된 것을 모두 지우고 처음 상태로 돌아갑니다.\n\n· 목록 '+DATA.length+'건 · 직전 목록(되살리기용)\n· 저장한 보기 · 통계 조건·계산 · 서랍 · 칸 너비\n· 요율 설정 (기본값으로)\n\n되돌릴 수 없어요. 필요하면 먼저 「백업 내려받기」를 하세요.\n\n전체 초기화할까요?',()=>{
+  askConfirm('이 브라우저에 저장된 것을 모두 지우고 처음 상태로 돌아갑니다.\n'+(SYNC&&SYNC.on?'(공용 저장소의 목록은 그대로 있고, 다시 열면 공용 목록을 새로 받아와요)\n':'')+'\n· 목록 '+DATA.length+'건 · 직전 목록(되살리기용)\n· 저장한 보기 · 통계 조건·계산 · 서랍 · 칸 너비\n· 요율 설정 (기본값으로)\n\n되돌릴 수 없어요. 필요하면 먼저 「백업 내려받기」를 하세요.\n\n전체 초기화할까요?',()=>{
     const n=wipeAll();
     DATA=[];
     toast('전체 초기화 완료 · '+n+'개 항목 삭제 — 새로 시작합니다');
@@ -1459,7 +1501,7 @@ document.getElementById('restoreFile').addEventListener('change',e=>{
       if(s.SAFE&&Array.isArray(s.SAFE.list))SAFE=s.SAFE;
       if(!s.dfix)fixOldDates(s.rows);
       repairCols();
-      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null};deriveItem(d);return d;});
+      DATA=s.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null,_uid:o.u||'',_n:o.n};deriveItem(d);return d;});
       loaded=true;markDup();buildColPanel();buildFilters();applyUI(s.ui);
       buildHead();renderCards();renderValidate();render();renderSettle();renderRates();
       markDirty();goTab('manage');toast(DATA.length+'건을 불러왔습니다');
@@ -1660,7 +1702,7 @@ document.getElementById('btnPrev').addEventListener('click',()=>{
   const cur=DATA.length?JSON.stringify({...stateObj(),n:DATA.length}):null;
   COL=p.COL||{};DISP=(p.DISP||[]).map(c=>({idx:c.idx,label:c.label,vis:c.vis!==false}));colWidth=p.colWidth||{};
   repairCols();
-  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null};deriveItem(d);return d;});
+  DATA=p.rows.map(o=>{const d={row:o.r||[],_pick:!!o.p,_sel:!!o.s,_msel:!!o.m,_chk:!!o.x,_gone:!!o.g,_src:o.o||'',_added:o.a||null,_uid:o.u||'',_n:o.n};deriveItem(d);return d;});
   loaded=true;markDup();buildColPanel();buildFilters();applyUI(p.ui);
   buildHead();renderCards();renderValidate();render();renderSettle();
   try{if(cur)localStorage.setItem(LS_PREV,cur);else localStorage.removeItem(LS_PREV);}catch(e){}
@@ -1720,8 +1762,9 @@ document.getElementById('btnDedup').addEventListener('click',()=>{
   });
 document.getElementById('btnWipe').addEventListener('click',()=>{
   if(!DATA.length){toast('이미 목록이 비어 있습니다');return;}
-  askConfirm('지금 목록 '+DATA.length+'건을 모두 비웁니다.\n칸 구성도 함께 초기화됩니다.\n\n(저장해 둔 보기 설정과 요율은 그대로 남습니다)\n(비운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
+  askConfirm('지금 목록 '+DATA.length+'건을 모두 비웁니다.'+(SYNC&&SYNC.on?'\n★ 공용 저장소 목록도 함께 비워져서 모든 작업자 화면에서 사라져요.':'')+'\n칸 구성도 함께 초기화됩니다.\n\n(저장해 둔 보기 설정과 요율은 그대로 남습니다)\n(비운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
   stashPrev();
+  if(SYNC&&SYNC.on){SYNC.allowDel=true;cloudSchedule(true);}
   DATA=[];DISP=[];COL={};COLREP=[];colFilter={};colWidth={};sortCI=null;lastUpload=null;PENDING=null;
   try{localStorage.removeItem(LS_KEY);}catch(e){}
   ['sheetBox','mapBox','chkBox','upPreview'].forEach(id=>{const e=document.getElementById(id);if(e){e.innerHTML='';e.classList.add('hide');}});
@@ -1880,7 +1923,7 @@ function renderSheetPicker(fname,sheets){
     h+='<p class="note">같은 건인지는 <b>관리번호</b>로 가립니다 (없으면 공사코드+공사명). 파일에 새 관리번호가 있으면 한 줄 추가되고, 파일에 없는 기존 건은 그대로 둡니다. 불러온 뒤 <b>업로드 검수</b>에서 파일 건수와 목록 반영 건수를 확인하세요.</p>';
   }
   box.innerHTML=h;box.classList.remove('hide');
-  const btn=document.getElementById('doImport');if(btn)btn.addEventListener('click',importSelected);
+  const btn=document.getElementById('doImport');if(btn)btn.addEventListener('click',()=>cloudBefore(importSelected));
   const ba=document.getElementById('upBaalAll');
   if(ba){
     /* 사업자 칸으로 발주처를 못 정하는 줄이 많으면 미리 켜 둔다 */
@@ -1905,7 +1948,7 @@ document.getElementById('sheetBox').addEventListener('change',e=>{
 function masterFromExisting(){
   const labels=DISP.map(c=>c.label);
   const rows=DATA.map(d=>DISP.map(c=>d.row[c.idx]));
-  const meta=DATA.map(d=>({p:d._pick!==false,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone,o:d._src||'',a:d._added||null}));
+  const meta=DATA.map(d=>({p:d._pick!==false,s:!!d._sel,m:!!d._msel,x:!!d._chk,g:!!d._gone,o:d._src||'',a:d._added||null,u:d._uid,n:d._n}));
   return {labels,rows,meta};
 }
 
@@ -2020,7 +2063,7 @@ function importSelected(){
   }
   ensureAutoCols();
   colWidth={};colFilter={};sortCI=null;
-  DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false,_chk:meta[i]?!!meta[i].x:false,_src:meta[i]?(meta[i].o||''):'',_added:meta[i]?(meta[i].a||null):null};deriveItem(d);return d;});
+  DATA=rows.map((r,i)=>{const d={row:r,_pick:meta[i]?meta[i].p:true,_sel:meta[i]?!!meta[i].s:false,_msel:meta[i]?!!meta[i].m:false,_chk:meta[i]?!!meta[i].x:false,_src:meta[i]?(meta[i].o||''):'',_added:meta[i]?(meta[i].a||null):null,_uid:meta[i]?(meta[i].u||''):'',_n:meta[i]?meta[i].n:undefined};deriveItem(d);return d;});
   loaded=true;markDup();lastUpload=DATA.slice();
   if(!append)applyDrawerCols(curDrawer);   /* 첫 업로드면 지금 서랍에 맞는 칸만 보이게 */
 
@@ -3253,7 +3296,7 @@ function openSkbWin(g){
 }
 let SKB_CACHE=null;   /* 원본을 매번 다시 읽지 않도록 */
 async function skbLoadWb(){
-  const t=await tplGet('SKB');if(!t)return null;
+  const t=await cTplGet('SKB');if(!t)return null;
   if(SKB_CACHE&&SKB_CACHE.at===t.at)return SKB_CACHE;
   const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(t.buf);
   SKB_CACHE={at:t.at,name:t.name,wb,TH:themeColors(wb)};return SKB_CACHE;
@@ -3366,8 +3409,10 @@ document.getElementById('skbWin').addEventListener('change',e=>{if(e.target.id==
 async function skbRegister(buf,name,size){
   const EX=await loadExcelJS();const wb=new EX.Workbook();await wb.xlsx.load(buf);
   if(!wb.worksheets.some(ws=>tplHeader(ws)))throw new Error('공사명·Eng 번호 머리글이 있는 시트가 없어요');
-  await tplPut('SKB',{name,at:Date.now(),size,buf});
+  const v={name,at:Date.now(),size,buf,by:cMe()};
+  await tplPut('SKB',v);
   SKB_CACHE=null;
+  if(await cFilePut('SKB',name,size,buf)){const f=SYNC.files.SKB;if(f){v.cat=new Date(f.t).getTime();await tplPut('SKB',v);}}
 }
 document.getElementById('skbTplFile').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -3437,6 +3482,7 @@ window.addEventListener('storage',e=>{
   loadState({keepUI:true,keepVis:keep});
   if(st)st.scrollTop=top;
   if(CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
+  cloudSchedule();
   if(PWIN)renderPerWin();
   if(SKBWIN)renderSkbWin();
 });
@@ -3844,21 +3890,21 @@ function syncToolbar(){
 
 /* ---- 자체 확인창 : 브라우저 기본 confirm 대신 화면 가운데 뜬다 ----
    askConfirm(문구, 확인 시 실행, {title, ok, cancel}) */
-let ASK_ON=null;
+let ASK_ON=null;let ASK_NO=null;
 function askConfirm(msg,onOk,opt){
   opt=opt||{};
-  if(typeof window.__confirmHook==='function'){if(window.__confirmHook(msg))onOk();return;}   /* 자동 테스트용 */
+  if(typeof window.__confirmHook==='function'){if(window.__confirmHook(msg))onOk();else if(opt.onNo)opt.onNo();return;}   /* 자동 테스트용 */
   const pop=document.getElementById('askPop');
   document.getElementById('askTitle').textContent=opt.title||'확인';
   document.getElementById('askMsg').textContent=msg;
   document.getElementById('askOk').textContent=opt.ok||'확인';
   document.getElementById('askNo').textContent=opt.cancel||'취소';
-  ASK_ON=onOk;pop.classList.remove('hide');
+  ASK_ON=onOk;ASK_NO=opt.onNo||null;pop.classList.remove('hide');
   setTimeout(()=>document.getElementById('askOk').focus(),0);
 }
 function askClose(ok){
   const pop=document.getElementById('askPop');pop.classList.add('hide');
-  const fn=ASK_ON;ASK_ON=null;if(ok&&fn)fn();
+  const fn=ASK_ON,no=ASK_NO;ASK_ON=null;ASK_NO=null;if(ok&&fn)fn();else if(!ok&&no)no();
 }
 document.getElementById('askOk').addEventListener('click',()=>askClose(true));
 document.getElementById('askNo').addEventListener('click',()=>askClose(false));
@@ -5149,6 +5195,421 @@ document.getElementById('export').addEventListener('click',()=>{
   toast(sel.length+'건 내보냈습니다 · 정산 시스템 "양식 업로드"에 올리세요');
 });
 
+/* ======================= 공용 저장소 (BUILD 86) =======================
+   여러 작업자가 같은 목록을 본다. 목록은 Supabase 에 사업 한 건 = 한 줄(uid)로 저장.
+   · 이 브라우저 저장(localStorage)은 그대로 두고, 저장할 때마다 바뀐 줄만 골라 올린다
+   · 15초마다(창을 보고 있을 때) 다른 사람이 고친 줄만 받아온다
+   · 같은 사업을 동시에 고치면 칸 단위로 합친다 (내가 고친 칸은 내 값, 나머지는 상대 값)
+   · 칸은 '칸 이름'으로 주고받는다 → 사람마다 칸 순서가 달라도 섞이지 않는다
+   · 팀 비밀번호(x-gj-team)가 맞아야 읽고 쓸 수 있다 (Supabase 쪽 RLS)
+   · uid 는 탱고·정산시스템과 이어 쓸 때의 열쇠 */
+const CLOUD_DEF={url:'https://shkpcnffcozqjobbghjf.supabase.co',key:''};
+const LS_CLOUD='gj_cloud_v1';          /* {url,key,team,off} — 전체 초기화로 지우지 않는다 */
+const LS_ME='gj_me_v1';                /* 작업자 이름 */
+const LS_SYNC='gongjeong_sync_v1';     /* {url,since,base:[[uid,rev,hash]],lay:{r,h},files} */
+var IS_SUBWIN=/^#(list$|per=|skb=)/.test(location.hash||'');
+var SYNC={on:false,state:'off',msg:'',since:null,base:new Map(),lay:{r:0,h:''},files:{},busy:false,again:false,
+  timer:null,pushT:null,last:null,fail:0,allowDel:false,holdDel:null,remoteN:0};
+
+function cCfg(){
+  let o={};try{o=JSON.parse(localStorage.getItem(LS_CLOUD)||'{}')||{};}catch(e){}
+  return {url:(o.url||CLOUD_DEF.url||'').replace(/\/+$/,''),key:o.key||CLOUD_DEF.key||'',team:o.team||'',off:!!o.off};
+}
+function cCfgSave(p){const c=Object.assign(cCfg(),p);try{localStorage.setItem(LS_CLOUD,JSON.stringify({url:c.url===CLOUD_DEF.url?'':c.url,key:c.key===CLOUD_DEF.key?'':c.key,team:c.team,off:c.off}));}catch(e){}}
+function cMe(){try{return localStorage.getItem(LS_ME)||'';}catch(e){return '';}}
+function cB64(s){return btoa(unescape(encodeURIComponent(s)));}
+function cHash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return (h>>>0).toString(36)+'.'+s.length.toString(36);}
+function cUid(){const a=new Uint8Array(6);(window.crypto||{getRandomValues:x=>{for(let i=0;i<x.length;i++)x[i]=Math.random()*256|0;return x;}}).getRandomValues(a);
+  return 'g'+Date.now().toString(36)+Array.from(a,b=>(b%36).toString(36)).join('');}
+
+async function cRpc(fn,args){
+  const c=cCfg();
+  const r=await fetch(c.url+'/rest/v1/rpc/'+fn,{method:'POST',
+    headers:Object.assign({'apikey':c.key,'Content-Type':'application/json','x-gj-team':c.team},/^eyJ/.test(c.key)?{'Authorization':'Bearer '+c.key}:{}),
+    body:JSON.stringify(args||{})});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null;}catch(e){}
+  if(!r.ok){const e=new Error((j&&(j.message||j.hint))||('HTTP '+r.status));e.code=j&&j.code;e.status=r.status;throw e;}
+  return j;
+}
+
+/* ---- 한 줄을 주고받는 모양 : {v:{칸이름:값}, x:이슈체크, g:없어진건, o:발주처리스트, a:등록일, n:순서} ---- */
+function cCanon(o){
+  o=o||{};const v={},src=o.v||{};
+  Object.keys(src).sort().forEach(k=>{const x=src[k];if(x===undefined||x===null||x==='')return;v[k]=x;});
+  const out={v:v};
+  if(o.x)out.x=1;if(o.g)out.g=1;if(o.o)out.o=String(o.o);if(o.a)out.a=o.a;if(o.n!=null)out.n=o.n;
+  return out;
+}
+function cAutoSet(){const s=new Set();DISP.forEach(c=>{if(isAutoIdx(c.idx))s.add(c.idx);});return s;}
+function cSer(d,auto){
+  const v={};DISP.forEach(c=>{if(auto.has(c.idx))return;v[c.label]=d.row[c.idx];});
+  return cCanon({v:v,x:d._chk,g:d._gone,o:d._src,a:d._added,n:d._n});
+}
+function ensureIds(){
+  const t=Date.now()*1000;
+  DATA.forEach((d,i)=>{if(!d._uid)d._uid=cUid();if(d._n==null)d._n=t+i;});
+}
+function cLabelIdx(l){
+  const c=DISP.find(x=>x.label===l);if(c)return c.idx;
+  const idx=nextColIdx();DISP.push({idx:idx,label:l,vis:false});return idx;
+}
+function cPutRow(d,o,auto){
+  d.row=d.row||[];
+  DISP.forEach(c=>{if(auto.has(c.idx))return;const x=o.v[c.label];d.row[c.idx]=(x===undefined?'':x);});
+  Object.keys(o.v).forEach(l=>{if(!DISP.some(c=>c.label===l))d.row[cLabelIdx(l)]=o.v[l];});
+  d._chk=!!o.x;d._gone=!!o.g;d._src=o.o||'';d._added=o.a||null;if(o.n!=null)d._n=o.n;
+}
+/* 세 갈래 합치기 : base(마지막으로 맞춘 값) 에서 내가 바꾼 칸은 내 값, 나머지는 상대 값 */
+function cMerge3(base,mine,theirs){
+  const out={v:Object.assign({},theirs.v)};
+  const ls=new Set([...Object.keys(base.v),...Object.keys(mine.v)]);let mineN=0;
+  ls.forEach(l=>{const b=base.v[l],m=mine.v[l];if(String(b==null?'':b)===String(m==null?'':m))return;mineN++;if(m===undefined)delete out.v[l];else out.v[l]=m;});
+  ['x','g','o','a','n'].forEach(k=>{out[k]=(String(base[k]||'')!==String(mine[k]||''))?mine[k]:theirs[k];});
+  return {o:cCanon(out),mine:mineN};
+}
+
+/* ---- 칸 구성 : 칸 이름 묶음 + 핵심 칸(공사명·Eng번호…)이 어느 이름인지 ---- */
+function cLayout(){
+  const labels=DISP.map(c=>c.label),keys={},vis={};
+  Object.keys(COL).forEach(k=>{const i=COL[k];if(i==null||i<0)return;const c=DISP.find(x=>x.idx===i);if(c)keys[k]=c.label;});
+  DISP.forEach(c=>{if(c.vis)vis[c.label]=1;});
+  return {labels:labels,keys:keys,vis:vis};
+}
+function cLayHash(L){
+  const k={};Object.keys(L.keys||{}).sort().forEach(x=>{k[x]=L.keys[x];});
+  return cHash(JSON.stringify({l:(L.labels||[]).slice().sort(),k:k}));
+}
+/* 받은 칸 구성을 내 칸 구성에 합친다 (칸은 늘기만 한다) */
+function cMergeLayout(R){
+  if(!R||!R.labels)return false;
+  let ch=false;
+  if(!DISP.length){
+    DISP=R.labels.map((l,i)=>({idx:i,label:l,vis:!!(R.vis&&R.vis[l])}));
+    COL={};COLSPEC.forEach(s=>{COL[s.k]=-1;});
+    Object.keys(R.keys||{}).forEach(k=>{const i=R.labels.indexOf(R.keys[k]);COL[k]=i;});
+    return true;
+  }
+  R.labels.forEach(l=>{if(!DISP.some(c=>c.label===l)){DISP.push({idx:nextColIdx(),label:l,vis:false});ch=true;}});
+  Object.keys(R.keys||{}).forEach(k=>{
+    if(COL[k]!=null&&COL[k]>=0&&DISP.some(c=>c.idx===COL[k]))return;
+    const c=DISP.find(x=>x.label===R.keys[k]);if(c){COL[k]=c.idx;ch=true;}
+  });
+  return ch;
+}
+
+/* ---- 동기화 기록 (이 브라우저) ---- */
+function cLoadMeta(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(LS_SYNC)||'null');}catch(e){}
+  const c=cCfg();
+  if(!s||s.url!==c.url)return false;
+  SYNC.since=s.since||null;SYNC.lay=s.lay||{r:0,h:''};SYNC.files=s.files||{};
+  SYNC.base=new Map((s.base||[]).map(a=>[a[0],{r:a[1],h:a[2]}]));
+  return true;
+}
+function cSaveMeta(){
+  const base=[];SYNC.base.forEach((b,u)=>base.push([u,b.r,b.h]));
+  try{localStorage.setItem(LS_SYNC,JSON.stringify({url:cCfg().url,since:SYNC.since,lay:SYNC.lay,files:SYNC.files,base:base}));}catch(e){}
+}
+function cSetBase(u,r,o){const j=JSON.stringify(o);SYNC.base.set(u,{r:r,h:cHash(j),j:j});}
+
+/* ---- 상태 표시 ---- */
+function cDot(state,msg){
+  SYNC.state=state;SYNC.msg=msg||'';
+  const b=document.getElementById('btnCloud');if(!b)return;
+  const me=cMe();
+  const txt={off:'이 브라우저만',ok:'공용',wait:'공용 · 올리는 중',err:'공용 · 연결 안 됨',need:'공용 · 연결 필요'}[state]||'공용';
+  b.className='cloudchip '+state;
+  b.innerHTML='<i></i>'+esc(txt)+(me&&state!=='off'?' · <b>'+esc(me)+'</b>':'');
+  b.title=(msg||'')+(SYNC.last?'\n마지막 맞춤 '+hhmm(SYNC.last):'')+'\n눌러서 공용 저장소 설정';
+}
+
+/* ---- 올리기 ---- */
+function cloudSchedule(now){
+  if(!SYNC||!SYNC.on||IS_SUBWIN)return;
+  clearTimeout(SYNC.pushT);SYNC.pushT=setTimeout(cPush,now?10:1200);
+}
+function cDiff(){
+  ensureIds();
+  const auto=cAutoSet(),out=[],seen=new Set();
+  DATA.forEach(d=>{
+    seen.add(d._uid);
+    const o=cSer(d,auto),j=JSON.stringify(o),b=SYNC.base.get(d._uid);
+    if(!b)out.push({u:d._uid,r:0,d:o,j:j});
+    else if(b.h!==cHash(j))out.push({u:d._uid,r:b.r,d:o,j:j});
+  });
+  const dels=[];SYNC.base.forEach((b,u)=>{if(!seen.has(u))dels.push({u:u,r:b.r,x:true});});
+  return {out:out,dels:dels};
+}
+async function cPush(){
+  if(!SYNC.on)return;
+  if(SYNC.busy){SYNC.again=true;return;}
+  let {out,dels}=cDiff();
+  const L=cLayout(),lh=cLayHash(L),meta={};
+  if(lh!==SYNC.lay.h)meta.layout={r:SYNC.lay.r,v:L};
+  /* 한꺼번에 많이 지우는 건 한 번 더 묻는다 (실수·오류로 공용 목록이 날아가지 않게) */
+  if(dels.length>=20&&dels.length>SYNC.base.size*0.3&&!SYNC.allowDel){
+    if(SYNC.holdDel)return;
+    SYNC.holdDel=dels.length;
+    askConfirm('공용 목록에서 '+dels.length+'건이 지워지게 돼요 (공용 '+SYNC.base.size+'건 중).\n다른 작업자 화면에서도 모두 사라져요.\n\n· 지우기 : 공용 목록에서도 지워요 (변경 이력에는 남아요)\n· 취소 : 지운 건을 공용 목록에서 다시 받아와요',
+      ()=>{SYNC.holdDel=null;SYNC.allowDel=true;cPush();},
+      {title:'공용 목록에서 지우기',ok:'지우기',onNo:()=>{SYNC.holdDel=null;cRefetch(dels.map(x=>x.u));}});
+    return;
+  }
+  if(!out.length&&!dels.length&&!meta.layout){SYNC.allowDel=false;if(SYNC.state==='wait')cDot('ok','공용 저장소와 맞춤');return;}
+  SYNC.busy=true;cDot('wait','올리는 중 '+(out.length+dels.length)+'건');
+  const by=cMe();let conf=[];
+  try{
+    const all=out.concat(dels);
+    for(let i=0;i<Math.max(all.length,1);i+=200){
+      const part=all.slice(i,i+200);
+      const res=await cRpc('gj_push',{p_rows:part.map(x=>x.x?{u:x.u,r:x.r,x:true}:{u:x.u,r:x.r,d:x.d}),p_meta:i===0&&meta.layout?meta:null,p_by:by});
+      part.forEach(x=>{const r=res.revs&&res.revs[x.u];if(r==null)return;if(x.x)SYNC.base.delete(x.u);else SYNC.base.set(x.u,{r:r,h:cHash(x.j),j:x.j});});
+      conf=conf.concat(res.conf||[]);
+      if(i===0&&meta.layout){
+        if(res.mrevs&&res.mrevs.layout!=null)SYNC.lay={r:res.mrevs.layout,h:lh};
+        else if(res.mconf&&res.mconf.layout){const R=res.mconf.layout;cMergeLayout(R.v);SYNC.lay={r:R.r,h:cLayHash(R.v||{})};SYNC.again=true;}
+      }
+    }
+    SYNC.allowDel=false;SYNC.fail=0;SYNC.last=new Date();
+    cSaveMeta();cDot('ok','공용 저장소와 맞춤');
+  }catch(e){cFail(e);}
+  finally{SYNC.busy=false;}
+  if(conf.length){await cRefetch(conf,true);SYNC.again=true;}
+  if(SYNC.again){SYNC.again=false;cloudSchedule(true);}
+}
+/* 몇 건만 다시 받기 : 충돌 났을 때 / 지우기를 취소했을 때 */
+async function cRefetch(uids,merge){
+  try{
+    const rows=await cRpc('gj_get',{p_uids:uids});
+    const n=cApplyRows(rows||[],{force:!merge});
+    cAfterApply(n,true);
+    if(merge&&n.mine)toast('다른 작업자가 같은 사업을 고쳐서 칸 단위로 합쳤어요 ('+n.mine+'건)');
+  }catch(e){cFail(e);}
+}
+
+/* ---- 받기 ---- */
+function cApplyRows(rows,opt){
+  opt=opt||{};
+  const auto=cAutoSet(),byU=new Map(DATA.map(d=>[d._uid,d]));
+  const st={n:0,mine:0,lost:0,who:new Set(),add:0,del:0};
+  rows.forEach(rw=>{
+    const b=SYNC.base.get(rw.u);
+    if(b&&b.r>=rw.r&&!opt.force)return;
+    const d=byU.get(rw.u);
+    if(rw.x){
+      if(d){const i=DATA.indexOf(d);if(i>=0)DATA.splice(i,1);st.del++;st.n++;}
+      SYNC.base.delete(rw.u);if(rw.b)st.who.add(rw.b);return;
+    }
+    const ro=cCanon(rw.d);
+    if(!d){
+      const nd={row:[],_pick:true,_sel:false,_msel:false,_uid:rw.u};cPutRow(nd,ro,auto);DATA.push(nd);
+      st.add++;st.n++;
+    }else{
+      const lo=cSer(d,auto),lj=JSON.stringify(lo);
+      const dirty=!b||cHash(lj)!==b.h;
+      if(dirty&&!opt.force){
+        if(b&&b.j){const m=cMerge3(JSON.parse(b.j),lo,ro);cPutRow(d,m.o,auto);if(m.mine)st.mine++;}
+        else{cPutRow(d,ro,auto);st.lost++;}
+      }else if(lj!==JSON.stringify(ro))cPutRow(d,ro,auto);
+      else{cSetBase(rw.u,rw.r,ro);return;}
+      st.n++;
+    }
+    cSetBase(rw.u,rw.r,ro);if(rw.b)st.who.add(rw.b);
+  });
+  return st;
+}
+/* 받은 걸 화면에 : 이 브라우저에 저장하고 다시 그린다 (다른 창도 storage 로 따라온다) */
+function cAfterApply(st,quiet){
+  if(!st.n&&!st.lay){cSaveMeta();return;}
+  DATA.sort((a,b)=>(a._n||0)-(b._n||0));
+  loaded=true;cSaveMeta();
+  if(!DATA.length){try{localStorage.removeItem(LS_KEY);}catch(e){}}
+  else saveState(true);
+  const keep={};DISP.forEach(c=>{keep[c.label]=c.vis;});
+  const st2=document.querySelector('.mgr .tblwrap');const top=st2?st2.scrollTop:0;
+  if(DATA.length)loadState({keepUI:true,keepVis:keep});
+  else{buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();}
+  if(st2)st2.scrollTop=top;
+  if(typeof CARD_ID!=='undefined'&&CARD_ID!=null&&!DATA.some(d=>String(d._id)===String(CARD_ID)))closeCard();
+  updateUpMode();
+  if(!quiet&&st.n){
+    const who=[...st.who].filter(w=>w&&w!==cMe());
+    const parts=[];if(st.add)parts.push('추가 '+st.add);if(st.del)parts.push('삭제 '+st.del);const ed=st.n-st.add-st.del;if(ed)parts.push('수정 '+ed);
+    toast((who.length?who.join('·')+' 님 ':'다른 작업자 ')+'변경 반영 · '+parts.join(' · ')+'건');
+  }
+  if(st.lost)toast('같은 사업을 다른 작업자가 먼저 고쳐서 그 내용으로 맞췄어요 ('+st.lost+'건)',true);
+}
+function cBusyUI(){
+  const a=document.activeElement;
+  if(a&&a!==document.body&&(a.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))&&a.closest('table,.cardpop,#cardPop'))return true;
+  const ap=document.getElementById('askPop');if(ap&&!ap.classList.contains('hide'))return true;
+  return false;
+}
+async function cPull(force){
+  if(!SYNC.on||IS_SUBWIN)return;
+  if(SYNC.busy){return;}
+  if(!force&&document.hidden)return;
+  if(cBusyUI()){clearTimeout(SYNC.retryT);SYNC.retryT=setTimeout(()=>cPull(true),3000);return;}
+  SYNC.busy=true;
+  let st=null;
+  try{
+    const since=SYNC.since?new Date(new Date(SYNC.since).getTime()-30000).toISOString():null;
+    const res=await cRpc('gj_pull',{p_since:since});
+    let lay=false;
+    const R=res.meta&&res.meta.layout;
+    if(R&&R.r>SYNC.lay.r){lay=cMergeLayout(R.v);const mine=cLayHash(cLayout());SYNC.lay={r:R.r,h:cLayHash(R.v||{})};if(mine!==SYNC.lay.h)SYNC.again=true;}
+    st=cApplyRows(res.rows||[]);st.lay=lay;
+    (res.files||[]).forEach(f=>{SYNC.files[f.k]={t:f.t,n:f.n,s:f.s,b:f.b};});
+    SYNC.since=res.now;SYNC.fail=0;SYNC.last=new Date();
+    if(st.mine)SYNC.again=true;
+    cDot('ok','공용 저장소와 맞춤');
+  }catch(e){cFail(e);}
+  finally{SYNC.busy=false;}
+  if(st)cAfterApply(st);
+  if(SYNC.again){SYNC.again=false;cloudSchedule(true);}
+}
+function cFail(e){
+  SYNC.fail++;
+  if(e&&(e.code==='28000'||/team password/.test(e.message||''))){
+    SYNC.on=false;stopPoll();cDot('need','팀 비밀번호가 맞지 않아요');
+    openCloudPop('팀 비밀번호가 맞지 않아요. 다시 넣어 주세요.');return;
+  }
+  cDot('err','연결 안 됨 · '+(e&&e.message||e)+' — 바뀐 내용은 이 브라우저에 저장돼 있고, 다시 연결되면 올려요');
+}
+function startPoll(){stopPoll();SYNC.timer=setInterval(async()=>{await cPull();cloudSchedule();},15000);}
+function stopPoll(){if(SYNC.timer)clearInterval(SYNC.timer);SYNC.timer=null;}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&SYNC.on)cPull(true);});
+window.addEventListener('focus',()=>{if(SYNC.on&&SYNC.last&&Date.now()-SYNC.last>5000)cPull(true);});
+
+/* ---- 처음 연결 ---- */
+async function cloudInit(){
+  const c=cCfg();
+  if(IS_SUBWIN){cDot(c.key&&c.team&&!c.off?'ok':'off',c.key&&!c.off?'공용 저장소 사용 중 (이 창은 큰 창을 따라와요)':'');return;}
+  if(!c.url||!c.key||c.off){cDot('off',c.key?'이 브라우저에만 저장하고 있어요':'공용 저장소 키가 아직 없어요');return;}
+  if(!c.team||!cMe()){cDot('need','작업자 이름과 팀 비밀번호를 넣어 주세요');openCloudPop();return;}
+  cDot('wait','공용 저장소 연결 중');
+  try{
+    const p=await cRpc('gj_ping',{});
+    if(!p||!p.ok){cDot('need','팀 비밀번호가 맞지 않아요');openCloudPop('팀 비밀번호가 맞지 않아요. 다시 넣어 주세요.');return;}
+  }catch(e){cFail(e);setTimeout(cloudInit,20000);return;}
+  if(cLoadMeta()){SYNC.on=true;startPoll();cloudSchedule(true);cPull(true);return;}
+  /* 이 브라우저는 처음 → 공용 목록과 맞추는 방법을 고른다 */
+  let res;
+  try{res=await cRpc('gj_pull',{p_since:null});}catch(e){cFail(e);return;}
+  const R=(res.rows||[]).length,L=DATA.length;
+  const begin=()=>{SYNC.on=true;SYNC.since=res.now;SYNC.last=new Date();(res.files||[]).forEach(f=>{SYNC.files[f.k]={t:f.t,n:f.n,s:f.s,b:f.b};});startPoll();cDot('ok','공용 저장소와 맞춤');};
+  if(!R){
+    if(!L){begin();SYNC.lay={r:0,h:''};cSaveMeta();cDot('ok','공용 저장소 연결 · 아직 목록이 없어요');return;}
+    askConfirm('공용 저장소가 아직 비어 있어요.\n이 브라우저의 목록 '+L+'건을 공용 목록으로 올릴까요?\n\n올리면 다른 작업자도 이 목록을 같이 보고 고쳐요.\n(이 브라우저 목록은 그대로 남아요)',
+      ()=>{begin();SYNC.base=new Map();SYNC.lay={r:0,h:''};SYNC.allowDel=false;cSaveMeta();cloudSchedule(true);toast('공용 저장소에 '+L+'건을 올리고 있어요');},
+      {title:'공용 저장소 처음 연결',ok:'올리기',cancel:'나중에',onNo:()=>{cDot('off','공용 저장소에 아직 안 올렸어요 · 눌러서 연결');}});
+    return;
+  }
+  const take=()=>{
+    if(L)downloadBackup('공정관리_연결전_백업_');
+    DATA=[];DISP=[];COL={};colWidth={};SYNC.base=new Map();
+    const Ry=res.meta&&res.meta.layout;
+    if(Ry){cMergeLayout(Ry.v);SYNC.lay={r:Ry.r,h:cLayHash(Ry.v||{})};}else SYNC.lay={r:0,h:''};
+    const st=cApplyRows(res.rows||[]);st.lay=true;st.n=st.n||1;
+    begin();cAfterApply(st,true);
+    goTab('manage');toast('공용 목록 '+DATA.length+'건을 받았어요');
+  };
+  if(!L){take();return;}
+  askConfirm('공용 저장소에 이미 목록 '+R+'건이 있어요.\n\n이 브라우저의 목록 '+L+'건은 백업 파일로 내려받아 두고,\n공용 목록으로 바꿔서 같이 쓸게요.',
+    take,{title:'공용 저장소 연결',ok:'공용 목록 쓰기',cancel:'나중에',onNo:()=>{cDot('off','공용 저장소에 아직 연결 안 했어요 · 눌러서 연결');}});
+}
+function downloadBackup(prefix){
+  try{
+    const blob=new Blob([JSON.stringify({...stateObj(),SAFE},null,1)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=(prefix||'공정관리_백업_')+new Date().toISOString().slice(0,10)+'.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  }catch(e){}
+}
+/* 올리기 전에 한 번 받아 오기 (업로드할 때 최신 목록 위에 얹도록) */
+async function cloudBefore(fn){
+  if(SYNC.on&&!IS_SUBWIN){try{await cPull(true);}catch(e){}}
+  fn();
+}
+
+/* ---- 공용 파일 (SKB 원본 양식) ---- */
+function cBufB64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
+function cB64Buf(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer;}
+function cCloudReady(){const c=cCfg();return !!(c.url&&c.key&&c.team&&!c.off);}
+async function cFilePut(k,name,size,buf){
+  if(!cCloudReady())return false;
+  try{const r=await cRpc('gj_file_put',{p_key:k,p_name:name,p_size:size,p_b64:cBufB64(buf),p_by:cMe()});SYNC.files[k]={t:r.t,n:name,s:size,b:cMe()};return true;}
+  catch(e){toast('공용 저장소에 양식을 올리지 못했어요 · 이 브라우저에는 등록됐어요',true);return false;}
+}
+/* 이 브라우저에 없거나 공용 쪽이 더 새것이면 받아 온다 */
+const T_CHECKED={};
+async function cTplGet(k){
+  const loc=await tplGet(k).catch(()=>null);
+  if(!cCloudReady())return loc;
+  let fm=null;try{const s=JSON.parse(localStorage.getItem(LS_SYNC)||'null');fm=s&&s.files&&s.files[k];}catch(e){}
+  if(fm){if(loc&&loc.cat&&loc.cat>=new Date(fm.t).getTime())return loc;}
+  else if(T_CHECKED[k])return loc;
+  T_CHECKED[k]=1;
+  try{
+    const f=await cRpc('gj_file_get',{p_key:k});
+    if(!f||!f.d)return loc;
+    const ct=new Date(f.t).getTime();
+    if(loc&&loc.cat&&loc.cat>=ct)return loc;
+    const v={name:f.n,at:ct,cat:ct,size:f.s,buf:cB64Buf(f.d),by:f.b};
+    await tplPut(k,v);return v;
+  }catch(e){return loc;}
+}
+
+/* ---- 설정 창 ---- */
+function openCloudPop(warn){
+  const c=cCfg(),pop=document.getElementById('cloudPop');if(!pop)return;
+  document.getElementById('cpMe').value=cMe();
+  document.getElementById('cpTeam').value='';
+  document.getElementById('cpTeam').placeholder=c.team?'(저장돼 있어요 · 바꿀 때만 입력)':'팀 비밀번호';
+  document.getElementById('cpUrl').value=c.url;
+  document.getElementById('cpKey').value=c.key===CLOUD_DEF.key?'':c.key;
+  document.getElementById('cpKey').placeholder=CLOUD_DEF.key?'(기본 키 사용 중)':'Supabase anon public 키';
+  const w=document.getElementById('cpWarn');w.textContent=warn||'';w.classList.toggle('hide',!warn);
+  const st=document.getElementById('cpState');
+  st.innerHTML=SYNC.on
+    ?'<b style="color:#059669">● 연결됨</b> · 공용 목록 '+SYNC.base.size+'건'+(SYNC.last?' · 마지막 맞춤 '+hhmm(SYNC.last):'')
+    :(c.off?'<b style="color:#64748b">● 이 브라우저에만 저장 중</b>':'<b style="color:#B45309">● 아직 연결 안 됨</b>')+(c.key?'':' · 저장소 키가 없어요 (아래 「저장소」에 넣어 주세요)');
+  document.getElementById('cpSync').classList.toggle('hide',!SYNC.on);
+  document.getElementById('cpOff').textContent=SYNC.on?'연결 끊기 (이 브라우저만 쓰기)':'이 브라우저만 쓰기';
+  document.getElementById('cpAdv').open=!c.key;
+  pop.classList.remove('hide');
+  setTimeout(()=>{const f=!cMe()?'cpMe':(!c.team?'cpTeam':'cpMe');document.getElementById(f).focus();},0);
+}
+function closeCloudPop(){document.getElementById('cloudPop').classList.add('hide');}
+function bindCloudPop(){
+  const pop=document.getElementById('cloudPop');if(!pop)return;
+  document.getElementById('btnCloud').addEventListener('click',()=>openCloudPop());
+  document.getElementById('cpX').addEventListener('click',closeCloudPop);
+  pop.addEventListener('click',e=>{if(e.target===pop)closeCloudPop();});
+  pop.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();document.getElementById('cpGo').click();}else if(e.key==='Escape')closeCloudPop();});
+  document.getElementById('cpGo').addEventListener('click',async()=>{
+    const me=document.getElementById('cpMe').value.trim(),pw=document.getElementById('cpTeam').value;
+    const url=document.getElementById('cpUrl').value.trim().replace(/\/+$/,''),key=document.getElementById('cpKey').value.trim();
+    if(!me){toast('작업자 이름을 넣어 주세요',true);document.getElementById('cpMe').focus();return;}
+    const c=cCfg();
+    if(!pw&&!c.team){toast('팀 비밀번호를 넣어 주세요',true);document.getElementById('cpTeam').focus();return;}
+    try{localStorage.setItem(LS_ME,me);}catch(e){}
+    cCfgSave({url:url||CLOUD_DEF.url,key:key||CLOUD_DEF.key,team:pw?cB64(pw):c.team,off:false});
+    closeCloudPop();
+    if(SYNC.on&&!pw&&url===c.url){cDot('ok','공용 저장소와 맞춤');toast('작업자 이름을 바꿨어요 · '+me);return;}
+    SYNC.on=false;stopPoll();
+    if(cLoadMeta()===false||url!==c.url){SYNC.base=new Map();}
+    await cloudInit();
+  });
+  document.getElementById('cpOff').addEventListener('click',()=>{
+    askConfirm('공용 저장소 연결을 끊고 이 브라우저에만 저장할까요?\n\n· 지금 목록은 이 브라우저에 그대로 남아요\n· 다른 작업자가 고친 내용은 더는 들어오지 않아요\n· 다시 연결하면 공용 목록으로 맞춰요',()=>{
+      SYNC.on=false;stopPoll();cCfgSave({off:true});try{localStorage.removeItem(LS_SYNC);}catch(e){}
+      SYNC.base=new Map();closeCloudPop();cDot('off','이 브라우저에만 저장하고 있어요');
+    },{title:'연결 끊기',ok:'끊기'});
+  });
+  document.getElementById('cpSync').addEventListener('click',async()=>{await cPush();await cPull(true);openCloudPop();toast('공용 저장소와 맞췄어요');});
+}
+
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
@@ -5157,6 +5618,7 @@ if(PWIN)renderPerWin();
 if(SKBWIN)renderSkbWin();
 updateUpMode();showPrevBtn();syncToolbar();syncHbar();
 document.getElementById('mapBox').innerHTML='';
+bindCloudPop();cloudInit();
 </script>
 </body>
 </html>
