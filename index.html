@@ -347,6 +347,13 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .gsub{display:none;}
 .per{--pc:#be185d;--pbg:#fff;--phd:#fff;border:2px solid var(--pc);border-radius:10px;margin:0;display:flex;flex-direction:column;background:var(--pbg);overflow:hidden;flex:1 1 0;min-height:0;}
 #pBody{display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:8px 10px;}
+.mstat{flex:1 1 0;min-height:0;border:2px dashed #e2e8f0;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;}
+.mstat span{font-size:12px;color:#cbd5e1;}
+.per.one{flex:1.6 1 0;}
+.per-h .psel{display:inline-flex;border:1.5px solid var(--pc);border-radius:8px;overflow:hidden;}
+.per-h .psel button{border:0;border-right:1px solid color-mix(in srgb,var(--pc) 35%,#fff);background:#fff;color:var(--c);font-family:inherit;font-size:13px;font-weight:800;padding:3px 11px;cursor:pointer;}
+.per-h .psel button:last-child{border-right:0;}
+.per-h .psel button.on{background:var(--c);color:#fff;}
 .per-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 10px;flex:none;background:var(--phd);}
 .per-h .pn{font-size:15px;font-weight:800;color:var(--pc);min-width:34px;}
 .per-h .nav2,.pw-h .nav2{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:#475569;font-variant-numeric:tabular-nums;}
@@ -1334,8 +1341,9 @@ td.left{text-align:left;}
    BUILD 97: 기간 목록 창 — 완료 목록은 「정산유무」(정산 상황) · 대기(불가) 배지 밑에 사유(빨간 글자)
    BUILD 98: 사업 카드 — 작업자 글자·20일 판정·이슈·회신 문구 빼고, 진행률 막대(빨강/흰색) + 지금 단계 날짜를 빨간 글자로
    BUILD 99: 사업 카드 진행 막대 — 실시간 8단계 / 탐사 5단계로 나눠 지금 단계에 정확히 빨간 글자
+   BUILD 100: 추가사업 현황 — 일별·주간·월간 3칸을 한 칸으로 합치고 위에서 고르기 · 위쪽은 월간 통계 자리(빈 칸)
    ======================================================================== */
-const BUILD_NO='99';
+const BUILD_NO='100';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3058,6 +3066,7 @@ function wsBadge(d){
 const PERS=[{k:'d',name:'일별',c:'#F43F5E',bg:'#FFFAFB',hd:'#FFF0F3'},{k:'w',name:'주간',c:'#EA002C',bg:'#FFFCF5',hd:'#FFF5E1'},{k:'m',name:'월간',c:'#9F1239',bg:'#F6FCF8',hd:'#E6F6EC'}];
 const PKIND=[{k:'add',name:'추가',c:'#EA002C'},{k:'start',name:'착수',c:'#059669'},{k:'done',name:'완료',c:'#2563EB'}];
 let PST={d:{off:0,kind:'add'},w:{off:0,kind:'add'},m:{off:0,kind:'add'}};
+let PSEL=(()=>{try{return localStorage.getItem('gongjeong_psel_v1')||'w';}catch(e){return 'w';}})();   /* BUILD 100 : 일별·주간·월간 중 지금 보는 것 */
 const day0=dt=>new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());
 function perRange(k,off){
   const t=day0(new Date());
@@ -3091,12 +3100,12 @@ function perRows(k,off){
 }
 function renderPeriods(){
   const box=document.getElementById('pBody');if(!box)return;
-  let h='';
-  PERS.forEach(P=>{
+  let h='<div class="mstat" id="mStat"><span>월간 통계 자리 (준비 중)</span></div>';
+  [PERS.find(x=>x.k===PSEL)||PERS[1]].forEach(P=>{
     const st=PST[P.k],o=perRows(P.k),rows=o.sets[st.kind];
     const dfn={add:addedDate,start:startDate,done:doneDate}[st.kind];
     rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
-    h+='<div class="per" style="--pc:'+P.c+';--pbg:'+P.bg+';--phd:'+P.hd+'"><div class="per-h"><span class="pn">'+P.name+'</span>'+
+    h+='<div class="per one" style="--pc:'+P.c+';--pbg:'+P.bg+';--phd:'+P.hd+'"><div class="per-h"><span class="psel">'+PERS.map(X=>'<button class="'+(X.k===P.k?'on':'')+'" data-psel="'+X.k+'" style="--c:'+X.c+'">'+X.name+'</button>').join('')+'</span>'+
        '<span class="nav2"><button data-pm="'+P.k+'" data-dv="-1" aria-label="이전">◀</button><span>'+perLabel(P.k,o.r)+'</span><button data-pm="'+P.k+'" data-dv="1" aria-label="다음">▶</button>'+(st.off?'<button data-pm="'+P.k+'" data-dv="0" title="오늘로" style="width:auto;padding:0 6px;">오늘</button>':'')+'</span>'+
        PKIND.map(K=>'<button class="pk3'+(st.kind===K.k?' on':'')+'" data-pk="'+P.k+'" data-kind="'+K.k+'" style="--c:'+K.c+'">'+K.name+' <b>'+o.sets[K.k].length+'</b>건</button>').join('')+
        '<button class="pwbtn" data-pw="'+P.k+'" title="이 기간 목록을 별도 창으로 (다른 모니터로 옮길 수 있어요)">목록 창 ↗</button></div>';
@@ -3125,6 +3134,8 @@ function renderPeriods(){
   document.getElementById('pNote').textContent=nAdded?('등록일 기록 '+nAdded+'건 · 나머지는 요청일 기준'):'추가 = 요청일 기준 (기준 리스트 이후 들어온 건은 등록일)';
 }
 document.getElementById('pBody').addEventListener('click',e=>{
+  const ps=e.target.closest('[data-psel]');
+  if(ps){PSEL=ps.dataset.psel;try{localStorage.setItem('gongjeong_psel_v1',PSEL);}catch(x){}renderPeriods();return;}
   const pw=e.target.closest('[data-pw]');
   if(pw){openPerWin(pw.dataset.pw);return;}
   const m=e.target.closest('[data-pm]');
