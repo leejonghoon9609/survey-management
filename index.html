@@ -350,10 +350,10 @@ body.skbwin #skbWin{display:flex;flex-direction:column;height:100vh;padding:10px
 .mstat{flex:1 1 0;min-height:0;border:2px dashed #e2e8f0;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;}
 .mstat span{font-size:12px;color:#cbd5e1;}
 .per.one{flex:1.6 1 0;}
-.per-h .psel{display:inline-flex;border:1.5px solid var(--pc);border-radius:8px;overflow:hidden;}
-.per-h .psel button{border:0;border-right:1px solid color-mix(in srgb,var(--pc) 35%,#fff);background:#fff;color:var(--c);font-family:inherit;font-size:13px;font-weight:800;padding:3px 11px;cursor:pointer;}
-.per-h .psel button:last-child{border-right:0;}
-.per-h .psel button.on{background:var(--c);color:#fff;}
+.per-h .psel{display:inline-flex;gap:5px;}
+.per-h .psel button{border:1.5px solid var(--c);border-radius:7px;background:#fff;color:var(--c);font-family:inherit;font-size:13px;font-weight:800;padding:3px 12px;cursor:pointer;}
+.per-h .psel button:hover{background:color-mix(in srgb,var(--c) 10%,#fff);}
+.per-h .psel button.on{background:var(--c);color:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 30%,transparent);}
 .per-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 10px;flex:none;background:var(--phd);}
 .per-h .pn{font-size:15px;font-weight:800;color:var(--pc);min-width:34px;}
 .per-h .nav2,.pw-h .nav2{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:#475569;font-variant-numeric:tabular-nums;}
@@ -1342,8 +1342,9 @@ td.left{text-align:left;}
    BUILD 98: 사업 카드 — 작업자 글자·20일 판정·이슈·회신 문구 빼고, 진행률 막대(빨강/흰색) + 지금 단계 날짜를 빨간 글자로
    BUILD 99: 사업 카드 진행 막대 — 실시간 8단계 / 탐사 5단계로 나눠 지금 단계에 정확히 빨간 글자
    BUILD 100: 추가사업 현황 — 일별·주간·월간 3칸을 한 칸으로 합치고 위에서 고르기 · 위쪽은 월간 통계 자리(빈 칸)
+   BUILD 101: 일별·주간·월간을 붙은 칸 대신 따로 떨어진 버튼 3개로
    ======================================================================== */
-const BUILD_NO='100';
+const BUILD_NO='101';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
