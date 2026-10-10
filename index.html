@@ -1176,8 +1176,10 @@ td.left{text-align:left;}
    BUILD 81: 사업현황 SKT를 지사별(수도권·경북·경남·강원·충청·서부)로 나누고,
              SKT·SKB 하위 카드를 접고 펴는 버튼 (상태 기억)
    BUILD 82: 하위 카드(지사·SKB 사업자)는 흰 바탕, 고르면 색 바탕 · 이름 글자만 서로 다른 색 · 처음엔 SKT·SKB 모두 접힘
+   BUILD 83: 사업현황 카드(전체 물량·SKT·지사·SKB·원인자)를 누르면 리스트에 완료 포함 전체가 나오게
+             단계 칸(완료 등)을 누르면 그 단계만 · 다시 누르거나 ✕ 로 풀면 「진행 중 전체」로
    ======================================================================== */
-const BUILD_NO='82';
+const BUILD_NO='83';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -2787,7 +2789,10 @@ document.getElementById('gBody').addEventListener('click',e=>{
   const b=e.target.closest('button[data-ph]');
   if(b){const g=b.dataset.g,p=b.dataset.ph;GSEL=(GSEL.g===g&&GSEL.ph===p)?{g:'',ph:''}:{g,ph:p};renderDash();return;}
   const c=e.target.closest('.gcard');
-  if(c){const g=c.dataset.g;GSEL=(GSEL.g===g&&!GSEL.ph)?{g:'',ph:''}:{g,ph:''};renderDash();}
+  if(c){const g=c.dataset.g;GSEL=(GSEL.g===g&&!GSEL.ph)?{g:'',ph:''}:{g,ph:''};
+    /* 카드를 고르면 완료 포함 전체, 풀면 진행 중 전체 */
+    const sel=document.getElementById('lTurn');if(sel&&sel.options.length)sel.value=GSEL.g?'':'open';
+    renderDash();}
 });
 
 /* ---- 작업 단계 (BUILD 70) : 실시간측량 → 결선 → 후측량 → 탱고 → 성과심사 → 완료 ----
@@ -3008,7 +3013,7 @@ document.getElementById('lTurn').addEventListener('change',()=>{GSEL.ph='';rende
 document.getElementById('lQ').addEventListener('input',renderLeftList);
 document.getElementById('lQ').addEventListener('keydown',e=>e.stopPropagation());
 document.getElementById('mgRight').addEventListener('click',e=>{
-  if(e.target.id==='lTagX'){GSEL={g:'',ph:''};renderDash();return;}
+  if(e.target.id==='lTagX'){GSEL={g:'',ph:''};const sel=document.getElementById('lTurn');if(sel)sel.value='open';renderDash();return;}
   const r=e.target.closest('.lrow[data-card]');if(r)openCard(r.dataset.card);
 });
 function renderDash(){
