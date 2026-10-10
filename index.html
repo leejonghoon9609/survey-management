@@ -544,11 +544,11 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-note textarea:focus{outline:none;border-color:#D69E00;box-shadow:0 0 0 3px rgba(214,158,0,.15);}
 .tc2-sv{font-size:11.5px;color:#94a3b8;margin-top:4px;min-height:15px;}
 .tc2-bot{flex:1;min-height:380px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;}
-.tc2-info{display:flex;flex-direction:column;min-height:0;border:2px solid #F9A8D4;border-radius:10px;padding:10px 12px;background:#fff;}
-.tc2-ih{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.tc2-ih .tc2-h{margin:0;}
-.tc2-tip{font-size:11.5px;color:#94a3b8;flex:1;}
-#tcSave{padding:5px 14px;font-weight:800;border:1.5px solid #2563EB;color:#2563EB;background:#fff;}
+.tc2-info{display:flex;flex-direction:column;min-height:0;border:2px solid #F9A8D4;border-radius:10px;padding:6px 10px 8px;background:#fff;}
+.tc2-ih{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+.tc2-ih .tc2-h{margin:0;font-size:13px;border-left-width:3px;padding-left:6px;}
+.tc2-tip{font-size:10.5px;color:#94a3b8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#tcSave{padding:1px 10px;font-size:12px;font-weight:800;border:1.5px solid #2563EB;color:#2563EB;background:#fff;}
 #tcSave:not(:disabled){background:#2563EB;color:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
 #tcSave:disabled{border-color:#e2e8f0;color:#cbd5e1;cursor:default;}
 .tc2-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-content:start;}
@@ -558,7 +558,7 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-grid .v{color:#1D4ED8;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tc2-grid .kv.z .v{color:#cbd5e1;font-weight:400;}
 .tc2-grid .kv.ch{background:#EFF6FF;}
-.tc2-grid .isec{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:8px 0 2px;padding-bottom:3px;border-bottom:2px solid color-mix(in srgb,var(--g) 45%,#fff);}
+.tc2-grid .isec{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:calc(var(--fs,12px) * .5) 0 1px;padding-bottom:3px;border-bottom:2px solid color-mix(in srgb,var(--g) 45%,#fff);}
 .tc2-grid .isec:first-child{margin-top:0;}
 .tc2-grid .isec>span:first-child{font-size:var(--fs,12px);font-weight:800;color:var(--g);}
 .tc2-grid .isec button{margin-left:auto;border:1.5px solid var(--g);background:#fff;color:var(--g);border-radius:6px;padding:0 9px;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;line-height:20px;}
@@ -576,7 +576,7 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .tc2-grid .kv.wide{grid-column:1/-1;grid-template-columns:112px minmax(0,1fr) auto;}
 .tc2-grid .kv.xl .k{color:#94a3b8;padding-left:10px;}
 .tc2-grid .kv.xl .v{color:#0f766e;}
-.tc2-grid .xadd{border:1.5px solid #16A34A;background:#F0FDF4;color:#15803D;border-radius:6px;padding:0 9px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;line-height:15px;white-space:nowrap;}
+.tc2-grid .xadd{border:1px solid #16A34A;background:#F0FDF4;color:#15803D;border-radius:5px;padding:0 7px;font-family:inherit;font-size:calc(var(--fs,12px) - 1.5px);font-weight:800;cursor:pointer;line-height:1.15;white-space:nowrap;}
 .tc2-grid .xadd:hover{background:#DCFCE7;}
 .tc2-grid.t1 .kv{padding:2px 4px;min-height:17px;font-size:11.5px;}
 .tc2-grid.t1 .isec{margin:5px 0 1px;}
@@ -1485,8 +1485,9 @@ td.left{text-align:left;}
    BUILD 115: 사업 카드 — 위 두 칸 키움 · 사업 정보 글자·줄 간격 키움 · 이슈사항·비고·비고 2 각각 「＋ 추가」(줄 단위 추가 메모)
    BUILD 116: 사업 정보 글자 크기는 BUILD 114 로 · 진행 막대·단계 글자를 키워 위 칸 빈 공간을 채움
    BUILD 117: 위 진행 칸 가로 넓힘 · 작업 특이사항 칸 좁힘
+   BUILD 118: 사업 정보 머리줄 작게 · 목록이 스크롤 없이 한 화면에 (글꼴 로딩·창 크기 바뀔 때도 다시 맞춤)
    ======================================================================== */
-const BUILD_NO='117';
+const BUILD_NO='118';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3982,7 +3983,8 @@ function openCard(id){
     '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
   document.getElementById('tcBody').innerHTML=H;
   document.getElementById('cardPop').classList.remove('hide');
-  fitCardInfo();requestAnimationFrame(fitCardInfo);setTimeout(fitCardInfo,300);
+  fitCardInfo();requestAnimationFrame(fitCardInfo);setTimeout(fitCardInfo,300);setTimeout(fitCardInfo,1000);
+  if(FIT_RO){FIT_RO.disconnect();const g=document.getElementById('tcInfo');if(g)FIT_RO.observe(g);}
   loadDwg(d);
 }
 /* ---- 작업 특이사항 칸 : 「작업 특이사항」 칸에 저장 (없으면 숨김 칸으로 만든다) ---- */
@@ -4130,13 +4132,15 @@ function addInfoField(sec){
 function fitCardInfo(){
   const g=document.getElementById('tcInfo');if(!g)return;
   g.classList.remove('t1','t2','t3');
-  const steps=[[12,3],[12,2],[11.5,2],[11.5,1],[11,1],[11,0],[10.5,0],[10,0],[9.5,0]];
+  const steps=[[12,3],[12,2],[11.5,2],[11.5,1],[11,1],[11,0],[10.5,0],[10,0],[9.5,0],[9,0],[8.5,0]];
   for(const [fs,pv] of steps){
     g.style.setProperty('--fs',fs+'px');g.style.setProperty('--pv',pv+'px');
     if(g.scrollHeight<=g.clientHeight+1)break;
   }
 }
 window.addEventListener('resize',()=>{if(CARD_ID!=null)fitCardInfo();});
+try{document.fonts&&document.fonts.ready.then(()=>{if(CARD_ID!=null)fitCardInfo();});}catch(e){}
+const FIT_RO=(typeof ResizeObserver!=='undefined')?new ResizeObserver(()=>{if(CARD_ID!=null)fitCardInfo();}):null;
 function renderCardInfo(){
   const d=DATA.find(x=>String(x._id)===String(CARD_ID));const box=document.getElementById('tcInfo');if(!d||!box)return;
   const st=box.scrollTop;box.innerHTML=cardInfoHTML(d);fitCardInfo();box.scrollTop=st;
