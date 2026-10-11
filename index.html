@@ -974,6 +974,39 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .rdw-tabs{display:flex;gap:6px;margin:0 0 6px;}
 .rdw-tabs button{font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:2px 10px;background:#fff;color:#334155;font-family:inherit;cursor:pointer;}
 .rdw-tabs button.on{border-color:#EA002C;color:#EA002C;font-weight:700;}
+/* ===== BUILD 122 : 입력 칸 줄이고 오른쪽에 의뢰 도면 칸 ===== */
+.ad-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:stretch;}
+.ad-left{min-width:0;}
+#p-add .ad-fg{gap:6px 8px;}
+#p-add .ad-f input,#p-add .ad-f select{height:30px;font-size:12.5px;padding:4px 8px;}
+#p-add .ad-f label{font-size:11.5px;margin-bottom:2px;}
+#p-add .ad-grp{margin:7px 0 5px;}
+#p-add .ad-src{margin-bottom:4px;}
+#p-add .ad-src button{padding:4px 14px;font-size:13px;}
+#p-add .ad-src button:disabled{cursor:default;opacity:.45;}
+#p-add .ad-src button.on:disabled{opacity:1;}
+#p-add .ad-act .btn{padding:5px 14px;font-size:13px;}
+.ad-view{background:#FFF7ED;border:1px solid #fed7aa;color:#9a3412 !important;border-radius:6px;padding:2px 9px;font-size:12px !important;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:720px;}
+.ad-dw{position:relative;min-height:300px;border:1.5px solid #bfdbfe;border-radius:10px;background:#f8fbff;overflow:hidden;}
+.ad-dw.over{border-color:#2563eb;background:#eff6ff;}
+.ad-dh{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #dbeafe;height:35px;}
+.ad-dh b{font-size:13px;font-weight:800;color:#1d4ed8;white-space:nowrap;}
+.ad-dh>span:not(.ad-dbt){font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.ad-dbt{margin-left:auto;display:flex;gap:5px;flex:none;}
+.ad-dbt button,.ad-dtabs button{border:1px solid #bfdbfe;background:#fff;border-radius:6px;padding:2px 9px;font-size:12px;color:#1d4ed8;font-family:inherit;white-space:nowrap;cursor:pointer;}
+.ad-dbt button.x{color:#B91C1C;border-color:#fecaca;}
+.ad-db{position:absolute;left:0;right:0;top:35px;bottom:0;overflow:auto;display:flex;flex-direction:column;}
+.ad-db img{width:100%;display:block;cursor:zoom-in;}
+.ad-db iframe{flex:1;width:100%;border:0;background:#fff;}
+.ad-dtabs{display:flex;gap:5px;padding:5px 8px;border-bottom:1px solid #dbeafe;flex:none;}
+.ad-dtabs button.on{border-color:#1d4ed8;font-weight:700;background:#eff6ff;}
+.ad-drop{margin:10px;border:2px dashed #93c5fd;border-radius:10px;color:#64748b;font-size:12.5px;text-align:center;padding:16px 12px;line-height:1.7;flex:1;display:flex;flex-direction:column;justify-content:center;cursor:pointer;}
+.ad-drop b{display:block;color:#1e293b;font-size:14px;margin-bottom:2px;}
+.ad-drop small{font-size:11.5px;color:#94a3b8;}
+.ad-dmsg{flex:1;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:12.5px;text-align:center;padding:12px;line-height:1.7;}
+.td-row.sel{border-color:#EA002C;box-shadow:0 0 0 2px #fecdd3;background:#fff5f6;}
+.td-row .b button.go{border-color:#EA002C;color:#EA002C;font-weight:700;}
+@media (max-width:1250px){.ad-grid{grid-template-columns:minmax(0,1fr);}}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -1007,12 +1040,21 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
   <div class="page on" id="p-add">
     <div class="ad-top">
       <div class="ad-col">
-        <div class="ad-sec"><span class="no">1</span><b>새 사업 추가</b><span>매일 들어오는 사업을 넣는 자리</span></div>
+        <div class="ad-sec"><span class="no">1</span><b>새 사업 추가</b><span id="adSub">매일 들어오는 사업을 넣는 자리</span></div>
         <div class="card" id="mode-in">
-          <div class="ad-src" id="adSrc"><span class="lb">발주처</span><button type="button" data-src="SKT">SKT</button><button type="button" data-src="SKB">SKB</button><button type="button" data-src="원인자">원인자</button><span class="note">고르면 그 리스트 양식의 칸으로 바뀌어요</span></div>
-          <div id="adForm"></div>
-          <div id="adDup"></div>
-          <div class="ad-act"><button type="button" class="btn btn-primary" id="adAdd">사업 추가</button><button type="button" class="btn" id="adAddMore">추가하고 계속 입력</button><span class="note">추가하면 목록에 바로 올라가요 · 측량 결과·정산 칸은 나중에 사업 카드에서 넣어요</span></div>
+          <div class="ad-grid">
+            <div class="ad-left">
+              <div class="ad-src" id="adSrc"><span class="lb">발주처</span><button type="button" data-src="SKT">SKT</button><button type="button" data-src="SKB">SKB</button><button type="button" data-src="원인자">원인자</button><span class="note" id="adSrcNote">고르면 그 리스트 양식의 칸으로 바뀌어요</span></div>
+              <div id="adForm"></div>
+              <div id="adDup"></div>
+            </div>
+            <div class="ad-dw" id="adDw">
+              <div class="ad-dh"><b>의뢰 도면</b><span id="adDwS"></span><span class="ad-dbt" id="adDwB"></span></div>
+              <div class="ad-db" id="adDwBody"></div>
+              <input type="file" id="adDwFile" class="hide" accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.pdf,.xlsx,.xlsm">
+            </div>
+          </div>
+          <div class="ad-act" id="adAct"></div>
         </div>
       </div>
       <div class="ad-col ad-side">
@@ -1935,8 +1977,10 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 118: 사업 정보 머리줄 작게 · 목록이 스크롤 없이 한 화면에 (글꼴 로딩·창 크기 바뀔 때도 다시 맞춤)
    BUILD 119: 진행 현황 칸 — 빨간 테두리·연한 바탕·「진행 현황」 제목 · 단계 칸 구분
    BUILD 120: 사업추가 — 새 사업 추가·엑셀로 올리기·관리를 한 화면에 · 발주처별 입력 양식 · 오늘 추가한 사업 · 측량 의뢰 양식 확인 창(m→km 붉은 칸 확인) · 도면 탭을 그림으로(의뢰 도면) · Eng 번호 「미정」은 중복 아님
+   BUILD 121: 추가사업 현황 — 열면 항상 「일별」부터 (주간·월간은 누르면 바뀜)
+   BUILD 122: 새 사업 추가 — 입력 칸을 줄이고 오른쪽에 의뢰 도면 칸(이미지·PDF·엑셀 도면 탭) · 오늘 추가한 사업 「여기서 보기」로 값·도면 보고 고치기
    ======================================================================== */
-const BUILD_NO='120';
+const BUILD_NO='122';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -3637,7 +3681,7 @@ function wsBadge(d){
 const PERS=[{k:'d',name:'일별',c:'#F43F5E',bg:'#FFFAFB',hd:'#FFF0F3'},{k:'w',name:'주간',c:'#EA002C',bg:'#FFFCF5',hd:'#FFF5E1'},{k:'m',name:'월간',c:'#9F1239',bg:'#F6FCF8',hd:'#E6F6EC'}];
 const PKIND=[{k:'add',name:'추가',c:'#EA002C'},{k:'start',name:'착수',c:'#059669'},{k:'done',name:'완료',c:'#2563EB'}];
 let PST={d:{off:0,kind:'add'},w:{off:0,kind:'add'},m:{off:0,kind:'add'}};
-let PSEL=(()=>{try{return localStorage.getItem('gongjeong_psel_v1')||'w';}catch(e){return 'w';}})();   /* BUILD 100 : 일별·주간·월간 중 지금 보는 것 */
+let PSEL='d';   /* BUILD 100 : 일별·주간·월간 중 지금 보는 것 */
 const day0=dt=>new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());
 function perRange(k,off){
   const t=day0(new Date());
@@ -3702,7 +3746,7 @@ function openMsWin(g,S){
 function renderPeriods(){
   const box=document.getElementById('pBody');if(!box)return;
   let h=monthStatHTML();
-  [PERS.find(x=>x.k===PSEL)||PERS[1]].forEach(P=>{
+  [PERS.find(x=>x.k===PSEL)||PERS.find(x=>x.k==='d')||PERS[0]].forEach(P=>{
     const st=PST[P.k],o=perRows(P.k),rows=o.sets[st.kind];
     const dfn={add:addedDate,start:startDate,done:doneDate}[st.kind];
     rows.sort((a,b)=>(dfn(b)||0)-(dfn(a)||0));
@@ -3738,7 +3782,7 @@ document.getElementById('pBody').addEventListener('click',e=>{
   const mw=e.target.closest('[data-msw]');
   if(mw){const [g,S]=mw.dataset.msw.split('|');openMsWin(g,S);return;}
   const ps=e.target.closest('[data-psel]');
-  if(ps){PSEL=ps.dataset.psel;try{localStorage.setItem('gongjeong_psel_v1',PSEL);}catch(x){}renderPeriods();return;}
+  if(ps){PSEL=ps.dataset.psel;renderPeriods();return;}
   const pw=e.target.closest('[data-pw]');
   if(pw){openPerWin(pw.dataset.pw);return;}
   const m=e.target.closest('[data-pm]');
@@ -6844,6 +6888,8 @@ const ADD_LS='gongjeong_addsrc_v1';
 const SRC_C={SKT:'#EA002C',SKB:'#2563EB','원인자':'#B45309'};
 let ADD_SRC=(()=>{try{const v=localStorage.getItem(ADD_LS);return SRC_C[v]?v:'SKT';}catch(e){return 'SKT';}})();
 let ADD_VAL={},ADD_TOUCH={},ADD_T=null;
+let ADD_VIEW=null,ADD_ORIG={},ADD_DIRTY=false;   /* BUILD 122 : 오늘 추가한 사업을 여기서 보기·고치기 (ADD_VIEW = 그 사업 고유번호) */
+function viewD(){return ADD_VIEW?(DATA.find(d=>d._uid===ADD_VIEW)||null):null;}
 const M2=['실시간','탐사'];
 const ADD_AUTO=new Set(['지역본부','사업자','대표사업자']);
 const ADD_FORM={
@@ -6866,14 +6912,15 @@ function addFreq(label){
 }
 function renderAddForm(){
   const box=document.getElementById('adForm');if(!box)return;
-  [...document.querySelectorAll('#adSrc [data-src]')].forEach(b=>{b.classList.toggle('on',b.dataset.src===ADD_SRC);b.style.setProperty('--c',SRC_C[b.dataset.src]);});
+  [...document.querySelectorAll('#adSrc [data-src]')].forEach(b=>{b.classList.toggle('on',b.dataset.src===ADD_SRC);b.style.setProperty('--c',SRC_C[b.dataset.src]);b.disabled=!!ADD_VIEW;});
+  const sn=document.getElementById('adSrcNote');if(sn)sn.textContent=ADD_VIEW?'넣은 사업의 발주처는 여기서 못 바꿔요':'고르면 그 리스트 양식의 칸으로 바뀌어요';
   let h='',dl='',n=0;
   ADD_FORM[ADD_SRC].forEach(g=>{
     h+='<div class="ad-grp">'+esc(g[0])+'</div><div class="ad-fg">';
     g[1].forEach(f=>{
       const l=f[0],o=f[1]||{};n++;
       let v=ADD_VAL[l];
-      if(v===undefined&&!ADD_TOUCH[l]){
+      if(v===undefined&&!ADD_TOUCH[l]&&!ADD_VIEW){
         if(o.date)v=todayYmd();
         else if(l==='시행시기')v=String(new Date().getFullYear()).slice(2)+'년';
         else if(ADD_AUTO.has(l)){const q=addFreq(l);if(q.n>=10&&q.share>=0.8)v=q.top;}   /* 그 리스트에서 거의 늘 같은 값인 칸만 미리 채운다 */
@@ -6881,56 +6928,66 @@ function renderAddForm(){
       }
       v=v==null?'':String(v);
       const id='adI'+n;let inp;
-      if(o.sel)inp='<select id="'+id+'" data-l="'+esc(l)+'"><option value=""></option>'+o.sel.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
+      const isDate=o.date&&(!v||/^\d{4}-\d{2}-\d{2}$/.test(v));   /* 날짜가 아닌 글자가 들어 있으면 글자 칸으로 — 값이 지워지지 않게 */
+      if(o.sel)inp='<select id="'+id+'" data-l="'+esc(l)+'"><option value=""></option>'+(v&&!o.sel.includes(v)?[v].concat(o.sel):o.sel).map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
       else{
         let la='';
         if(!o.nolist&&!o.date&&!o.num){const q=addFreq(l);if(q.list.length){la=' list="adL'+n+'"';dl+='<datalist id="adL'+n+'">'+q.list.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist>';}}
-        inp='<input id="'+id+'" data-l="'+esc(l)+'"'+(o.date?' type="date"':(o.num?' inputmode="decimal"':''))+la+' value="'+esc(v)+'" placeholder="'+esc(o.ph||'')+'" autocomplete="off">';
+        inp='<input id="'+id+'" data-l="'+esc(l)+'"'+(isDate?' type="date"':(o.num?' inputmode="decimal"':''))+la+' value="'+esc(v)+'" placeholder="'+esc(o.ph||'')+'" autocomplete="off">';
       }
       h+='<div class="ad-f'+(o.req?' req':'')+'" style="grid-column:span '+(o.w||1)+'"><label for="'+id+'">'+esc(o.t||l)+(o.req?' <i>*</i>':'')+'</label>'+inp+'</div>';
     });
     h+='</div>';
   });
   box.innerHTML=h+dl;
-  addDupCheck();
+  addDupCheck();renderAddAct();renderAddDw();
 }
 const normW=s=>String(s==null?'':s).replace(/\s+/g,' ').trim().toLowerCase();
 /* 같은 관리번호·Eng 번호·공사명이 이미 있는지 */
-function addFindDup(v){
+function addFindDup(v,self){
   const seq=normW(v['관리번호']).replace(/\s/g,''),eng=engKey(v['Eng 번호']),w=normW(v['공사명']);
   let hit=null;
-  if(seq)hit=DATA.find(d=>String(d.seq||'').replace(/\s/g,'').toLowerCase()===seq);
+  if(seq)hit=DATA.find(d=>d!==self&&String(d.seq||'').replace(/\s/g,'').toLowerCase()===seq);
   if(hit)return {d:hit,by:'관리번호',block:true};
-  if(eng)hit=DATA.find(d=>engKey(d.eng)===eng);
+  if(eng)hit=DATA.find(d=>d!==self&&engKey(d.eng)===eng);
   if(hit)return {d:hit,by:'Eng 번호'};
-  if(w)hit=DATA.find(d=>normW(d.work)===w);
+  if(w)hit=DATA.find(d=>d!==self&&normW(d.work)===w);
   if(hit)return {d:hit,by:'공사명'};
   return null;
 }
 function addDupCheck(){
   const box=document.getElementById('adDup');if(!box)return null;
-  const x=addFindDup(ADD_VAL);
+  const x=addFindDup(ADD_VAL,viewD());
   if(!x){box.innerHTML='';return null;}
   if(x.d._id==null)x.d._id=++idSeq;
   box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'">⚠ 같은 <b>'+x.by+'</b>'+(x.by==='공사명'?'이':'가')+' 이미 있어요 — '+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,60))+'」'+(x.block?' · 관리번호는 겹칠 수 없어요':'')+'<button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
   return x;
 }
 document.getElementById('mode-in').addEventListener('click',e=>{
-  const s=e.target.closest('[data-src]');
-  if(s){ADD_SRC=s.dataset.src;try{localStorage.setItem(ADD_LS,ADD_SRC);}catch(_){}
+  const s=e.target.closest('#adSrc [data-src]');
+  if(s){if(ADD_VIEW)return;ADD_SRC=s.dataset.src;try{localStorage.setItem(ADD_LS,ADD_SRC);}catch(_){}
     /* 발주처마다 기본값이 달라서, 손대지 않은 칸은 다시 채운다 */
     Object.keys(ADD_VAL).forEach(l=>{if(!ADD_TOUCH[l])delete ADD_VAL[l];});renderAddForm();return;}
   const o=e.target.closest('[data-ad-open]');if(o){openCard(o.dataset.adOpen);return;}
-  if(e.target.id==='adAdd'){addBizGo(false);return;}
-  if(e.target.id==='adAddMore'){addBizGo(true);return;}
+  const id=e.target.id;
+  if(id==='adAdd'){addBizGo(false);return;}
+  if(id==='adAddMore'){addBizGo(true);return;}
+  if(id==='adSave'){addViewSave();return;}
+  if(id==='adNew'){addLeave(addViewExit);return;}
+  if(id==='adCard'){const d=viewD();if(d){if(d._id==null)d._id=++idSeq;openCard(d._id);}return;}
+  /* 의뢰 도면 칸 */
+  if(e.target.closest('[data-dw-pick]')){document.getElementById('adDwFile').click();return;}
+  if(e.target.closest('[data-dw-zoom]')||e.target.id==='adDwImg'){const it=ADD_DW[ADD_DWI];if(it&&it.url)window.open(it.url,'_blank');return;}
+  if(e.target.closest('[data-dw-del]')){addDwSet([]);return;}
+  const t=e.target.closest('[data-dw-i]');if(t){ADD_DWI=+t.dataset.dwI;renderAddDw();return;}
 });
 document.getElementById('mode-in').addEventListener('input',e=>{
   const l=e.target.dataset&&e.target.dataset.l;if(!l)return;
-  ADD_VAL[l]=e.target.value;ADD_TOUCH[l]=1;
+  ADD_VAL[l]=e.target.value;ADD_TOUCH[l]=1;if(ADD_VIEW)ADD_DIRTY=true;
   const f=e.target.closest('.ad-f');if(f)f.classList.remove('bad');
   clearTimeout(ADD_T);ADD_T=setTimeout(addDupCheck,250);
 });
-document.getElementById('mode-in').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();addBizGo(e.shiftKey);}});
+document.getElementById('mode-in').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();if(ADD_VIEW)addViewSave();else addBizGo(e.shiftKey);}});
 function addBizGo(more){
   const fs=addFields(),v={};let bad=null;
   fs.forEach(f=>{
@@ -6942,14 +6999,20 @@ function addBizGo(more){
   });
   if(bad){toast('「'+(bad.f.o.t||bad.f.l)+'」'+bad.why,true);if(bad.el)bad.el.focus();return;}
   const dup=addFindDup(v);
-  const go=()=>{
-    const d=addBizRows([{src:ADD_SRC,v}])[0];
+  const go=async()=>{
+    if(ADD_BUSY)return;ADD_BUSY=true;
+    let d;
+    try{const refs=await addDwRefs();if(refs.length)v[RDW_LABEL]=refs.join(' | ');d=addBizRows([{src:ADD_SRC,v}])[0];}
+    catch(err){console.error(err);toast('추가하지 못했어요 · '+(err&&err.message||err),true);return;}
+    finally{ADD_BUSY=false;}
     const keep=more?['시행시기','지역본부','담당Manager','사업유형','공사협력사','행정구역','사업자','대표사업자','사업자 (정산 업체)','협력사 연락처','요청일','측량방법','굴착 작업일정','측량작업자 이름/연락처']:[];
     const nv={},nt={};keep.forEach(l=>{if(ADD_VAL[l]!==undefined){nv[l]=ADD_VAL[l];nt[l]=ADD_TOUCH[l];}});
-    ADD_VAL=nv;ADD_TOUCH=nt;renderAddForm();
+    ADD_VAL=nv;ADD_TOUCH=nt;if(!more)addDwSet([],true);   /* 계속 입력이면 같은 도면을 다음 사업에도 붙인다 */
+    renderAddForm();
     toast('추가했어요 · '+ADD_SRC+' 「'+String(d.work).slice(0,30)+'」');
     const first=document.querySelector('#adForm [data-l="'+(ADD_SRC==='원인자'?'관리번호':'공사명')+'"]');if(first)first.focus();
   };
+  if(ADD_DW_BUSY){toast('도면을 그림으로 바꾸는 중이에요 · 잠시 뒤에 눌러 주세요',true);return;}
   if(dup&&dup.block){toast('같은 관리번호가 이미 있어요 — 관리번호를 확인해 주세요',true);addDupCheck();return;}
   if(dup)askConfirm('같은 '+dup.by+(dup.by==='공사명'?'이':'가')+' 이미 있어요.\n\n· '+[dup.d._src||dup.d.baal,dup.d.seq,dup.d.eng].filter(Boolean).join(' ')+' 「'+String(dup.d.work).slice(0,50)+'」\n\n그래도 새 사업으로 추가할까요?',go,{title:'이미 있는 사업',ok:'추가'});
   else go();
@@ -6986,6 +7049,7 @@ function addBizRows(list){
 function isToday9(t){if(!t)return false;const a=new Date(t),b=new Date();return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
 function renderToday(){
   const box=document.getElementById('tdList');if(!box)return;
+  if(ADD_VIEW&&!viewD()){ADD_VIEW=null;ADD_VAL={};ADD_TOUCH={};ADD_ORIG={};ADD_DIRTY=false;addDwSet([],true);renderAddForm();}   /* 보던 사업이 지워졌으면 새 입력으로 */
   const rows=DATA.filter(d=>isToday9(d._added)).sort((a,b)=>b._added-a._added);
   document.getElementById('tdN').textContent=rows.length;
   if(!rows.length){box.innerHTML='<div class="td-empty">오늘 추가한 사업이 아직 없어요</div>';return;}
@@ -6994,11 +7058,12 @@ function renderToday(){
     if(d._id==null)d._id=++idSeq;
     const src=d._src||d.baal||'',by=bc?String(d.row[bc.idx]||''):'';
     const meta=[hhmm(new Date(d._added)),by,d.seq&&/[^0-9]/.test(d.seq)?d.seq:'',d.jisa].filter(Boolean).join(' · ');
-    return '<div class="td-row"><div class="t"><span class="td-chip" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src||'미정')+'</span>'+esc(meta)+'</div><div class="nm">'+esc(d.work||'(공사명 없음)')+'</div>'+
-      '<div class="b"><button type="button" data-td-open="'+d._id+'">카드 열기</button><button type="button" class="x" data-td-del="'+d._id+'">추가 취소</button></div></div>';
+    return '<div class="td-row'+(ADD_VIEW&&d._uid===ADD_VIEW?' sel':'')+'"><div class="t"><span class="td-chip" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src||'미정')+'</span>'+esc(meta)+'</div><div class="nm">'+esc(d.work||'(공사명 없음)')+'</div>'+
+      '<div class="b"><button type="button" class="go" data-td-view="'+d._id+'">여기서 보기</button><button type="button" data-td-open="'+d._id+'">카드 열기</button><button type="button" class="x" data-td-del="'+d._id+'">추가 취소</button></div></div>';
   }).join('')+(rows.length>CAP?'<div class="td-more">… 외 '+(rows.length-CAP)+'건 — 리스트관리 「추가사업 현황」에서 볼 수 있어요</div>':'');
 }
 document.getElementById('tdList').addEventListener('click',e=>{
+  const vw=e.target.closest('[data-td-view]');if(vw){const dv=DATA.find(r=>String(r._id)===String(vw.dataset.tdView));if(dv)addViewOpen(dv);return;}
   const o=e.target.closest('[data-td-open]');if(o){openCard(o.dataset.tdOpen);return;}
   const x=e.target.closest('[data-td-del]');if(!x)return;
   const d=DATA.find(r=>String(r._id)===String(x.dataset.tdDel));if(!d)return;
@@ -7250,9 +7315,10 @@ async function loadRdw(d){
   if(String(CARD_ID)!==String(d._id)||DWG_MODE!=='req')return;
   const tabs=refs.length>1?'<div class="rdw-tabs">'+refs.map((r,i)=>'<button type="button" data-rdw="'+i+'" class="'+(i===RDW_I?'on':'')+'">'+esc(r.name)+'</button>').join('')+'</div>':'';
   if(!f||!f.buf){box.innerHTML=tabs+'<div class="tc2-empty">의뢰 도면을 불러오지 못했어요<br><span>공용 저장소 연결을 확인해 주세요</span></div>';return;}
-  DWG_URL=URL.createObjectURL(new Blob([f.buf],{type:'image/jpeg'}));
-  box.innerHTML=tabs+'<div class="tc2-fi"><b>'+esc(f.name)+'</b> · '+(f.size?Math.round(f.size/1024).toLocaleString()+' KB':'')+(f.by?' · '+esc(f.by):'')+(f.at?' · '+fmtDate(new Date(f.at)):'')+' · 그림을 누르면 크게 보여요</div>'+
-    '<div class="tc2-pv"><img class="zoomable" id="tcRdwImg" src="'+DWG_URL+'" alt="의뢰 도면"></div>';
+  const rext=(String(f.name).split('.').pop()||'').toLowerCase(),rmime=DWG_MIME[rext]||'image/jpeg';
+  DWG_URL=URL.createObjectURL(new Blob([f.buf],{type:rmime}));
+  box.innerHTML=tabs+'<div class="tc2-fi"><b>'+esc(f.name)+'</b> · '+(f.size?Math.round(f.size/1024).toLocaleString()+' KB':'')+(f.by?' · '+esc(f.by):'')+(f.at?' · '+fmtDate(new Date(f.at)):'')+(rmime==='application/pdf'?'':' · 그림을 누르면 크게 보여요')+'</div>'+
+    (rmime==='application/pdf'?'<iframe class="tc2-pdf" src="'+DWG_URL+'" title="의뢰 도면"></iframe>':'<div class="tc2-pv"><img class="zoomable" id="tcRdwImg" src="'+DWG_URL+'" alt="의뢰 도면"></div>');
   dn.disabled=false;dn.dataset.name=f.name;
 }
 document.getElementById('cardPop').addEventListener('click',e=>{
@@ -7262,6 +7328,145 @@ document.getElementById('cardPop').addEventListener('click',e=>{
   const r=e.target.closest('[data-rdw]');if(r){RDW_I=+r.dataset.rdw;loadRdw(d);return;}
   if(e.target.id==='tcRdwImg'&&DWG_URL){window.open(DWG_URL,'_blank');return;}
 });
+
+/* ---------- BUILD 122 : 새 사업 추가 옆 의뢰 도면 칸 · 오늘 추가한 사업 「여기서 보기」 ---------- */
+let ADD_BUSY=false;
+let ADD_DW=[],ADD_DWI=0,ADD_DW_BUSY=0,ADD_DW_CH=false;   /* ADD_DW = [{ref:도면 이름, name:파일명, blob, type, url, key}] — key 가 있으면 이미 저장된 도면 */
+const ADW_MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp',pdf:'application/pdf'};
+function addDwSet(list,quiet){
+  ADD_DW.forEach(it=>{if(it.url&&!list.includes(it))URL.revokeObjectURL(it.url);});
+  ADD_DW=list;ADD_DWI=0;
+  if(!quiet){ADD_DW_CH=true;if(ADD_VIEW)ADD_DIRTY=true;renderAddDw();}
+}
+function renderAddAct(){
+  const a=document.getElementById('adAct'),sub=document.getElementById('adSub');if(!a)return;
+  const d=viewD();
+  if(d){
+    a.innerHTML='<button type="button" class="btn btn-primary" id="adSave">수정 저장</button><button type="button" class="btn" id="adNew">새 사업 입력으로</button><button type="button" class="btn" id="adCard">카드 열기</button><span class="note">오늘 추가한 사업을 보고 있어요 · 고친 뒤 「수정 저장」을 누르면 목록에 반영돼요</span>';
+    if(sub){sub.className='ad-view';sub.textContent='보는 중 · '+(d.work||'(공사명 없음)');sub.title=d.work||'';}
+  }else{
+    a.innerHTML='<button type="button" class="btn btn-primary" id="adAdd">사업 추가</button><button type="button" class="btn" id="adAddMore">추가하고 계속 입력</button><span class="note">추가하면 목록에 바로 올라가요 · 측량 결과·정산 칸은 나중에 사업 카드에서 넣어요</span>';
+    if(sub){sub.className='';sub.textContent='매일 들어오는 사업을 넣는 자리';sub.title='';}
+  }
+}
+function renderAddDw(){
+  const body=document.getElementById('adDwBody'),S=document.getElementById('adDwS'),B=document.getElementById('adDwB');if(!body)return;
+  if(ADD_DW_BUSY){S.textContent='';B.innerHTML='';body.innerHTML='<div class="ad-dmsg">도면을 그림으로 바꾸는 중…</div>';return;}
+  if(!ADD_DW.length){
+    S.textContent=ADD_VIEW?'이 사업에는 도면이 없어요':'이 사업에 붙일 도면';B.innerHTML='';
+    body.innerHTML='<div class="ad-drop" data-dw-pick="1"><b>도면을 올려 주세요</b>이미지 · PDF · 엑셀(도면 탭)<br>끌어다 놓거나 눌러서 선택<small>엑셀 도면 탭은 그림으로 바꿔서 보여 줘요</small></div>';return;
+  }
+  if(ADD_DWI>=ADD_DW.length)ADD_DWI=0;
+  const it=ADD_DW[ADD_DWI];
+  const tabs=ADD_DW.length>1?'<div class="ad-dtabs">'+ADD_DW.map((x,i)=>'<button type="button" data-dw-i="'+i+'" class="'+(i===ADD_DWI?'on':'')+'">'+esc(x.ref||'도면')+'</button>').join('')+'</div>':'';
+  B.innerHTML=(it.url&&it.type!=='application/pdf'?'<button type="button" data-dw-zoom="1">크게 보기</button>':(it.url?'<button type="button" data-dw-zoom="1">새 창</button>':''))+'<button type="button" data-dw-pick="1">바꾸기</button><button type="button" class="x" data-dw-del="1">빼기</button>';
+  if(!it.url){
+    S.textContent=it.ref||'';
+    if(it.err){body.innerHTML=tabs+'<div class="ad-dmsg">도면을 불러오지 못했어요<br>공용 저장소 연결을 확인해 주세요</div>';return;}
+    body.innerHTML=tabs+'<div class="ad-dmsg">불러오는 중…</div>';
+    if(it.key&&!it.loading){it.loading=true;
+      cTplGet(it.key).then(f=>{if(!f||!f.buf){it.err=1;}else{const ext=(String(f.name).split('.').pop()||'').toLowerCase();it.type=ADW_MIME[ext]||'image/jpeg';it.name=f.name;it.size=f.size;it.url=URL.createObjectURL(new Blob([f.buf],{type:it.type}));}},()=>{it.err=1;})
+        .then(()=>{it.loading=false;if(ADD_DW.includes(it))renderAddDw();else if(it.url)URL.revokeObjectURL(it.url);});}
+    return;
+  }
+  const kb=it.size||(it.blob&&it.blob.size)||0;
+  S.textContent=(it.ref&&it.ref!=='도면'?'「'+it.ref+'」 · ':'')+(kb?Math.round(kb/1024).toLocaleString()+' KB':'')+(it.key?'':' · 아직 저장 전');
+  S.title=it.name||'';
+  body.innerHTML=tabs+(it.type==='application/pdf'?'<iframe src="'+it.url+'" title="의뢰 도면"></iframe>':'<img id="adDwImg" src="'+it.url+'" alt="의뢰 도면">');
+}
+async function addDwFile(file){
+  if(!file||ADD_DW_BUSY)return;
+  const ext=(String(file.name).split('.').pop()||'').toLowerCase();
+  if(file.size>20*1024*1024){toast('20MB 보다 큰 파일은 올릴 수 없어요 ('+Math.round(file.size/1048576)+'MB)',true);return;}
+  if(ADW_MIME[ext]){addDwSet([{ref:'도면',name:file.name,blob:file,type:ADW_MIME[ext],url:URL.createObjectURL(file)}]);return;}
+  if(ext!=='xlsx'&&ext!=='xlsm'){toast(ext==='xls'?'예전 엑셀(.xls)은 도면을 읽지 못해요 · .xlsx 로 저장해서 올려 주세요':'이미지 · PDF · 엑셀(.xlsx) 파일만 올릴 수 있어요',true);return;}
+  ADD_DW_BUSY++;renderAddDw();
+  const out=[];
+  try{
+    const u8=new Uint8Array(await file.arrayBuffer());
+    const ls=gjDrawing.list(u8).filter(s=>s.pics>0||s.shapes>=5);
+    if(!ls.length){toast('이 엑셀에는 도면·개황도 탭이 없어요',true);}
+    const base=String(file.name).replace(/\.[^.]+$/,'');
+    for(const g of ls){
+      const r=await gjDrawing.render(u8,g.sheet,{maxSide:6000});
+      const blob=await new Promise(res=>r.canvas.toBlob(res,'image/jpeg',0.85));r.canvas.width=1;r.canvas.height=1;
+      if(blob)out.push({ref:g.sheet,name:base+'_'+g.sheet+'.jpg',blob:blob,type:'image/jpeg',url:URL.createObjectURL(blob)});
+    }
+  }catch(e){console.error(e);toast('도면을 그림으로 바꾸지 못했어요 · '+(e&&e.message||e),true);}
+  ADD_DW_BUSY--;
+  if(out.length)addDwSet(out);else renderAddDw();
+}
+/* 아직 저장 안 된 도면을 저장하고 '이름@rdw:고유번호' 목록을 돌려준다 */
+async function addDwRefs(){
+  const refs=[];
+  for(const it of ADD_DW){
+    if(!it.key){
+      const k='rdw:'+cUid(),buf=await it.blob.arrayBuffer();
+      const v={name:it.name,at:Date.now(),size:buf.byteLength,buf:buf,by:cMe()};
+      await tplPut(k,v);
+      if(await cFilePut(k,it.name,buf.byteLength,buf)){const f=SYNC.files[k];if(f){v.cat=new Date(f.t).getTime();await tplPut(k,v);}}
+      it.key=k;it.size=buf.byteLength;
+    }
+    refs.push(String(it.ref||'도면').replace(/[@|]/g,' ')+'@'+it.key);
+  }
+  return refs;
+}
+document.getElementById('adDwFile').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';addDwFile(f);});
+(function(){const z=document.getElementById('adDw');
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over');});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');if(e.dataTransfer.files[0])addDwFile(e.dataTransfer.files[0]);});})();
+/* 고치던 것이 있으면 한 번 물어보고 넘어간다 */
+function addLeave(fn){
+  if(ADD_VIEW&&ADD_DIRTY)askConfirm('고친 내용을 아직 저장하지 않았어요.\n저장하지 않고 넘어갈까요?',fn,{title:'저장 안 함',ok:'넘어가기'});
+  else fn();
+}
+function addViewLoad(d){
+  ADD_VIEW=d._uid;if(SRC_C[d._src])ADD_SRC=d._src;else if(SRC_C[d.baal])ADD_SRC=d.baal;
+  ADD_VAL={};ADD_TOUCH={};ADD_ORIG={};
+  addFields().forEach(f=>{const c=DISP.find(x=>x.label===f.l);let v=c?d.row[c.idx]:'';v=v==null?'':String(isDateObj(v)?fmtDate(v):v);ADD_VAL[f.l]=v;ADD_ORIG[f.l]=v.trim();ADD_TOUCH[f.l]=1;});
+  addDwSet(rdwRefs(d).map(r=>({ref:r.name,key:r.key})),true);ADD_DW_CH=false;ADD_DIRTY=false;
+}
+function addViewOpen(d){
+  ensureIds();
+  if(ADD_VIEW===d._uid)return;
+  addLeave(()=>{addViewLoad(d);renderAddForm();renderToday();});
+}
+function addViewExit(){
+  ADD_VIEW=null;ADD_VAL={};ADD_TOUCH={};ADD_ORIG={};ADD_DIRTY=false;addDwSet([],true);ADD_DW_CH=false;
+  renderAddForm();renderToday();
+}
+async function addViewSave(){
+  const d=viewD();if(!d){addViewExit();return;}
+  if(ADD_BUSY)return;
+  if(ADD_DW_BUSY){toast('도면을 그림으로 바꾸는 중이에요 · 잠시 뒤에 눌러 주세요',true);return;}
+  const ch=[],cur={};let bad=null;
+  addFields().forEach(f=>{
+    const x=String(ADD_VAL[f.l]==null?'':ADD_VAL[f.l]).trim();cur[f.l]=x;
+    const el=document.querySelector('#adForm [data-l="'+CSS.escape(f.l)+'"]'),box=el&&el.closest('.ad-f');if(box)box.classList.remove('bad');
+    if(f.o.req&&!x){if(box)box.classList.add('bad');if(!bad)bad={f,el,why:'을(를) 넣어 주세요'};return;}
+    if(x===ADD_ORIG[f.l])return;   /* 손대지 않은 칸은 그대로 둔다 */
+    let val=x;
+    if(f.o.num&&x){const n=parseFloat(x.replace(/,/g,''));if(isNaN(n)||n<0){if(box)box.classList.add('bad');if(!bad)bad={f,el,why:'은(는) 숫자로 넣어 주세요 (km)'};return;}val=n;}
+    ch.push([f.l,val]);
+  });
+  if(bad){toast('「'+(bad.f.o.t||bad.f.l)+'」'+bad.why,true);if(bad.el)bad.el.focus();return;}
+  const dup=addFindDup(cur,d);
+  if(dup&&dup.block&&cur['관리번호']!==ADD_ORIG['관리번호']){toast('같은 관리번호가 이미 있어요 — 관리번호를 확인해 주세요',true);return;}
+  if(!ch.length&&!ADD_DW_CH){toast('바뀐 내용이 없어요');return;}
+  ADD_BUSY=true;
+  try{
+    const n0=DISP.length;
+    if(ADD_DW_CH){const refs=await addDwRefs();d.row[cLabelIdx(RDW_LABEL)]=refs.join(' | ');}
+    ch.forEach(z=>{d.row[cLabelIdx(z[0])]=z[1];});
+    if(DISP.length!==n0){repairCols();buildHead();buildColPanel();}
+    deriveItem(d);
+    markDup();buildFilters();renderCards();renderValidate();render();renderSettle();updateUpMode();markDirty();
+    addViewLoad(d);renderAddForm();renderToday();
+    toast('수정했어요 · 「'+String(d.work).slice(0,30)+'」');
+  }catch(err){console.error(err);toast('수정하지 못했어요 · '+(err&&err.message||err),true);}
+  finally{ADD_BUSY=false;}
+}
 
 /* 목록을 다시 그릴 때마다 「오늘 추가한 사업」도 맞춘다 */
 {const r0=render;render=function(){const x=r0.apply(this,arguments);try{renderToday();}catch(e){}return x;};}
