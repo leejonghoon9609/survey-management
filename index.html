@@ -1018,6 +1018,11 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .ad-adm .ln:nth-child(1){--bg:#F5F3FF;--bd:#DDD6FE;}
 .ad-adm .ln:nth-child(2){--bg:#EFF6FF;--bd:#BFDBFE;}
 .ad-adm .ln:nth-child(3){--bg:#FEF2F2;--bd:#FECACA;}
+/* ===== BUILD 124 : 새 사업 추가 아래 버튼마다 다른 색 ===== */
+#p-add .ad-act .btn.ad-b2{background:#EFF6FF;border-color:#2563EB;color:#1D4ED8;font-weight:700;}
+#p-add .ad-act .btn.ad-b2:hover{background:#DBEAFE;}
+#p-add .ad-act .btn.ad-b3{background:#FFB400;border-color:#E6A200;color:#3B2A00;font-weight:700;}
+#p-add .ad-act .btn.ad-b3:hover{background:#F5AC00;}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -1991,8 +1996,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 121: 추가사업 현황 — 열면 항상 「일별」부터 (주간·월간은 누르면 바뀜)
    BUILD 122: 새 사업 추가 — 입력 칸을 줄이고 오른쪽에 의뢰 도면 칸(이미지·PDF·엑셀 도면 탭) · 오늘 추가한 사업 「여기서 보기」로 값·도면 보고 고치기
    BUILD 123: 엑셀 올리는 칸 크게·테두리 선명하게(안내 글 없앰) · 관리 줄마다 연한 바탕색
+   BUILD 124: 새 사업 추가 아래 버튼마다 다른 색 (빨강 · 파랑 · 노랑)
    ======================================================================== */
-const BUILD_NO='123';
+const BUILD_NO='124';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7354,10 +7360,10 @@ function renderAddAct(){
   const a=document.getElementById('adAct'),sub=document.getElementById('adSub');if(!a)return;
   const d=viewD();
   if(d){
-    a.innerHTML='<button type="button" class="btn btn-primary" id="adSave">수정 저장</button><button type="button" class="btn" id="adNew">새 사업 입력으로</button><button type="button" class="btn" id="adCard">카드 열기</button><span class="note">오늘 추가한 사업을 보고 있어요 · 고친 뒤 「수정 저장」을 누르면 목록에 반영돼요</span>';
+    a.innerHTML='<button type="button" class="btn btn-primary" id="adSave">수정 저장</button><button type="button" class="btn ad-b2" id="adNew">새 사업 입력으로</button><button type="button" class="btn ad-b3" id="adCard">카드 열기</button><span class="note">오늘 추가한 사업을 보고 있어요 · 고친 뒤 「수정 저장」을 누르면 목록에 반영돼요</span>';
     if(sub){sub.className='ad-view';sub.textContent='보는 중 · '+(d.work||'(공사명 없음)');sub.title=d.work||'';}
   }else{
-    a.innerHTML='<button type="button" class="btn btn-primary" id="adAdd">사업 추가</button><button type="button" class="btn" id="adAddMore">추가하고 계속 입력</button><span class="note">추가하면 목록에 바로 올라가요 · 측량 결과·정산 칸은 나중에 사업 카드에서 넣어요</span>';
+    a.innerHTML='<button type="button" class="btn btn-primary" id="adAdd">사업 추가</button><button type="button" class="btn ad-b2" id="adAddMore">추가하고 계속 입력</button><span class="note">추가하면 목록에 바로 올라가요 · 측량 결과·정산 칸은 나중에 사업 카드에서 넣어요</span>';
     if(sub){sub.className='';sub.textContent='매일 들어오는 사업을 넣는 자리';sub.title='';}
   }
 }
