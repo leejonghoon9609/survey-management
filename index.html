@@ -852,6 +852,129 @@ td.left{text-align:left;}
   .stat-c,.vchip{min-width:92px;flex:1 1 92px;}
   .tblwrap{max-height:60vh;}
 }
+/* ===== BUILD 120 : 사업추가 — 세 파트 한 화면 ===== */
+#p-add .card{margin-bottom:0;padding:12px 16px;}
+.ad-top{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;align-items:stretch;}
+.ad-bot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 400px;gap:14px;margin-top:12px;align-items:stretch;}
+.ad-bot.noadm{grid-template-columns:minmax(0,1fr) 400px;}
+.ad-col{display:flex;flex-direction:column;min-width:0;}
+.ad-col>.card{flex:1;}
+.ad-sec{display:flex;align-items:center;gap:9px;margin:0 0 7px;}
+.ad-sec .no{width:23px;height:23px;border-radius:50%;background:#0f172a;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+.ad-sec b{font-size:15px;color:#0f172a;}.ad-sec>span:not(.no){font-size:12.5px;color:#64748b;}
+.ad-sec .ad-cnt{background:#EA002C;color:#fff !important;border-radius:10px;padding:1px 9px;font-size:12px !important;font-weight:700;}
+.ad-sec .ad-tag{background:#e2e8f0;color:#475569 !important;border-radius:4px;padding:2px 7px;font-size:11px !important;font-weight:800;}
+.ad-src{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}
+.ad-src .lb{font-size:13px;color:#475569;font-weight:600;margin-right:4px;}
+.ad-src button{border:1.5px solid #e2e8f0;background:#fff;border-radius:8px;padding:6px 20px;font-size:14px;font-weight:700;color:#64748b;font-family:inherit;cursor:pointer;}
+.ad-src button.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 8%,#fff);color:var(--c);}
+.ad-src .note{margin:0 0 0 6px;}
+.ad-grp{font-size:12.5px;font-weight:800;color:#EA002C;margin:9px 0 6px;display:flex;align-items:center;gap:8px;}
+.ad-grp:after{content:"";flex:1;height:1px;background:#fee2e2;}
+.ad-fg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px 10px;}
+.ad-f label{display:block;font-size:12px;color:#475569;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ad-f label i{color:#EA002C;font-style:normal;font-weight:800;}
+.ad-f input,.ad-f select{width:100%;height:33px;padding:5px 9px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:13px;color:#0f172a;background:#fff;}
+.ad-f input:focus,.ad-f select:focus{outline:2px solid #FFB400;outline-offset:-1px;border-color:#FFB400;}
+.ad-f.req input,.ad-f.req select{border-color:#fca5a5;background:#fffafa;}
+.ad-f.bad input,.ad-f.bad select{border-color:#EA002C;background:#fee2e2;}
+.ad-dup{margin-top:9px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:8px;padding:7px 11px;font-size:12.5px;display:flex;align-items:center;gap:10px;}
+.ad-dup.block{border-color:#fca5a5;background:#fee2e2;color:#991b1b;}
+.ad-dup button{margin:0 0 0 auto;border:1px solid currentColor;background:#fff;color:inherit;border-radius:6px;padding:3px 10px;font-size:12.5px;font-family:inherit;cursor:pointer;white-space:nowrap;}
+.ad-act{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+.ad-act .btn{margin-top:0;padding:7px 16px;font-size:13.5px;}
+.ad-act .note{margin:0;}
+#tdCard{display:flex;flex-direction:column;min-height:0;padding:10px 12px;}
+#tdList{flex:1;min-height:120px;max-height:440px;overflow:auto;}
+.td-empty{color:#94a3b8;font-size:13px;text-align:center;padding:40px 0;}
+.td-row{border:1px solid #e2e8f0;border-radius:9px;padding:7px 10px;margin-bottom:6px;background:#fff;}
+.td-row .t{display:flex;gap:6px;align-items:center;font-size:12px;color:#64748b;margin-bottom:3px;}
+.td-chip{font-size:11px;font-weight:800;border-radius:4px;padding:1px 6px;color:#fff;background:var(--c,#64748b);}
+.td-row .nm{font-size:13px;font-weight:600;line-height:1.35;color:#0f172a;word-break:break-all;}
+.td-row .b{display:flex;gap:6px;margin-top:5px;}
+.td-row .b button{font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:2px 9px;color:#334155;background:#fff;font-family:inherit;cursor:pointer;}
+.td-row .b button.x{color:#B91C1C;border-color:#fecaca;}
+.td-more{font-size:12px;color:#64748b;text-align:center;padding:4px 0;}
+#mode-up .drop{padding:14px;border-radius:10px;font-size:13px;}
+#mode-up .drop b{font-size:14.5px;}
+#mode-up #upmodeNote .warn{margin:8px 0 0 !important;padding:6px 10px;font-size:12px;line-height:1.55;}
+.up-sum{display:flex;gap:8px;margin-top:8px;}
+.up-sum div{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;text-align:center;background:#fff;}
+.up-sum div b{display:block;font-size:16px;color:#0f172a;}.up-sum div span{font-size:12px;color:#64748b;}
+.up-sum .a b{color:#EA002C;}.up-sum .u b{color:#2563EB;}.up-sum .g b{color:#94a3b8;}
+.up-sum .g.has{cursor:pointer;border-color:#fde68a;background:#fffbeb;}.up-sum .g.has b{color:#B45309;}
+.ad-adm{border-color:#fecaca !important;}
+.ad-adm .ln{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;}
+.ad-adm .ln:last-child{border-bottom:0;}
+.ad-adm .ln .d{flex:1;min-width:0;}.ad-adm .ln .d b{display:block;font-size:13.5px;color:#0f172a;}.ad-adm .ln .d>span{font-size:12.5px;color:#64748b;}
+.ad-adm .ln .btn{margin-top:0;padding:7px 14px;font-size:13px;white-space:nowrap;}
+.ad-adm .ln .btn.dan{border-color:#fca5a5;color:#B91C1C;font-weight:700;}
+.ad-adm .lock{font-size:12px;color:#B91C1C;font-weight:700;margin-left:6px;}
+#admDupN{color:#7C3AED;}
+.ad-tg{flex:1;border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px 14px;color:#64748b;font-size:12.5px;background:#f8fafc;line-height:1.6;}
+.ad-tg b{color:#334155;font-size:13.5px;display:block;margin-bottom:3px;}
+#upFlow{margin-top:12px;}
+#upFlow:not(:has(>div[id]:not(.hide))){display:none;}
+@media (max-width:1250px){.ad-top,.ad-bot,.ad-bot.noadm{grid-template-columns:minmax(0,1fr);}.ad-fg{grid-template-columns:repeat(3,minmax(0,1fr));}}
+/* 가운데 창 (의뢰 확인 · 중복 정리) */
+#gwPop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9200;display:flex;align-items:center;justify-content:center;padding:20px;}
+#gwPop.hide{display:none;}
+.gw{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;width:min(1600px,100%);max-height:min(860px,94vh);}
+.gw.sm{width:min(1100px,100%);}
+.gw-h{padding:12px 20px;border-bottom:3px solid #FFB400;display:flex;align-items:center;gap:12px;}
+.gw-h b{font-size:17px;color:#EA002C;white-space:nowrap;}.gw-h span{color:#64748b;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gw-h .btn{margin:0 0 0 auto;padding:5px 12px;font-size:13px;}
+.gw-b{flex:1;min-height:0;overflow:auto;}
+.gw-f{padding:10px 20px;border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;}
+.gw-f .btn{margin-top:0;}.gw-f .btn:disabled{background:#f1f5f9;border-color:#e2e8f0;color:#94a3b8;cursor:default;}
+.gw-f .note{margin:0;font-size:12.5px;color:#64748b;}
+.gw-note{font-size:12.5px;color:#64748b;line-height:1.7;margin:10px 0;}
+.gw-note b{color:#0f172a;}
+.gw-pad{padding:14px 20px;}
+table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
+.gw-t th{background:#f1f5f9;border:1px solid #cbd5e1;padding:6px;font-weight:700;color:#334155;white-space:nowrap;position:sticky;top:0;}
+.gw-t td{border:1px solid #e2e8f0;padding:5px 6px;text-align:center;white-space:nowrap;}
+.gw-t td.l{text-align:left;white-space:normal;min-width:240px;font-weight:600;}
+.gw-t tr.kill td{background:#fff1f2;color:#9f1239;}
+.gw-t tr.off td{opacity:.45;}
+.rq{display:grid;grid-template-columns:minmax(0,1fr) 330px;min-height:0;height:100%;}
+.rq-l{padding:14px 20px;min-width:0;overflow:auto;}
+.rq-r{border-left:1px solid #e2e8f0;padding:14px 18px;background:#fafafa;display:flex;flex-direction:column;min-height:0;overflow:auto;}
+.rq-sum{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
+.rq-pill{border-radius:20px;padding:4px 12px;font-size:12.5px;font-weight:700;border:1px solid;}
+.rq-pill.p1{color:#EA002C;border-color:#fecaca;background:#fff5f5;}.rq-pill.p2{color:#2563EB;border-color:#bfdbfe;background:#eff6ff;}.rq-pill.p3{color:#B91C1C;border-color:#fca5a5;background:#fee2e2;}.rq-pill.p4{color:#166534;border-color:#bbf7d0;background:#f0fdf4;}
+.rq-t td[contenteditable]{cursor:text;outline:none;min-width:40px;}
+.rq-t td.l[contenteditable]{min-width:300px;}
+.rq-t td[contenteditable]:focus{box-shadow:inset 0 0 0 2px #FFB400;background:#fffdf5;}
+.rq-t td.red{background:#fee2e2;border-color:#fca5a5;}
+.rq-t td.red .v{font-weight:800;color:#B91C1C;font-size:13.5px;outline:none;display:inline-block;min-width:36px;}
+.rq-t td .o{display:block;font-size:11px;color:#991b1b;}
+.rq-t td.red button{margin-top:3px;border:1px solid #EA002C;background:#EA002C;color:#fff;border-radius:6px;padding:2px 10px;font-size:11.5px;font-family:inherit;font-weight:700;cursor:pointer;}
+.rq-t td.okd .v{font-weight:700;outline:none;display:inline-block;min-width:36px;}.rq-t td.okd .o{color:#16a34a;}
+.rq-t td.warnc{background:#fffbeb;color:#92400e;font-weight:700;}
+.rq-t td.need{background:#fee2e2;}
+.rq-t select{border:1px solid #cbd5e1;border-radius:6px;padding:3px 4px;font-family:inherit;font-size:12.5px;font-weight:700;}
+.rq-ex{display:inline-block;font-size:11px;font-weight:800;color:#92400e;background:#fef3c7;border-radius:4px;padding:1px 6px;margin-left:6px;}
+.rq-map{margin-top:12px;border:1px solid #e2e8f0;border-radius:10px;padding:9px 14px;font-size:12.5px;color:#475569;background:#f8fafc;}
+.rq-map b{color:#0f172a;}.rq-map span{display:inline-block;margin-right:16px;}
+.rq-r h3{font-size:14.5px;margin:0 0 4px;color:#0f172a;}.rq-r .s{font-size:12.5px;color:#64748b;margin-bottom:10px;}
+.rq-dw{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:8px;margin-bottom:10px;}
+.rq-dw.off{opacity:.45;}
+.rq-dw .nm{font-size:12.5px;font-weight:700;color:#0f172a;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;}
+.rq-dw .nm span{font-weight:400;color:#64748b;}
+.rq-dw .im{display:flex;justify-content:center;background:#f8fafc;border:1px solid #e2e8f0;min-height:80px;align-items:center;font-size:12.5px;color:#64748b;}
+.rq-dw img{max-width:100%;max-height:440px;display:block;cursor:zoom-in;}
+.rq-dw .b{display:flex;gap:6px;margin-top:6px;}
+.rq-dw .b button{font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 10px;background:#fff;color:#334155;font-family:inherit;cursor:pointer;}
+/* 사업 카드 : 준공도면 | 의뢰 도면 */
+.tc2-dt b.dtab{cursor:pointer;padding:4px 10px;border-radius:7px;border:1.5px solid transparent;color:#94a3b8;font-size:14px;}
+.tc2-dt b.dtab.on{color:#0f172a;border-color:#FFB400;background:#FFFBEB;font-size:15px;}
+.tc2-dt b.dtab.hide{display:none;}
+.tc2-pv img.zoomable{cursor:zoom-in;}
+.rdw-tabs{display:flex;gap:6px;margin:0 0 6px;}
+.rdw-tabs button{font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:2px 10px;background:#fff;color:#334155;font-family:inherit;cursor:pointer;}
+.rdw-tabs button.on{border-color:#EA002C;color:#EA002C;font-weight:700;}
+.ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
 <body>
@@ -880,60 +1003,65 @@ td.left{text-align:left;}
 
 <div class="wrap">
 
-  <!-- 사업추가 -->
+  <!-- 사업추가 (BUILD 120 : 세 파트를 한 화면에) -->
   <div class="page on" id="p-add">
-    <div class="seg">
-      <button class="on" id="seg-up" onclick="segMode('up')">엑셀 업로드</button>
-      <button id="seg-in" onclick="segMode('in')">직접 입력</button>
+    <div class="ad-top">
+      <div class="ad-col">
+        <div class="ad-sec"><span class="no">1</span><b>새 사업 추가</b><span>매일 들어오는 사업을 넣는 자리</span></div>
+        <div class="card" id="mode-in">
+          <div class="ad-src" id="adSrc"><span class="lb">발주처</span><button type="button" data-src="SKT">SKT</button><button type="button" data-src="SKB">SKB</button><button type="button" data-src="원인자">원인자</button><span class="note">고르면 그 리스트 양식의 칸으로 바뀌어요</span></div>
+          <div id="adForm"></div>
+          <div id="adDup"></div>
+          <div class="ad-act"><button type="button" class="btn btn-primary" id="adAdd">사업 추가</button><button type="button" class="btn" id="adAddMore">추가하고 계속 입력</button><span class="note">추가하면 목록에 바로 올라가요 · 측량 결과·정산 칸은 나중에 사업 카드에서 넣어요</span></div>
+        </div>
+      </div>
+      <div class="ad-col ad-side">
+        <div class="ad-sec"><b>오늘 추가한 사업</b><span class="ad-cnt" id="tdN">0</span></div>
+        <div class="card" id="tdCard"><div id="tdList"></div></div>
+      </div>
     </div>
-    <div class="card" id="mode-up">
-      <div class="controls" style="margin-bottom:10px;">
-        <span style="font-size:13px;color:#475569;font-weight:500;">불러오는 방식</span>
-        <label class="upmode" id="umMerge"><input type="radio" name="upmode" value="merge" checked><span>갱신 + 추가</span></label>
-        <label class="upmode" id="umAdd"><input type="radio" name="upmode" value="add"><span>추가만</span></label>
-        <span class="stat" id="upmodeApp"></span>
-        <button class="btn tbtn hide" id="btnPrev" style="padding:6px 14px;--c:#0369A1;">직전 목록 되살리기</button>
-        <button class="btn tbtn" id="btnWipe" style="padding:6px 14px;--c:#B91C1C;">목록 비우기</button>
-        <span style="flex:1"></span>
-        <button class="btn tbtn" id="btnDedup" style="padding:6px 16px;--c:#7C3AED;">중복 제외</button>
+    <div class="ad-bot" id="adBot">
+      <div class="ad-col">
+        <div class="ad-sec"><span class="no">2</span><b>엑셀로 올리기</b><span>리스트 파일 · 측량 의뢰 양식</span></div>
+        <div class="card" id="mode-up">
+          <div class="controls" style="margin-bottom:8px;">
+            <span style="font-size:13px;color:#475569;font-weight:500;">불러오는 방식</span>
+            <label class="upmode" id="umMerge"><input type="radio" name="upmode" value="merge" checked><span>갱신 + 추가</span></label>
+            <label class="upmode" id="umAdd"><input type="radio" name="upmode" value="add"><span>추가만</span></label>
+            <span class="stat" id="upmodeApp"></span>
+          </div>
+          <div class="drop" id="drop">
+            <b>공정 리스트 · 측량 의뢰 엑셀을 올려주세요</b>
+            .xls / .xlsx 파일을 끌어다 놓거나 클릭해서 선택
+            <input type="file" id="file" accept=".xls,.xlsx" class="hide">
+          </div>
+          <div class="up-sum" id="upSum"></div>
+          <div id="upmodeNote"></div>
+        </div>
       </div>
-      <div id="upmodeNote"></div>
-      <div class="drop" id="drop">
-        <b>공정 리스트 엑셀을 올려주세요</b>
-        .xls / .xlsx 파일을 끌어다 놓거나 클릭해서 선택
-        <input type="file" id="file" accept=".xls,.xlsx" class="hide">
+      <div class="ad-col" id="admCol">
+        <div class="ad-sec"><span class="no">3</span><b>관리</b><span>관리자에게만 보여요</span></div>
+        <div class="card ad-adm">
+          <div class="ln"><div class="d"><b>중복 정리 <span id="admDupN"></span></b><span>공사코드가 같은 건 — 어떤 사업끼리 겹치는지 먼저 보여 줘요</span></div><button type="button" class="btn" id="btnDedup">겹치는 사업 보기</button></div>
+          <div class="ln"><div class="d"><b>직전 목록 되살리기</b><span id="admPrevNote">마지막으로 비우거나 정리하기 전 상태로 되돌려요</span></div><button type="button" class="btn hide" id="btnPrev">되살리기</button></div>
+          <div class="ln"><div class="d"><b>목록 비우기 <span class="lock">전 직원 화면에서 사라져요</span></b><span id="admWipeNote">누르면 한 번 더 물어봐요</span></div><button type="button" class="btn dan" id="btnWipe">목록 비우기</button></div>
+        </div>
       </div>
-      <p class="note">※ 파일은 브라우저 안에서만 처리됩니다(서버 전송 없음). SKT·SKB 측량공정진행현황 양식과 기존 공정 리스트 양식을 모두 읽습니다. 시트가 여러 개면 올린 뒤 골라서 불러올 수 있어요.</p>
-
-      <div id="sheetBox" class="hide" style="margin-top:14px;"></div>
+      <div class="ad-col ad-tgc">
+        <div class="ad-sec"><b>탱고에서 먼저 등록된 사업</b><span class="ad-tag">준비 중</span></div>
+        <div class="ad-tg"><b>0건</b>탱고와 연결한 뒤, 현장에서 탱고에 먼저 만든 사업이 여기에 떠요. 담당자가 「리스트의 이 사업과 같음」 또는 「새 사업으로 확정」을 골라요.</div>
+      </div>
+    </div>
+    <div class="card" id="upFlow">
+      <div class="ad-sec" style="margin-bottom:10px;"><b>엑셀 올리기 진행</b><span>시트를 고르고 「선택한 시트 불러오기」를 누르세요</span></div>
+      <div id="sheetBox" class="hide"></div>
       <div id="mapBox" class="hide" style="margin-top:14px;"></div>
       <div id="chkBox" class="hide" style="margin-top:12px;"></div>
-
       <div id="upResult" class="hide upbox">
         <span id="upMsg" style="font-size:14px;color:#166534;"></span>
         <button class="btn btn-primary" onclick="confirmPicks()">선택한 사업 → 리스트관리로</button>
       </div>
       <div id="upPreview" class="hide" style="margin-top:14px;"></div>
-    </div>
-    <div class="card hide" id="mode-in">
-      <div class="form-grid">
-        <div class="field"><label>발주처</label><select id="iBaal"><option>SKT</option><option>SKB</option><option>원인자</option></select></div>
-        <div class="field"><label>구분</label><input id="iGubun" placeholder="예) 지자체"></div>
-        <div class="field"><label>시행시기</label><input id="iSihaeng" placeholder="예) 26년"></div>
-        <div class="field"><label>지사</label><input id="iJisa" placeholder="예) 수도권지사"></div>
-        <div class="field"><label>행정구역</label><input id="iRegion" placeholder="예) 인천시"></div>
-        <div class="field"><label>공구명</label><input id="iWork" placeholder="공사 전체 명칭"></div>
-        <div class="field"><label>공사협력사</label><input id="iPartner"></div>
-        <div class="field"><label>Eng 번호(공사코드)</label><input id="iEng" placeholder="예) T26..."></div>
-        <div class="field"><label>측량구분</label><select id="iMethod"><option>탐사</option><option>실시간</option></select></div>
-        <div class="field"><label>사업구분(Tango)</label><input id="iTangoType" placeholder="예) [B-3. 기간선로] 신설/증설/보강"></div>
-        <div class="field"><label>실측거리(km)</label><input id="iSil" type="number" step="0.001"></div>
-        <div class="field"><label>탱고거리(km) · 측량완료시</label><input id="iTango" type="number" step="0.001"></div>
-        <div class="field"><label>진행상황</label><input id="iJin" placeholder="예) 탐사완료"></div>
-        <div class="field"><label>정산상황</label><select id="iJeong"><option>미정산</option><option>정산완료</option><option>정산제외</option><option value="">(미입력)</option></select></div>
-      </div>
-      <div style="margin-top:14px;"><button class="btn btn-primary" onclick="addManual()">사업 추가</button></div>
-      <p class="note">추가하면 리스트관리에 바로 들어가고, 이 브라우저에 자동 저장됩니다.</p>
     </div>
   </div>
 
@@ -1223,6 +1351,11 @@ td.left{text-align:left;}
   <button id="lgLocal" class="lg-local hide" type="button">이 브라우저 목록으로 열기 (서버 연결 안 됨)</button>
   <a id="lgForget" class="lg-link" href="#">이 기기 자동로그인 해제</a>
 </div></div>
+<div id="gwPop" class="hide"><div class="gw" role="dialog" aria-modal="true">
+  <div class="gw-h"><b id="gwT"></b><span id="gwS"></span><button type="button" class="btn" id="gwX">닫기</button></div>
+  <div class="gw-b" id="gwB"></div>
+  <div class="gw-f" id="gwF"></div>
+</div></div>
 <div id="askPop" class="hide"><div class="view-card ask-card">
   <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
   <div class="ask-b" id="askMsg"></div>
@@ -1312,6 +1445,315 @@ td.left{text-align:left;}
 <div id="cellPop" class="hide"><div class="cell-card"><div class="cell-h"><b id="cellPopT"></b><span class="cell-x" id="cellPopX">✕</span></div><div class="cell-b" id="cellPopB"></div></div></div>
 <div class="toast" id="toast"></div>
 
+<script>
+/* 엑셀 「도면」 탭(그림 + 도형)을 그림 한 장으로 — 브라우저 전용 (canvas)
+   gjDrawing.list(u8)            → [{sheet, drawing, shapes}]  도형이 있는 시트 목록
+   gjDrawing.render(u8, sheet, {maxSide}) → Promise<{canvas, w, h, scale, stats}> */
+(function (G) {
+  'use strict';
+  const FONT = "'Malgun Gothic','맑은 고딕','Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif";
+  const dec = new TextDecoder('utf-8');
+  const kids = (el, n) => { const r = []; if (el) for (const c of el.children) if (c.localName === n) r.push(c); return r; };
+  const kid = (el, n) => { if (el) for (const c of el.children) if (c.localName === n) return c; return null; };
+  const path = (el, ...ns) => { let e = el; for (const n of ns) { e = kid(e, n); if (!e) return null; } return e; };
+  const att = (el, a, d) => { if (!el) return d; const v = el.getAttribute(a); return v == null ? d : v; };
+  const num = (el, a, d) => { const v = att(el, a, null); return v == null || v === '' || isNaN(+v) ? d : +v; };
+  const attLocal = (el, ln) => { if (!el) return null; for (const a of el.attributes) if (a.localName === ln) return a.value; return null; };
+
+  /* ---------- zip ---------- */
+  function openZip(u8) {
+    const cfb = XLSX.CFB.read(u8, { type: 'array' });
+    const get = p => { const f = XLSX.CFB.find(cfb, '/' + p.replace(/^\//, '')); if (!f || !f.content) return null; return f.content instanceof Uint8Array ? f.content : new Uint8Array(f.content); };
+    const text = p => { const b = get(p); return b ? dec.decode(b) : null; };
+    const xml = p => { const t = text(p); return t ? new DOMParser().parseFromString(t, 'application/xml') : null; };
+    return { get, text, xml };
+  }
+  const dirOf = p => p.slice(0, p.lastIndexOf('/') + 1);
+  const relPath = p => dirOf(p) + '_rels/' + p.slice(p.lastIndexOf('/') + 1) + '.rels';
+  function resolve(base, target) {
+    if (target.startsWith('/')) return target.slice(1);
+    const parts = (dirOf(base) + target).split('/'); const out = [];
+    for (const s of parts) { if (s === '..') out.pop(); else if (s !== '.' && s !== '') out.push(s); }
+    return out.join('/');
+  }
+  function rels(zip, p) {
+    const d = zip.xml(relPath(p)); const m = {};
+    if (d) for (const r of d.documentElement.children) m[r.getAttribute('Id')] = { type: r.getAttribute('Type') || '', target: resolve(p, r.getAttribute('Target') || '') };
+    return m;
+  }
+  function sheets(zip) {
+    const wb = zip.xml('xl/workbook.xml'); if (!wb) return [];
+    const wr = rels(zip, 'xl/workbook.xml'); const out = [];
+    const ss = wb.getElementsByTagNameNS('*', 'sheet');
+    for (const s of ss) {
+      const rid = attLocal(s, 'id'); const r = wr[rid]; if (!r) continue;
+      const sr = rels(zip, r.target); let drawing = null;
+      for (const k in sr) if (/\/drawing$/.test(sr[k].type)) drawing = sr[k].target;
+      out.push({ sheet: s.getAttribute('name'), path: r.target, drawing });
+    }
+    return out;
+  }
+  function list(u8) {
+    const zip = openZip(u8);
+    return sheets(zip).filter(s => s.drawing).map(s => {
+      const t = zip.text(s.drawing) || '';
+      return { sheet: s.sheet, drawing: s.drawing, shapes: (t.match(/<xdr:(sp|pic|cxnSp) /g) || []).length, pics: (t.match(/<xdr:pic>/g) || []).length };
+    });
+  }
+
+  /* ---------- 색 ---------- */
+  const PRST = { black: '000000', white: 'FFFFFF', red: 'FF0000', green: '008000', blue: '0000FF', yellow: 'FFFF00', gray: '808080', grey: '808080', orange: 'FFA500', cyan: '00FFFF', magenta: 'FF00FF' };
+  function themeOf(zip) {
+    const t = zip.xml('xl/theme/theme1.xml'); const c = { dk1: '000000', lt1: 'FFFFFF', dk2: '1F497D', lt2: 'EEECE1', accent1: '4F81BD', accent2: 'C0504D', accent3: '9BBB59', accent4: '8064A2', accent5: '4BACC6', accent6: 'F79646', hlink: '0000FF', folHlink: '800080' };
+    let lw = [9525, 25400, 38100];
+    if (t) {
+      const cs = t.getElementsByTagNameNS('*', 'clrScheme')[0];
+      if (cs) for (const e of cs.children) { const v = e.firstElementChild; if (v) c[e.localName] = v.getAttribute('val') && v.localName === 'srgbClr' ? v.getAttribute('val') : (v.getAttribute('lastClr') || c[e.localName]); }
+      const ls = t.getElementsByTagNameNS('*', 'lnStyleLst')[0];
+      if (ls) { const a = kids(ls, 'ln').map(l => num(l, 'w', 9525)); if (a.length) lw = a; }
+    }
+    c.bg1 = c.lt1; c.tx1 = c.dk1; c.bg2 = c.lt2; c.tx2 = c.dk2;
+    return { c, lw };
+  }
+  function hsl(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0; const l = (mx + mn) / 2; if (mx !== mn) { const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; } return [h, s, l]; }
+  function rgb(h, s, l) { const f = (p, q, t) => { if (t < 0) t += 1; if (t > 1) t -= 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < .5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; }; if (s === 0) return [l * 255, l * 255, l * 255]; const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; return [f(p, q, h + 1 / 3) * 255, f(p, q, h) * 255, f(p, q, h - 1 / 3) * 255]; }
+  /* holder 안의 srgbClr/schemeClr/sysClr/prstClr → {css, a} */
+  function color(holder, T, ph) {
+    if (!holder) return null;
+    let e = null; for (const c of holder.children) if (/Clr$/.test(c.localName)) { e = c; break; }
+    if (!e) return null;
+    let hex = null; const n = e.localName;
+    if (n === 'srgbClr') hex = e.getAttribute('val');
+    else if (n === 'schemeClr') { const v = e.getAttribute('val'); hex = v === 'phClr' ? ph : T.c[v]; }
+    else if (n === 'sysClr') hex = e.getAttribute('lastClr') || (e.getAttribute('val') === 'window' ? 'FFFFFF' : '000000');
+    else if (n === 'prstClr') hex = PRST[e.getAttribute('val')] || '000000';
+    if (!hex) return null;
+    let r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16), a = 1;
+    for (const m of e.children) {
+      const v = num(m, 'val', 100000) / 100000;
+      if (m.localName === 'alpha') a = v;
+      else if (m.localName === 'shade') { r *= v; g *= v; b *= v; }
+      else if (m.localName === 'tint') { r += (255 - r) * (1 - v); g += (255 - g) * (1 - v); b += (255 - b) * (1 - v); }
+      else if (m.localName === 'lumMod' || m.localName === 'lumOff') { const k = hsl(r, g, b); k[2] = m.localName === 'lumMod' ? k[2] * v : k[2] + v; k[2] = Math.max(0, Math.min(1, k[2])); [r, g, b] = rgb(k[0], k[1], k[2]); }
+    }
+    const cl = x => Math.max(0, Math.min(255, Math.round(x)));
+    return { css: 'rgb(' + cl(r) + ',' + cl(g) + ',' + cl(b) + ')', a };
+  }
+  function fillOf(spPr, style, T) {
+    if (kid(spPr, 'noFill')) return null;
+    const s = kid(spPr, 'solidFill'); if (s) return color(s, T);
+    const gr = kid(spPr, 'gradFill'); if (gr) { const gs = gr.getElementsByTagNameNS('*', 'gs')[0]; return gs ? color(gs, T) : null; }
+    const pt = kid(spPr, 'pattFill'); if (pt) return color(kid(pt, 'fgClr'), T);
+    if (kid(spPr, 'blipFill')) return null;
+    const fr = kid(style, 'fillRef'); if (fr && num(fr, 'idx', 0) > 0) return color(fr, T);
+    return null;
+  }
+  function lineOf(spPr, style, T) {
+    const ln = kid(spPr, 'ln'); const lr = kid(style, 'lnRef'); const idx = num(lr, 'idx', 0);
+    let w = num(ln, 'w', null); if (w == null) w = idx > 0 ? (T.lw[idx - 1] || 9525) : 9525;
+    let c = null;
+    if (ln && kid(ln, 'noFill')) c = null;
+    else if (ln && kid(ln, 'solidFill')) c = color(kid(ln, 'solidFill'), T);
+    else if (idx > 0) c = color(lr, T);
+    if (!c) return null;
+    const dash = att(kid(ln, 'prstDash'), 'val', 'solid');
+    const end = n => { const e = kid(ln, n); const t = att(e, 'type', 'none'); return t === 'none' ? null : { t, w: att(e, 'w', 'med'), l: att(e, 'len', 'med') }; };
+    return { w, c, dash, cap: att(ln, 'cap', 'flat'), head: end('headEnd'), tail: end('tailEnd') };
+  }
+  const DASH = { dash: [4, 3], sysDash: [3, 1], sysDot: [1, 1], dot: [1, 3], dashDot: [4, 3, 1, 3], sysDashDot: [3, 1, 1, 1], lgDash: [8, 3], lgDashDot: [8, 3, 1, 3], lgDashDotDot: [8, 3, 1, 3, 1, 3], sysDashDotDot: [3, 1, 1, 1, 1, 1] };
+
+  /* ---------- 도형 모양 → 점 목록 (px, 상자 왼쪽 위 기준) ---------- */
+  function geometry(spPr, W, H) {
+    const subs = []; // {cmds:[['M',x,y]|['L',x,y]|['C',..]|['Q',..]|['Z']], fill:true, stroke:true}
+    const pg = kid(spPr, 'prstGeom'); const cg = kid(spPr, 'custGeom');
+    if (cg) {
+      for (const p of kids(kid(cg, 'pathLst'), 'path')) {
+        const pw = num(p, 'w', 0), ph = num(p, 'h', 0); const fx = pw > 0 ? W / pw : 0, fy = ph > 0 ? H / ph : 0;
+        const pt = e => [num(e, 'x', 0) * fx, num(e, 'y', 0) * fy];
+        const cmds = []; let cur = [0, 0];
+        for (const c of p.children) {
+          const ps = kids(c, 'pt').map(pt);
+          if (c.localName === 'moveTo' && ps[0]) { cmds.push(['M', ...ps[0]]); cur = ps[0]; }
+          else if (c.localName === 'lnTo' && ps[0]) { cmds.push(['L', ...ps[0]]); cur = ps[0]; }
+          else if (c.localName === 'cubicBezTo' && ps.length === 3) { cmds.push(['C', ...ps[0], ...ps[1], ...ps[2]]); cur = ps[2]; }
+          else if (c.localName === 'quadBezTo' && ps.length === 2) { cmds.push(['Q', ...ps[0], ...ps[1]]); cur = ps[1]; }
+          else if (c.localName === 'arcTo') {
+            const wR = num(c, 'wR', 0) * fx, hR = num(c, 'hR', 0) * fy, st = num(c, 'stAng', 0) / 60000 * Math.PI / 180, sw = num(c, 'swAng', 0) / 60000 * Math.PI / 180;
+            const cx = cur[0] - wR * Math.cos(st), cy = cur[1] - hR * Math.sin(st); const n = Math.max(4, Math.ceil(Math.abs(sw) / (Math.PI / 16)));
+            for (let i = 1; i <= n; i++) { const a = st + sw * i / n; cur = [cx + wR * Math.cos(a), cy + hR * Math.sin(a)]; cmds.push(['L', ...cur]); }
+          }
+          else if (c.localName === 'close') cmds.push(['Z']);
+        }
+        subs.push({ cmds, fill: att(p, 'fill', 'norm') !== 'none', stroke: att(p, 'stroke', '1') !== '0' });
+      }
+      return subs;
+    }
+    const prst = att(pg, 'prst', 'rect');
+    const adj = {}; for (const g of kids(kid(pg, 'avLst'), 'gd')) { const m = /val\s+(-?\d+)/.exec(g.getAttribute('fmla') || ''); if (m) adj[g.getAttribute('name')] = +m[1]; }
+    const one = cmds => [{ cmds, fill: true, stroke: true }];
+    if (prst === 'ellipse') { const k = 0.5522847498, rx = W / 2, ry = H / 2; return one([['M', W, ry], ['C', W, ry + ry * k, rx + rx * k, H, rx, H], ['C', rx - rx * k, H, 0, ry + ry * k, 0, ry], ['C', 0, ry - ry * k, rx - rx * k, 0, rx, 0], ['C', rx + rx * k, 0, W, ry - ry * k, W, ry], ['Z']]); }
+    if (prst === 'line' || prst === 'straightConnector1') return [{ cmds: [['M', 0, 0], ['L', W, H]], fill: false, stroke: true }];
+    if (prst === 'rightArrow' || prst === 'leftArrow' || prst === 'upArrow' || prst === 'downArrow') {
+      const a1 = (adj.adj1 == null ? 50000 : adj.adj1) / 100000, a2 = (adj.adj2 == null ? 50000 : adj.adj2) / 100000;
+      const horiz = prst === 'rightArrow' || prst === 'leftArrow'; const w = horiz ? W : H, h = horiz ? H : W;
+      const hd = Math.min(w, a2 * Math.min(w, h)), y1 = h * (1 - a1) / 2, y2 = h - y1, x2 = w - hd;
+      let pts = [[0, y1], [x2, y1], [x2, 0], [w, h / 2], [x2, h], [x2, y2], [0, y2]];
+      if (prst === 'leftArrow') pts = pts.map(p => [w - p[0], p[1]]);
+      if (prst === 'downArrow') pts = pts.map(p => [h - p[1], p[0]]);
+      if (prst === 'upArrow') pts = pts.map(p => [p[1], w - p[0]]);
+      return one(pts.map((p, i) => [i ? 'L' : 'M', p[0], p[1]]).concat([['Z']]));
+    }
+    if (prst === 'roundRect') { const r = Math.min(W, H) * (adj.adj == null ? 16667 : adj.adj) / 100000, k = 0.5523 * r; return one([['M', r, 0], ['L', W - r, 0], ['C', W - r + k, 0, W, r - k, W, r], ['L', W, H - r], ['C', W, H - r + k, W - r + k, H, W - r, H], ['L', r, H], ['C', r - k, H, 0, H - r + k, 0, H - r], ['L', 0, r], ['C', 0, r - k, r - k, 0, r, 0], ['Z']]); }
+    if (prst === 'triangle') return one([['M', W / 2, 0], ['L', W, H], ['L', 0, H], ['Z']]);
+    if (prst === 'diamond') return one([['M', W / 2, 0], ['L', W, H / 2], ['L', W / 2, H], ['L', 0, H / 2], ['Z']]);
+    return one([['M', 0, 0], ['L', W, 0], ['L', W, H], ['L', 0, H], ['Z']]); // rect 및 모르는 모양
+  }
+  function trace(ctx, subs, ox, oy, which) {
+    ctx.beginPath(); let any = false;
+    for (const s of subs) { if (!s[which]) continue; any = true;
+      for (const c of s.cmds) {
+        if (c[0] === 'M') ctx.moveTo(ox + c[1], oy + c[2]); else if (c[0] === 'L') ctx.lineTo(ox + c[1], oy + c[2]);
+        else if (c[0] === 'C') ctx.bezierCurveTo(ox + c[1], oy + c[2], ox + c[3], oy + c[4], ox + c[5], oy + c[6]);
+        else if (c[0] === 'Q') ctx.quadraticCurveTo(ox + c[1], oy + c[2], ox + c[3], oy + c[4]); else ctx.closePath();
+      } }
+    return any;
+  }
+  function endsOf(subs) { // 열린 선의 시작·끝 방향 (화살촉용)
+    const s = subs.find(x => x.stroke && x.cmds.length > 1 && x.cmds[x.cmds.length - 1][0] !== 'Z'); if (!s) return null;
+    const P = c => c[0] === 'C' ? [c[5], c[6]] : c[0] === 'Q' ? [c[3], c[4]] : [c[1], c[2]];
+    const C1 = c => c[0] === 'C' || c[0] === 'Q' ? [c[1], c[2]] : [c[1], c[2]];
+    const CL = c => c[0] === 'C' ? [c[3], c[4]] : c[0] === 'Q' ? [c[1], c[2]] : null;
+    const a = s.cmds, n = a.length; const p0 = P(a[0]), p1 = C1(a[1]); const pe = P(a[n - 1]); const pp = CL(a[n - 1]) || P(a[n - 2]);
+    return { s: p0, sd: [p0[0] - p1[0], p0[1] - p1[1]], e: pe, ed: [pe[0] - pp[0], pe[1] - pp[1]] };
+  }
+  const ASZ = { sm: 2, med: 3, lg: 5 };
+  function arrow(ctx, pt, d, a, lw, css) {
+    const L = Math.hypot(d[0], d[1]); if (!L) return; const ux = d[0] / L, uy = d[1] / L;
+    const base = Math.max(lw, 1.2); const len = base * ASZ[a.l || 'med'], wid = base * ASZ[a.w || 'med'];
+    const bx = pt[0] - ux * len, by = pt[1] - uy * len, nx = -uy * wid / 2, ny = ux * wid / 2;
+    ctx.save(); ctx.setLineDash([]); ctx.fillStyle = css; ctx.strokeStyle = css; ctx.lineJoin = 'miter';
+    ctx.beginPath();
+    if (a.t === 'oval') ctx.ellipse(pt[0], pt[1], len / 2, wid / 2, Math.atan2(uy, ux), 0, 7);
+    else if (a.t === 'diamond') { ctx.moveTo(pt[0] + ux * len / 2, pt[1] + uy * len / 2); ctx.lineTo(pt[0] + nx, pt[1] + ny); ctx.lineTo(pt[0] - ux * len / 2, pt[1] - uy * len / 2); ctx.lineTo(pt[0] - nx, pt[1] - ny); ctx.closePath(); }
+    else { ctx.moveTo(pt[0], pt[1]); ctx.lineTo(bx + nx, by + ny); if (a.t === 'stealth') ctx.lineTo(pt[0] - ux * len * .6, pt[1] - uy * len * .6); ctx.lineTo(bx - nx, by - ny); ctx.closePath(); }
+    if (a.t === 'arrow') { ctx.lineWidth = base; ctx.beginPath(); ctx.moveTo(bx + nx, by + ny); ctx.lineTo(pt[0], pt[1]); ctx.lineTo(bx - nx, by - ny); ctx.stroke(); } else ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- 글자 ---------- */
+  function drawText(ctx, sp, x, y, W, H, k, T) {
+    const tb = kid(sp, 'txBody'); if (!tb) return 0;
+    const bp = kid(tb, 'bodyPr'); const style = kid(sp, 'style');
+    const fontC = color(kid(style, 'fontRef'), T) || { css: '#000', a: 1 };
+    const lI = num(bp, 'lIns', 91440) * k, tI = num(bp, 'tIns', 45720) * k, rI = num(bp, 'rIns', 91440) * k, bI = num(bp, 'bIns', 45720) * k;
+    const wrap = att(bp, 'wrap', 'square') !== 'none'; const anchor = att(bp, 'anchor', 't');
+    const avail = Math.max(0, W - lI - rI);
+    const px = sz => sz / 100 * 96 / 72 * k * 9525; // k = px/EMU → 96dpi 기준 배율
+    const lines = []; // {algn, h, items:[{t,font,css,w,u}], w}
+    for (const p of kids(tb, 'p')) {
+      const pPr = kid(p, 'pPr'); const algn = att(pPr, 'algn', 'l'); const defSz = num(kid(p, 'endParaRPr'), 'sz', null);
+      const toks = [];
+      for (const r of p.children) {
+        if (r.localName === 'br') { toks.push({ br: 1 }); continue; }
+        if (r.localName !== 'r' && r.localName !== 'fld') continue;
+        const rp = kid(r, 'rPr'); const sz = num(rp, 'sz', defSz || 1100); const fpx = px(sz);
+        const c = color(kid(rp, 'solidFill'), T) || fontC;
+        const font = (att(rp, 'i', '0') === '1' ? 'italic ' : '') + (att(rp, 'b', '0') === '1' ? 'bold ' : '') + fpx.toFixed(2) + 'px ' + FONT;
+        const t = (kid(r, 't') || { textContent: '' }).textContent || '';
+        for (const m of t.match(/[ᄀ-ᇿ⺀-힯豈-﫿＀-￯]|[^\sᄀ-ᇿ⺀-힯豈-﫿＀-￯]+|\s+/g) || [])
+          toks.push({ t: m, font, css: c.css, fpx, u: att(rp, 'u', 'none') !== 'none', sp: /^\s+$/.test(m) });
+      }
+      const dpx = px(defSz || (toks.find(t => t.fpx) ? 0 : 1100)) || 0;
+      let cur = { algn, items: [], w: 0, fpx: dpx };
+      const push = () => { while (cur.items.length && cur.items[cur.items.length - 1].sp) cur.w -= cur.items.pop().w; cur.h = (cur.fpx || px(1100)) * 1.2; lines.push(cur); cur = { algn, items: [], w: 0, fpx: 0 }; };
+      for (const t of toks) {
+        if (t.br) { if (!cur.fpx) cur.fpx = dpx || px(1100); push(); continue; }
+        ctx.font = t.font; t.w = ctx.measureText(t.t).width;
+        if (wrap && avail > 0 && cur.items.length && !t.sp && cur.w + t.w > avail + 0.5) push();
+        if (t.sp && !cur.items.length) continue;
+        cur.items.push(t); cur.w += t.w; cur.fpx = Math.max(cur.fpx, t.fpx);
+      }
+      if (!cur.fpx) cur.fpx = toks.length ? toks[toks.length - 1].fpx || dpx : dpx || px(1100);
+      push();
+    }
+    const total = lines.reduce((a, l) => a + l.h, 0); const hasText = lines.some(l => l.items.length);
+    if (!hasText) return 0;
+    let ty = anchor === 'ctr' ? y + tI + (H - tI - bI - total) / 2 : anchor === 'b' ? y + H - bI - total : y + tI;
+    ctx.save();
+    if (att(bp, 'vertOverflow', 'overflow') === 'clip' && att(bp, 'horzOverflow', 'overflow') === 'clip' && W > 2 && H > 2) { ctx.beginPath(); ctx.rect(x, y, W, H); ctx.clip(); }
+    ctx.textBaseline = 'alphabetic';
+    for (const l of lines) {
+      let tx = l.algn === 'ctr' ? x + lI + (avail - l.w) / 2 : l.algn === 'r' ? x + W - rI - l.w : x + lI;
+      const base = ty + l.h * 0.79;
+      for (const t of l.items) { ctx.font = t.font; ctx.fillStyle = t.css; ctx.fillText(t.t, tx, base); if (t.u) ctx.fillRect(tx, base + t.fpx * .08, t.w, Math.max(.6, t.fpx * .06)); tx += t.w; }
+      ty += l.h;
+    }
+    ctx.restore(); return 1;
+  }
+
+  /* ---------- 그리기 ---------- */
+  function xf(spPr) { const x = kid(spPr, 'xfrm'); if (!x) return null; const o = kid(x, 'off'), e = kid(x, 'ext'), co = kid(x, 'chOff'), ce = kid(x, 'chExt');
+    return { x: num(o, 'x', 0), y: num(o, 'y', 0), w: num(e, 'cx', 0), h: num(e, 'cy', 0), rot: num(x, 'rot', 0) / 60000 * Math.PI / 180, fh: att(x, 'flipH', '0') === '1', fv: att(x, 'flipV', '0') === '1',
+      cx: num(co, 'x', 0), cy: num(co, 'y', 0), cw: num(ce, 'cx', 0), ch: num(ce, 'cy', 0) }; }
+  const ID = { map: r => r };
+  function collect(el, M, out) { // 좌표를 시트 기준 EMU 로
+    for (const c of el.children) {
+      const n = c.localName;
+      if (n === 'grpSp') { const g = xf(kid(c, 'grpSpPr')); if (!g) continue; const p = M.map(g); const sx = g.cw ? p.w / g.cw : 1, sy = g.ch ? p.h / g.ch : 1;
+        collect(c, { map: r => ({ ...r, x: p.x + (r.x - g.cx) * sx, y: p.y + (r.y - g.cy) * sy, w: r.w * sx, h: r.h * sy }) }, out); }
+      else if (n === 'sp' || n === 'cxnSp' || n === 'pic') { const r = xf(kid(c, 'spPr')); if (r) out.push({ el: c, kind: n, r: M.map(r) }); }
+    }
+  }
+  async function render(u8, sheetName, opt) {
+    opt = opt || {}; const zip = openZip(u8); const T = themeOf(zip);
+    const sh = sheets(zip).find(s => s.sheet === sheetName && s.drawing); if (!sh) throw new Error('도면이 있는 시트를 찾지 못했어요: ' + sheetName);
+    const doc = zip.xml(sh.drawing); const dr = rels(zip, sh.drawing); const items = [];
+    for (const a of doc.documentElement.children) if (/Anchor$/.test(a.localName)) collect(a, ID, items);
+    let maxX = 0, maxY = 0; for (const it of items) { maxX = Math.max(maxX, it.r.x + it.r.w); maxY = Math.max(maxY, it.r.y + it.r.h); }
+    const fullW = maxX / 9525, fullH = maxY / 9525; const scale = Math.min(1, (opt.maxSide || 6000) / Math.max(fullW, fullH, 1));
+    const k = scale / 9525; const cw = Math.ceil(fullW * scale) + 2, ch = Math.ceil(fullH * scale) + 2;
+    const canvas = document.createElement('canvas'); canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cw, ch);
+    const imgs = {}; const stats = { shapes: 0, pics: 0, texts: 0, skipped: 0 };
+    for (const it of items) {
+      const r = it.r, x = r.x * k, y = r.y * k, W = r.w * k, H = r.h * k, cx = x + W / 2, cy = y + H / 2;
+      const spPr = kid(it.el, 'spPr'), style = kid(it.el, 'style');
+      ctx.save(); ctx.translate(cx, cy); if (r.rot) ctx.rotate(r.rot);
+      ctx.save(); ctx.scale(r.fh ? -1 : 1, r.fv ? -1 : 1); ctx.translate(-cx, -cy);
+      if (it.kind === 'pic') {
+        const blip = path(it.el, 'blipFill', 'blip'); const rid = attLocal(blip, 'embed'); const tg = dr[rid] && dr[rid].target;
+        if (tg) {
+          if (!imgs[tg]) { const b = zip.get(tg); const ext = tg.split('.').pop().toLowerCase(); try { imgs[tg] = b ? await createImageBitmap(new Blob([b], { type: ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/' + ext })) : null; } catch (e) { imgs[tg] = null; } }
+          const im = imgs[tg];
+          if (im) { const sr = path(it.el, 'blipFill', 'srcRect'); const l = num(sr, 'l', 0) / 1e5, t = num(sr, 't', 0) / 1e5, rr = num(sr, 'r', 0) / 1e5, b = num(sr, 'b', 0) / 1e5;
+            const am = kid(blip, 'alphaModFix'); if (am) ctx.globalAlpha = num(am, 'amt', 100000) / 1e5;
+            if (kid(blip, 'grayscl')) ctx.filter = 'grayscale(1)';
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(im, im.width * l, im.height * t, im.width * (1 - l - rr), im.height * (1 - t - b), x, y, W, H); stats.pics++; }
+          else stats.skipped++;
+        }
+        ctx.restore(); ctx.restore(); continue;
+      }
+      const subs = geometry(spPr, W, H); const fill = fillOf(spPr, style, T); const ln = lineOf(spPr, style, T);
+      if (fill && trace(ctx, subs, x, y, 'fill')) { ctx.globalAlpha = fill.a; ctx.fillStyle = fill.css; ctx.fill('evenodd'); ctx.globalAlpha = 1; }
+      if (ln && trace(ctx, subs, x, y, 'stroke')) {
+        const lw = Math.max(ln.w * k, 0.75); ctx.lineWidth = lw; ctx.strokeStyle = ln.c.css; ctx.globalAlpha = ln.c.a;
+        ctx.lineCap = ln.cap === 'rnd' ? 'round' : ln.cap === 'sq' ? 'square' : 'butt'; ctx.lineJoin = 'round';
+        ctx.setLineDash((DASH[ln.dash] || []).map(v => v * lw)); ctx.stroke(); ctx.setLineDash([]);
+        if (ln.head || ln.tail) { const e = endsOf(subs); if (e) { if (ln.head) arrow(ctx, [x + e.s[0], y + e.s[1]], e.sd, ln.head, lw, ln.c.css); if (ln.tail) arrow(ctx, [x + e.e[0], y + e.e[1]], e.ed, ln.tail, lw, ln.c.css); } }
+        ctx.globalAlpha = 1;
+      }
+      stats.shapes++;
+      ctx.restore(); ctx.translate(-cx, -cy);
+      stats.texts += drawText(ctx, it.el, x, y, W, H, k, T);
+      ctx.restore();
+    }
+    return { canvas, w: cw, h: ch, scale, fullW: Math.round(fullW), fullH: Math.round(fullH), stats };
+  }
+  G.gjDrawing = { list, render };
+})(window);
+
+</script>
 <script>
 /* ========================================================================
    공정관리 현황 — BUILD 02
@@ -1492,8 +1934,9 @@ td.left{text-align:left;}
    BUILD 117: 위 진행 칸 가로 넓힘 · 작업 특이사항 칸 좁힘
    BUILD 118: 사업 정보 머리줄 작게 · 목록이 스크롤 없이 한 화면에 (글꼴 로딩·창 크기 바뀔 때도 다시 맞춤)
    BUILD 119: 진행 현황 칸 — 빨간 테두리·연한 바탕·「진행 현황」 제목 · 단계 칸 구분
+   BUILD 120: 사업추가 — 새 사업 추가·엑셀로 올리기·관리를 한 화면에 · 발주처별 입력 양식 · 오늘 추가한 사업 · 측량 의뢰 양식 확인 창(m→km 붉은 칸 확인) · 도면 탭을 그림으로(의뢰 도면) · Eng 번호 「미정」은 중복 아님
    ======================================================================== */
-const BUILD_NO='119';
+const BUILD_NO='120';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -1764,7 +2207,6 @@ document.querySelector('.nav').addEventListener('click',e=>{
   if(e.target.dataset.t==='manage')requestAnimationFrame(syncHbar);
   if(e.target.dataset.t==='stats')openStats();
 });
-function segMode(m){document.getElementById('seg-up').classList.toggle('on',m==='up');document.getElementById('seg-in').classList.toggle('on',m==='in');document.getElementById('mode-up').classList.toggle('hide',m!=='up');document.getElementById('mode-in').classList.toggle('hide',m!=='in');}
 function goTab(t){[...document.querySelectorAll('.nav button')].forEach(b=>b.classList.toggle('on',b.dataset.t===t));['add','manage','process','settle','stats'].forEach(n=>document.getElementById('p-'+n).classList.toggle('on',n===t));if(t==='process')renderProcess();if(t==='manage')requestAnimationFrame(syncHbar);if(t==='stats')openStats();}
 
 /* ======================= 공정관리 ======================= */
@@ -1927,9 +2369,11 @@ function prevInfo(){
 function showPrevBtn(){
   const b=document.getElementById('btnPrev'),p=prevInfo();
   if(!b)return;
-  if(!p){b.classList.add('hide');return;}
+  const pn=document.getElementById('admPrevNote');
+  if(!p){b.classList.add('hide');if(pn)pn.textContent='되살릴 목록이 없어요 · 비우거나 정리하면 직전 상태가 남아요';return;}
   const t=p.at?new Date(p.at):null;
-  b.textContent='직전 목록 되살리기 ('+(p.n||p.rows.length)+'건'+(t?' · '+hhmm(t):'')+')';
+  b.textContent='되살리기';
+  if(pn)pn.textContent='직전 목록 '+(p.n||p.rows.length)+'건'+(t?' ('+hhmm(t)+' 보관)':'')+' 상태로 되돌려요';
   b.classList.remove('hide');
 }
 document.getElementById('btnPrev').addEventListener('click',()=>{
@@ -1953,7 +2397,7 @@ document.getElementById('btnPrev').addEventListener('click',()=>{
 function dupList(){
   /* 공사코드가 같은 건 중 뒤에 온 것들의 위치 */
   const seen={},out=[];
-  DATA.forEach((d,i)=>{const k=String(d.eng||'').trim().toLowerCase();if(!k)return;
+  DATA.forEach((d,i)=>{const k=engKey(d.eng);if(!k)return;
     if(seen[k]===undefined)seen[k]=i;else out.push(i);});
   return out;
 }
@@ -1966,10 +2410,10 @@ function updateUpMode(){
   if(mm)mm.classList.toggle('safe',m==='merge');
   if(ma)ma.classList.toggle('safe',m==='add');
   const dup=dupList().length;
-  const bd=document.getElementById('btnDedup');
-  bd.textContent=dup?('중복 제외 ('+dup+'건)'):'중복 제외';
-  bd.classList.toggle('on',dup>0);
-  document.getElementById('btnWipe').classList.toggle('hide',n===0);
+  const dn=document.getElementById('admDupN');if(dn)dn.textContent=dup?dup+'건':'없음';
+  const wn=document.getElementById('admWipeNote');if(wn)wn.textContent=n?('목록 '+n.toLocaleString()+'건 전체 · 누르면 한 번 더 물어봐요'):'지금 목록이 비어 있어요';
+  document.getElementById('btnWipe').disabled=(n===0);
+  try{admVis();renderToday();}catch(e){}
   const note=document.getElementById('upmodeNote');
   note.innerHTML=n
     ? '<div class="warn" style="margin:0 0 10px;background:#f0fdf4;border-color:#bbf7d0;color:#166534;">'+
@@ -1977,25 +2421,11 @@ function updateUpMode(){
         ? '같은 건은 <b>새 파일 값으로 갱신</b>하고, 없던 건은 뒤에 <b>추가</b>합니다. 파일에서 빈 칸은 건드리지 않아 직접 넣으신 값(이슈사항·구분 등)은 그대로 남습니다.'
         : '같은 건은 <b>그대로 두고</b>, 없던 건만 뒤에 <b>추가</b>합니다.')+
       ' 같은 건인지는 <b>관리번호</b>로 가립니다 (관리번호가 없으면 공사코드+공사명).'+
-      (dup?' · 공사코드만 같은 건이 <b>'+dup+'건</b> 있어요 — 오른쪽 <b>중복 제외</b>로 정리할 수 있습니다.':'')+'</div>'
+      (dup?' · 공사코드만 같은 건이 <b>'+dup+'건</b> 있어요 — 「관리」의 <b>중복 정리</b>에서 볼 수 있어요.':'')+'</div>'
     : '';
 }
 [...document.querySelectorAll('input[name=upmode]')].forEach(r=>r.addEventListener('change',()=>{updateUpMode();markDirty();}));
-document.getElementById('btnDedup').addEventListener('click',()=>{
-  if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
-  const dup=dupList();
-  if(!dup.length){toast('공사코드가 겹치는 건이 없습니다');return;}
-  const groups=new Set(dup.map(i=>String(DATA[i].eng||'').trim().toLowerCase())).size;
-  askConfirm('공사코드가 같은 건이 '+groups+'개 코드에 걸쳐 있습니다.\n먼저 들어온 건만 남기고 뒤의 '+dup.length+'건을 지웁니다.\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
-  stashPrev();
-  const kill=new Set(dup);
-  DATA=DATA.filter((d,i)=>!kill.has(i));
-  pruneFilters();afterDataChange();updateUpMode();
-  toast(dup.length+'건 중복 제외 · 남은 목록 '+DATA.length+'건');
-
-  });
-  return;
-  });
+document.getElementById('btnDedup').addEventListener('click',openDedupWin);
 document.getElementById('btnWipe').addEventListener('click',()=>{
   if(SYNC&&SYNC.on&&!cIsAdmin()){toast('공용 목록 비우기는 관리자만 할 수 있어요',true);return;}
   if(!DATA.length){toast('이미 목록이 비어 있습니다');return;}
@@ -2008,6 +2438,7 @@ document.getElementById('btnWipe').addEventListener('click',()=>{
   resetUpResult();document.getElementById('upResult').classList.add('hide');
   clearAllFiltersSilent();
   buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
+  UP_AUDIT=null;renderUpSum();
   updateUpMode();showPrevBtn();setDot('','저장된 목록 없음');
   toast('목록을 비웠습니다 · 0건');
 
@@ -2037,8 +2468,12 @@ function readFile(file){
   const reader=new FileReader();
   reader.onload=e=>{
     try{
-      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const u8=new Uint8Array(e.target.result);
+      const wb=XLSX.read(u8,{type:'array',cellDates:true});
       const sheets=wb.SheetNames.map(n=>scanSheet(n,XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true})));
+      /* BUILD 120 : 측량 의뢰 양식이면 가운데 확인 창으로 */
+      const rq=reqDetect(sheets);
+      if(rq){PENDING=null;['sheetBox','mapBox','chkBox','upPreview','upResult'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hide');});reqOpen(file,u8,rq);return;}
       if(!sheets.some(x=>x.count)){toast('읽을 데이터를 찾지 못했습니다',true);renderSheetPicker(file.name,sheets);return;}
       PENDING={fileName:file.name,sheets:sheets,baal:guessBaal(file.name,sheets)};
       renderSheetPicker(file.name,sheets);
@@ -2108,7 +2543,7 @@ function keyVals(eng,seq,work){
         1,2,3 같은 단순 일련번호는 파일마다 밀릴 수 있어 열쇠로 안 쓴다. */
   const n=String(seq==null?'':seq).replace(/\s/g,'').toLowerCase();
   if(n&&/[^0-9]/.test(n)&&n!=='직접')return 'n|'+n;
-  const e=String(eng==null?'':eng).trim().toLowerCase();
+  const e=engKey(eng);
   const w=String(work==null?'':work).replace(/\s+/g,' ').trim().toLowerCase();
   if(e)return 'e|'+e+'|'+w;
   return 'w|'+w;
@@ -2160,6 +2595,7 @@ function renderSheetPicker(fname,sheets){
     h+='<p class="note">같은 건인지는 <b>관리번호</b>로 가립니다 (없으면 공사코드+공사명). 파일에 새 관리번호가 있으면 한 줄 추가되고, 파일에 없는 기존 건은 그대로 둡니다. 불러온 뒤 <b>업로드 검수</b>에서 파일 건수와 목록 반영 건수를 확인하세요.</p>';
   }
   box.innerHTML=h;box.classList.remove('hide');
+  try{document.getElementById('upFlow').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
   const btn=document.getElementById('doImport');if(btn)btn.addEventListener('click',()=>cloudBefore(importSelected));
   const ba=document.getElementById('upBaalAll');
   if(ba){
@@ -2321,7 +2757,7 @@ function importSelected(){
   audit.xlist=xl.map(d=>({seq:d.seq,eng:d.eng,work:d.work,other:[...new Set(DATA.filter(o=>o!==d&&o._src&&o._src!==fileBaal&&o.eng&&o.eng.toLowerCase()===d.eng.toLowerCase()).map(o=>o._src))].join('·')}));
   audit.added=added;audit.updated=updated;audit.same=same;audit.gone=gone;audit.inFile=inFile;audit.fileKeys=seen.size;
   audit.total=DATA.length;audit.other=DATA.length-inFile-gone;
-  UP_AUDIT=audit;
+  UP_AUDIT=audit;renderUpSum();
 
   const noBaal=DATA.filter(d=>!d.baal).length;
   resetUpResult();
@@ -2415,22 +2851,7 @@ function renderCheckBox(){
 }
 
 /* ======================= 직접 입력 ======================= */
-function addManual(){
-  if(!loaded){setupDefault();}
-  const g=id=>document.getElementById(id).value.trim();
-  const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
-  const work=g('iWork');
-  if(!work){toast('공구명을 입력하세요',true);return;}
-  const row=[];const set=(c,v)=>{if(c!=null&&c>=0)row[c]=v;};
-  set(COL.순번,'직접');set(COL.시행,g('iSihaeng'));set(COL.발주처,g('iBaal'));set(COL.구분,g('iGubun'));
-  set(COL.사업구분,g('iTangoType'));set(COL.협력사,g('iPartner'));set(COL.행정,g('iRegion'));set(COL.공구명,work);
-  set(COL.실측,num(g('iSil')));set(COL.측량구분,g('iMethod'));set(COL.eng,g('iEng'));set(COL.탱고거리,num(g('iTango')));
-  set(COL.지사,g('iJisa'));set(COL.진행,g('iJin'));set(COL.정산상황,g('iJeong'));
-  const d={row,_pick:true,_added:Date.now()};deriveItem(d);DATA.push(d);
-  markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();
-  ['iGubun','iRegion','iWork','iPartner','iEng','iSil','iTango','iJin'].forEach(id=>document.getElementById(id).value='');
-  markDirty();toast('추가했습니다 · 리스트관리 탭에서 확인하세요');
-}
+function addManual(){addBizGo(false);}   /* BUILD 120 : 새 사업 추가 양식으로 바뀜 */
 
 /* ======================= 파생 / 점검 ======================= */
 function toNum(v){if(typeof v==='number')return v;if(v==null||v==='')return null;const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?null:n;}
@@ -2540,11 +2961,11 @@ function flagsOf(d){
 }
 function markDup(){
   const srcs={};
-  DATA.forEach(d=>{const k=(d.eng||'').toLowerCase();if(!k||!d._src)return;(srcs[k]=srcs[k]||new Set()).add(d._src);});
-  DATA.forEach(d=>{const k=(d.eng||'').toLowerCase();d._xlist=!!(k&&srcs[k]&&srcs[k].size>1);});
+  DATA.forEach(d=>{const k=engKey(d.eng);if(!k||!d._src)return;(srcs[k]=srcs[k]||new Set()).add(d._src);});
+  DATA.forEach(d=>{const k=engKey(d.eng);d._xlist=!!(k&&srcs[k]&&srcs[k].size>1);});
   const cnt={};
-  DATA.forEach(d=>{const k=(d.eng||'').toLowerCase();if(!k)return;cnt[k]=(cnt[k]||0)+1;});
-  DATA.forEach(d=>{const k=(d.eng||'').toLowerCase();d._dup=!!(k&&cnt[k]>1);});
+  DATA.forEach(d=>{const k=engKey(d.eng);if(!k)return;cnt[k]=(cnt[k]||0)+1;});
+  DATA.forEach(d=>{const k=engKey(d.eng);d._dup=!!(k&&cnt[k]>1);});
 }
 function issuesOf(d){
   const a=[];
@@ -3985,12 +4406,13 @@ function openCard(id){
   let H='<div class="tc2-top"><div class="tc2-main"><div class="tc2-h" style="--c:#EA002C">진행 현황</div>'+h+'</div>'+
     '<div class="tc2-note"><div class="tc2-h" style="--c:#D69E00">작업 특이사항</div><textarea id="tcNote" placeholder="작업 중 특이사항을 적어 주세요 · 적으면 자동 저장되고 공용으로 같이 보여요">'+esc(note)+'</textarea><div class="tc2-sv" id="tcNoteSv"></div></div></div>';
   H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-ih"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><span class="tc2-tip">값을 더블클릭하면 고쳐요 (빈 칸 「—」도 더블클릭해서 입력)</span><button class="btn" id="tcSave" disabled>수정 저장</button></div><div class="tc2-grid" id="tcInfo">'+cardInfoHTML(d)+'</div></div>'+
-    '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><span class="tc2-dt"><b>준공도면</b><button class="btn" id="tcTango" title="탱고 (준비 중)">탱고</button></span><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
+    '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><span class="tc2-dt"><b class="dtab on" data-dt="dwg">준공도면</b><b class="dtab hide" data-dt="req">의뢰 도면</b><button class="btn" id="tcTango" title="탱고 (준비 중)">탱고</button></span><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
     '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
   document.getElementById('tcBody').innerHTML=H;
   document.getElementById('cardPop').classList.remove('hide');
   fitCardInfo();requestAnimationFrame(fitCardInfo);setTimeout(fitCardInfo,300);setTimeout(fitCardInfo,1000);
   if(FIT_RO){FIT_RO.disconnect();const g=document.getElementById('tcInfo');if(g)FIT_RO.observe(g);}
+  DWG_MODE='dwg';RDW_I=0;DWG_AUTO=true;
   loadDwg(d);
 }
 /* ---- 작업 특이사항 칸 : 「작업 특이사항」 칸에 저장 (없으면 숨김 칸으로 만든다) ---- */
@@ -4028,7 +4450,7 @@ function infoGroupOf(l){
   return '메모';
 }
 function cardCells(){
-  return DISP.filter(c=>!isAutoIdx(c.idx)&&c.label!==NOTE_LABEL&&c.label!=='발주처(자동)');
+  return DISP.filter(c=>!isAutoIdx(c.idx)&&c.label!==NOTE_LABEL&&c.label!=='발주처(자동)'&&c.label!==RDW_LABEL);
 }
 function infoVal(d,c){
   const v=(c.idx in CARD_DRAFT)?CARD_DRAFT[c.idx]:d.row[c.idx];
@@ -4037,7 +4459,7 @@ function infoVal(d,c){
 /* BUILD 112 : 카드에서만 성격별로 모아 보인다 (엑셀 「발주처 보고용」은 리스트 양식 순서 그대로) */
 const JR_LABEL='정산접수일';
 const INFO_ORDER={
-  '사업 기본':['공사명','관리번호','Eng 번호','시행시기','지역본부','행정구역','사업유형','사업자','대표사업자','사업자 (정산 업체)','공사협력사','협력사 연락처','담당Manager','구분'],
+  '사업 기본':['공사명','관리번호','Eng 번호','시행시기','지역본부','행정구역','사업유형','사업자','대표사업자','사업자 (정산 업체)','공사협력사','협력사 연락처','담당Manager','구분','등록자'],
   '측량 일정':['요청일','굴착 작업일정','굴착완료 통보일','측량예정일','측량방법','1차 측량 (실시간)','2차 측량 (사후)','측량작업자 이름/연락처'],
   '거리·성과':['측량 심사내역','실측거리 (정산거리)','도면거리','업로딩거리','Tango업로드','납품완료유무','성과심사신청','성과심사 신청일','성과심사 사업명','성과심사 결과서 확인'],
   '정산':['정산접수일','측량 정산완료','TNS 정산일정','정례기성 반영','측량비 정산예정금액(원)','측량비 정산예정금액','성과심사비 정산예정금액','sap 입력명칭','기성 남음금액'],
@@ -4195,12 +4617,17 @@ document.getElementById('cardPop').addEventListener('click',e=>{
 });
 /* ---- 준공도면 : 사업마다 파일 1개 · 공용 저장소(gj_files)에 'dwg:고유번호' 로 ---- */
 const DWG_MIME={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp'};
-let DWG_URL=null;
+let DWG_URL=null,DWG_AUTO=false;
 function dwgKey(d){ensureIds();return 'dwg:'+d._uid;}
 async function loadDwg(d){
   const box=document.getElementById('tcDwg'),dn=document.getElementById('tcDn');if(!box)return;
+  if(DWG_MODE==='req')return loadRdw(d);
+  dwgTabs(d);
   let f=null;try{f=await cTplGet(dwgKey(d));}catch(e){}
-  if(String(CARD_ID)!==String(d._id))return;
+  if(String(CARD_ID)!==String(d._id)||DWG_MODE!=='dwg')return;
+  /* 준공도면은 없고 의뢰 도면만 있으면, 카드를 열 때 의뢰 도면을 먼저 보여 준다 */
+  if((!f||!f.buf)&&DWG_AUTO&&rdwRefs(d).length){DWG_AUTO=false;DWG_MODE='req';return loadRdw(d);}
+  DWG_AUTO=false;
   if(DWG_URL){URL.revokeObjectURL(DWG_URL);DWG_URL=null;}
   if(!f||!f.buf){box.innerHTML='<div class="tc2-empty">준공도면이 아직 없어요<br><span>위 「업로드 ↑」로 PDF·이미지·도면 파일을 올려 주세요</span></div>';dn.disabled=true;return;}
   const ext=(String(f.name).split('.').pop()||'').toLowerCase(),mime=DWG_MIME[ext]||'application/octet-stream';
@@ -4671,7 +5098,7 @@ document.getElementById('exGoM').addEventListener('click',()=>{
 /* 시스템이 만든 칸 : 발주처 보고용 엑셀에서 뺀다 */
 function isSysCol(c){
   const l=c.label;
-  return isAutoIdx(c.idx)||l===JR_LABEL||l===NOTE_LABEL||l==='발주처(자동)'||/^\[(정산|메모)\]/.test(l)||AUTO_COLS.some(a=>COL[a.k]===c.idx);
+  return isAutoIdx(c.idx)||l===JR_LABEL||l===NOTE_LABEL||l==='발주처(자동)'||l===BY_LABEL||l===RDW_LABEL||/^\[(정산|메모)\]/.test(l)||AUTO_COLS.some(a=>COL[a.k]===c.idx);
 }
 /* rows · cols 를 받아 엑셀 파일로 내보낸다. nameTag 가 있으면 파일명에 붙인다. */
 function exportRowsToExcel(rows,cols,nameTag,opt){
@@ -6002,6 +6429,7 @@ function cDot(state,msg){
   b.className='cloudchip '+state;
   b.innerHTML='<i></i>'+esc(txt)+(me&&state!=='off'?' · <b>'+esc(me)+'</b>':'');
   b.title=(msg||'')+(SYNC.last?'\n마지막 맞춤 '+hhmm(SYNC.last):'')+'\n눌러서 공용 저장소 설정';
+  try{admVis();}catch(e){}
 }
 
 /* ---- 올리기 ---- */
@@ -6384,6 +6812,460 @@ function bindCloudPop(){
   });
   document.getElementById('cpSync').addEventListener('click',async()=>{await cPush();await cPull(true);openCloudPop();toast('공용 저장소와 맞췄어요');});
 }
+/* ======================= BUILD 120 : 사업추가 — 세 파트 한 화면 · 측량 의뢰 양식 · 의뢰 도면 ======================= */
+const BY_LABEL='등록자';            /* 시스템 칸 : 새 사업을 넣은 사람 */
+const RDW_LABEL='의뢰 도면';        /* 시스템 칸 : '도면이름@rdw:고유번호 | …' — 그림은 공용 파일(gj_files)에 */
+/* Eng 번호가 「미정」 같은 자리채움이면 빈 값으로 본다 (서로 중복으로 잡지 않게) */
+const ENG_NONE=/^(미정|없음|해당없음|확인중|-+|x|n\/?a|tbd)$/i;
+function engKey(v){const e=String(v==null?'':v).trim();return ENG_NONE.test(e)?'':e.toLowerCase();}
+function segMode(){}   /* BUILD 120 : 화면 전환이 없어져 하는 일 없음 (예전 호출 대비) */
+
+/* ---------- 가운데 창 (공용) ---------- */
+let GW_BTN=[],GW_CLOSE=null;
+function gwOpen(title,sub,html,btns,opt){
+  opt=opt||{};
+  document.getElementById('gwT').textContent=title;document.getElementById('gwS').textContent=sub||'';
+  document.getElementById('gwB').innerHTML=html;
+  document.querySelector('#gwPop .gw').classList.toggle('sm',!!opt.sm);
+  GW_CLOSE=opt.onClose||null;gwButtons(btns,opt.note);
+  document.getElementById('gwPop').classList.remove('hide');
+}
+function gwButtons(btns,note){
+  GW_BTN=btns||[];
+  document.getElementById('gwF').innerHTML=GW_BTN.map((b,i)=>'<button type="button" class="btn '+(b.cls||'')+'" data-gw="'+i+'"'+(b.dis?' disabled':'')+'>'+esc(b.t)+'</button>').join('')+(note?'<span class="note">'+note+'</span>':'');
+}
+function gwClose(){const p=document.getElementById('gwPop');if(p.classList.contains('hide'))return;p.classList.add('hide');document.getElementById('gwB').innerHTML='';const f=GW_CLOSE;GW_CLOSE=null;if(f)f();}
+document.getElementById('gwX').addEventListener('click',gwClose);
+document.getElementById('gwF').addEventListener('click',e=>{const b=e.target.closest('[data-gw]');if(!b||b.disabled)return;const x=GW_BTN[+b.dataset.gw];if(x&&x.fn)x.fn();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('gwPop').classList.contains('hide')&&document.getElementById('askPop').classList.contains('hide')&&!(e.target&&e.target.isContentEditable)){e.preventDefault();gwClose();}});
+
+/* ---------- ① 새 사업 추가 ---------- */
+const ADD_LS='gongjeong_addsrc_v1';
+const SRC_C={SKT:'#EA002C',SKB:'#2563EB','원인자':'#B45309'};
+let ADD_SRC=(()=>{try{const v=localStorage.getItem(ADD_LS);return SRC_C[v]?v:'SKT';}catch(e){return 'SKT';}})();
+let ADD_VAL={},ADD_TOUCH={},ADD_T=null;
+const M2=['실시간','탐사'];
+const ADD_AUTO=new Set(['지역본부','사업자','대표사업자']);
+const ADD_FORM={
+  SKT:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자'],['측량작업자 이름/연락처',{t:'측량작업자'}]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) T26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+  SKB:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자',{w:2}]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) B26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+  '원인자':[['사업 기본',[['관리번호',{req:1,ph:'예) 1-238',nolist:1}],['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['공사명',{req:1,w:3,ph:'공사 전체 이름',nolist:1}],['행정구역'],['대표사업자'],['사업자 (정산 업체)']]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['도면거리',{t:'도면거리 (km)',num:1}],['Eng 번호',{nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['협력사 연락처',{w:2,nolist:1}],['이슈사항',{w:2,nolist:1}],['비고',{w:2,nolist:1}]]]]
+};
+function addFields(){const o=[];ADD_FORM[ADD_SRC].forEach(g=>g[1].forEach(f=>o.push({l:f[0],o:f[1]||{}})));return o;}
+function todayYmd(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/* 그 리스트(발주처)에서 이 칸에 많이 쓴 값 — 고르기 목록·기본값용 */
+function addFreq(label){
+  const c=DISP.find(x=>x.label===label);if(!c)return {list:[],top:'',share:0};
+  const m=new Map();let n=0;
+  DATA.forEach(d=>{if((d._src||d.baal)!==ADD_SRC)return;const v=d.row[c.idx];if(v==null||v==='')return;const s=String(isDateObj(v)?fmtDate(v):v).trim();if(!s)return;m.set(s,(m.get(s)||0)+1);n++;});
+  const a=[...m.entries()].sort((x,y)=>y[1]-x[1]);
+  return {list:a.slice(0,40).map(x=>x[0]),top:a.length?a[0][0]:'',share:a.length&&n?a[0][1]/n:0,n};
+}
+function renderAddForm(){
+  const box=document.getElementById('adForm');if(!box)return;
+  [...document.querySelectorAll('#adSrc [data-src]')].forEach(b=>{b.classList.toggle('on',b.dataset.src===ADD_SRC);b.style.setProperty('--c',SRC_C[b.dataset.src]);});
+  let h='',dl='',n=0;
+  ADD_FORM[ADD_SRC].forEach(g=>{
+    h+='<div class="ad-grp">'+esc(g[0])+'</div><div class="ad-fg">';
+    g[1].forEach(f=>{
+      const l=f[0],o=f[1]||{};n++;
+      let v=ADD_VAL[l];
+      if(v===undefined&&!ADD_TOUCH[l]){
+        if(o.date)v=todayYmd();
+        else if(l==='시행시기')v=String(new Date().getFullYear()).slice(2)+'년';
+        else if(ADD_AUTO.has(l)){const q=addFreq(l);if(q.n>=10&&q.share>=0.8)v=q.top;}   /* 그 리스트에서 거의 늘 같은 값인 칸만 미리 채운다 */
+        if(v!==undefined)ADD_VAL[l]=v;
+      }
+      v=v==null?'':String(v);
+      const id='adI'+n;let inp;
+      if(o.sel)inp='<select id="'+id+'" data-l="'+esc(l)+'"><option value=""></option>'+o.sel.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
+      else{
+        let la='';
+        if(!o.nolist&&!o.date&&!o.num){const q=addFreq(l);if(q.list.length){la=' list="adL'+n+'"';dl+='<datalist id="adL'+n+'">'+q.list.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist>';}}
+        inp='<input id="'+id+'" data-l="'+esc(l)+'"'+(o.date?' type="date"':(o.num?' inputmode="decimal"':''))+la+' value="'+esc(v)+'" placeholder="'+esc(o.ph||'')+'" autocomplete="off">';
+      }
+      h+='<div class="ad-f'+(o.req?' req':'')+'" style="grid-column:span '+(o.w||1)+'"><label for="'+id+'">'+esc(o.t||l)+(o.req?' <i>*</i>':'')+'</label>'+inp+'</div>';
+    });
+    h+='</div>';
+  });
+  box.innerHTML=h+dl;
+  addDupCheck();
+}
+const normW=s=>String(s==null?'':s).replace(/\s+/g,' ').trim().toLowerCase();
+/* 같은 관리번호·Eng 번호·공사명이 이미 있는지 */
+function addFindDup(v){
+  const seq=normW(v['관리번호']).replace(/\s/g,''),eng=engKey(v['Eng 번호']),w=normW(v['공사명']);
+  let hit=null;
+  if(seq)hit=DATA.find(d=>String(d.seq||'').replace(/\s/g,'').toLowerCase()===seq);
+  if(hit)return {d:hit,by:'관리번호',block:true};
+  if(eng)hit=DATA.find(d=>engKey(d.eng)===eng);
+  if(hit)return {d:hit,by:'Eng 번호'};
+  if(w)hit=DATA.find(d=>normW(d.work)===w);
+  if(hit)return {d:hit,by:'공사명'};
+  return null;
+}
+function addDupCheck(){
+  const box=document.getElementById('adDup');if(!box)return null;
+  const x=addFindDup(ADD_VAL);
+  if(!x){box.innerHTML='';return null;}
+  if(x.d._id==null)x.d._id=++idSeq;
+  box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'">⚠ 같은 <b>'+x.by+'</b>'+(x.by==='공사명'?'이':'가')+' 이미 있어요 — '+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,60))+'」'+(x.block?' · 관리번호는 겹칠 수 없어요':'')+'<button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
+  return x;
+}
+document.getElementById('mode-in').addEventListener('click',e=>{
+  const s=e.target.closest('[data-src]');
+  if(s){ADD_SRC=s.dataset.src;try{localStorage.setItem(ADD_LS,ADD_SRC);}catch(_){}
+    /* 발주처마다 기본값이 달라서, 손대지 않은 칸은 다시 채운다 */
+    Object.keys(ADD_VAL).forEach(l=>{if(!ADD_TOUCH[l])delete ADD_VAL[l];});renderAddForm();return;}
+  const o=e.target.closest('[data-ad-open]');if(o){openCard(o.dataset.adOpen);return;}
+  if(e.target.id==='adAdd'){addBizGo(false);return;}
+  if(e.target.id==='adAddMore'){addBizGo(true);return;}
+});
+document.getElementById('mode-in').addEventListener('input',e=>{
+  const l=e.target.dataset&&e.target.dataset.l;if(!l)return;
+  ADD_VAL[l]=e.target.value;ADD_TOUCH[l]=1;
+  const f=e.target.closest('.ad-f');if(f)f.classList.remove('bad');
+  clearTimeout(ADD_T);ADD_T=setTimeout(addDupCheck,250);
+});
+document.getElementById('mode-in').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();addBizGo(e.shiftKey);}});
+function addBizGo(more){
+  const fs=addFields(),v={};let bad=null;
+  fs.forEach(f=>{
+    let x=String(ADD_VAL[f.l]==null?'':ADD_VAL[f.l]).trim();
+    const el=document.querySelector('#adForm [data-l="'+CSS.escape(f.l)+'"]');const box=el&&el.closest('.ad-f');if(box)box.classList.remove('bad');
+    if(f.o.req&&!x){if(box)box.classList.add('bad');if(!bad)bad={f,el,why:'을(를) 넣어 주세요'};return;}
+    if(f.o.num&&x){const n=parseFloat(x.replace(/,/g,''));if(isNaN(n)||n<0){if(box)box.classList.add('bad');if(!bad)bad={f,el,why:'은(는) 숫자로 넣어 주세요 (km)'};return;}x=n;}
+    if(x!=='')v[f.l]=x;
+  });
+  if(bad){toast('「'+(bad.f.o.t||bad.f.l)+'」'+bad.why,true);if(bad.el)bad.el.focus();return;}
+  const dup=addFindDup(v);
+  const go=()=>{
+    const d=addBizRows([{src:ADD_SRC,v}])[0];
+    const keep=more?['시행시기','지역본부','담당Manager','사업유형','공사협력사','행정구역','사업자','대표사업자','사업자 (정산 업체)','협력사 연락처','요청일','측량방법','굴착 작업일정','측량작업자 이름/연락처']:[];
+    const nv={},nt={};keep.forEach(l=>{if(ADD_VAL[l]!==undefined){nv[l]=ADD_VAL[l];nt[l]=ADD_TOUCH[l];}});
+    ADD_VAL=nv;ADD_TOUCH=nt;renderAddForm();
+    toast('추가했어요 · '+ADD_SRC+' 「'+String(d.work).slice(0,30)+'」');
+    const first=document.querySelector('#adForm [data-l="'+(ADD_SRC==='원인자'?'관리번호':'공사명')+'"]');if(first)first.focus();
+  };
+  if(dup&&dup.block){toast('같은 관리번호가 이미 있어요 — 관리번호를 확인해 주세요',true);addDupCheck();return;}
+  if(dup)askConfirm('같은 '+dup.by+(dup.by==='공사명'?'이':'가')+' 이미 있어요.\n\n· '+[dup.d._src||dup.d.baal,dup.d.seq,dup.d.eng].filter(Boolean).join(' ')+' 「'+String(dup.d.work).slice(0,50)+'」\n\n그래도 새 사업으로 추가할까요?',go,{title:'이미 있는 사업',ok:'추가'});
+  else go();
+}
+/* 발주처(SKT·SKB·원인자)를 담는 칸 — 없으면 만든다 (엑셀 업로드가 쓰는 '발주처(자동)' 과 같은 칸) */
+function ensureBaalAuto(){
+  const AUTOL='발주처(자동)';const c=DISP.find(x=>x.label===AUTOL);
+  if(c){COL.발주처=c.idx;return c.idx;}
+  const idx=nextColIdx();DISP.push({idx:idx,label:AUTOL,vis:false});
+  DATA.forEach(d=>{d.row[idx]=baalOf(d.baal)||d._src||'';});
+  COL.발주처=idx;return idx;
+}
+/* list = [{src:'SKT'|'SKB'|'원인자', v:{칸 이름:값}}] → 목록 끝에 붙이고, 붙인 줄을 돌려준다 */
+function addBizRows(list){
+  if(!loaded)setupDefault();
+  const n0=DISP.length,me=cMe(),t=Date.now(),out=[];
+  const bi=ensureBaalAuto();
+  list.forEach((o,i)=>{
+    const row=[];
+    Object.keys(o.v).forEach(l=>{const x=o.v[l];if(x===''||x==null)return;row[cLabelIdx(l)]=x;});
+    if(me)row[cLabelIdx(BY_LABEL)]=me;
+    row[bi]=o.src;
+    const d={row:row,_pick:true,_src:o.src,_added:t+i};
+    out.push(d);
+  });
+  if(DISP.length!==n0)repairCols();
+  out.forEach(d=>{deriveItem(d);d._id=++idSeq;DATA.push(d);});
+  ensureIds();
+  markDup();buildHead();buildColPanel();buildFilters();renderCards();renderValidate();render();renderSettle();updateUpMode();markDirty();
+  return out;
+}
+
+/* ---------- 오늘 추가한 사업 ---------- */
+function isToday9(t){if(!t)return false;const a=new Date(t),b=new Date();return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function renderToday(){
+  const box=document.getElementById('tdList');if(!box)return;
+  const rows=DATA.filter(d=>isToday9(d._added)).sort((a,b)=>b._added-a._added);
+  document.getElementById('tdN').textContent=rows.length;
+  if(!rows.length){box.innerHTML='<div class="td-empty">오늘 추가한 사업이 아직 없어요</div>';return;}
+  const bc=DISP.find(c=>c.label===BY_LABEL),CAP=40;
+  box.innerHTML=rows.slice(0,CAP).map(d=>{
+    if(d._id==null)d._id=++idSeq;
+    const src=d._src||d.baal||'',by=bc?String(d.row[bc.idx]||''):'';
+    const meta=[hhmm(new Date(d._added)),by,d.seq&&/[^0-9]/.test(d.seq)?d.seq:'',d.jisa].filter(Boolean).join(' · ');
+    return '<div class="td-row"><div class="t"><span class="td-chip" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src||'미정')+'</span>'+esc(meta)+'</div><div class="nm">'+esc(d.work||'(공사명 없음)')+'</div>'+
+      '<div class="b"><button type="button" data-td-open="'+d._id+'">카드 열기</button><button type="button" class="x" data-td-del="'+d._id+'">추가 취소</button></div></div>';
+  }).join('')+(rows.length>CAP?'<div class="td-more">… 외 '+(rows.length-CAP)+'건 — 리스트관리 「추가사업 현황」에서 볼 수 있어요</div>':'');
+}
+document.getElementById('tdList').addEventListener('click',e=>{
+  const o=e.target.closest('[data-td-open]');if(o){openCard(o.dataset.tdOpen);return;}
+  const x=e.target.closest('[data-td-del]');if(!x)return;
+  const d=DATA.find(r=>String(r._id)===String(x.dataset.tdDel));if(!d)return;
+  askConfirm('「'+String(d.work||'').slice(0,60)+'」\n\n오늘 추가한 이 사업을 목록에서 지웁니다.\n계속할까요?',()=>{
+    DATA=DATA.filter(r=>r!==d);afterDataChange();toast('추가를 취소했어요 · 남은 목록 '+DATA.length+'건');
+  },{title:'추가 취소',ok:'지우기'});
+});
+
+/* ---------- ② 엑셀로 올리기 : 결과 요약 ---------- */
+function renderUpSum(){
+  const b=document.getElementById('upSum');if(!b)return;const a=UP_AUDIT;
+  const t=(c,n,l)=>'<div class="'+c+'"><b>'+(n==null?'—':Number(n).toLocaleString())+'</b><span>'+l+'</span></div>';
+  b.innerHTML=t('a',a?a.added:null,'새로 추가')+t('u',a?a.updated:null,'값이 바뀜')+t('g'+(a&&a.gone?' has':''),a?a.gone:null,'파일에 없어진 건')+t('s',a?a.same:null,'그대로');
+}
+document.getElementById('upSum').addEventListener('click',e=>{
+  if(!e.target.closest('.g.has'))return;
+  const f=document.getElementById('fIssue');if(!f)return;
+  goTab('manage');const tb=document.getElementById('mgTable');if(tb&&tb.classList.contains('hide')){const t=document.getElementById('tblTog');if(t)t.click();}
+  f.value='gone';f.dispatchEvent(new Event('change',{bubbles:true}));
+});
+
+/* ---------- ③ 관리 ---------- */
+function admVis(){
+  const c=document.getElementById('admCol');if(!c)return;
+  const show=!(SYNC&&SYNC.on)||cIsAdmin();
+  c.classList.toggle('hide',!show);document.getElementById('adBot').classList.toggle('noadm',!show);
+}
+function openDedupWin(){
+  if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  const dup=dupList();
+  if(!dup.length){toast('공사코드가 겹치는 건이 없어요');return;}
+  const g={},order=[];DATA.forEach((d,i)=>{const k=engKey(d.eng);if(!k)return;if(!g[k]){g[k]=[];order.push(k);}g[k].push(i);});
+  const keys=order.filter(k=>g[k].length>1);
+  let h='<div class="gw-pad"><div class="gw-note" style="margin-top:0">공사코드가 같은 사업이에요. <b>먼저 들어온 한 건만 남기고</b> 붉게 표시한 <b>'+dup.length+'건</b>을 지워요. 리스트가 서로 다른 건(SKT·SKB 양쪽에 있는 사업)도 한 건만 남으니 표를 보고 정해 주세요. 지운 뒤 「직전 목록 되살리기」로 되돌릴 수 있어요.</div>'+
+    '<table class="gw-t"><thead><tr><th>공사코드</th><th>리스트</th><th>관리번호</th><th>공사명</th><th>단계</th><th>처리</th></tr></thead><tbody>';
+  keys.forEach(k=>g[k].forEach((i,j)=>{const d=DATA[i];
+    h+='<tr class="'+(j?'kill':'')+'"><td>'+(j?'':esc(d.eng))+'</td><td>'+esc(d._src||d.baal||'')+'</td><td>'+esc(d.seq||'')+'</td><td class="l">'+esc(d.work||'')+'</td><td>'+esc(d._cancel?'취소':workStage(d))+'</td><td>'+(j?'지움':'남김')+'</td></tr>';}));
+  h+='</tbody></table></div>';
+  gwOpen('중복 정리',keys.length+'개 공사코드 · 겹친 '+dup.length+'건',h,[
+    {t:'붉은 '+dup.length+'건 지우기',cls:'btn-primary',fn:()=>askConfirm('공사코드가 같은 건 중 먼저 들어온 건만 남기고\n뒤의 '+dup.length+'건을 지웁니다.\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
+      stashPrev();const kill=new Set(dupList());DATA=DATA.filter((d,i)=>!kill.has(i));
+      pruneFilters();afterDataChange();updateUpMode();gwClose();toast(kill.size+'건 중복 정리 · 남은 목록 '+DATA.length+'건');
+    },{title:'중복 정리',ok:'지우기'})},
+    {t:'닫기',fn:gwClose}],{sm:true});
+}
+
+/* ---------- 측량 의뢰 양식 ---------- */
+const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정'};
+const REQ_ORDER=['관리번호','시행시기','지역본부','공사협력사','행정구역','공사명','@dist','굴착 작업일정','측량방법','요청일','Eng 번호','담당Manager','사업유형','비고','사업자'];
+const REQ_M_MIN=30;   /* 측량거리가 이 값 이상이면 m 로 보고 km 로 바꾼다 */
+let REQ=null;
+/* 굴착업체·발주처가 주는 측량 의뢰 양식인지 : 공구명·요청일은 있고, 리스트에만 있는 칸은 없다 */
+function reqDetect(sheets){
+  return sheets.find(sh=>{
+    if(!sh.count)return false;
+    const N=sh.labels.map(l=>nh(l).toLowerCase()),has=x=>N.includes(x);
+    return has('공구명')&&has('요청일')&&!has('측량예정일')&&!has('tango업로드')&&!has('진행상황')&&!has('정산상황')&&!N.some(x=>x.includes('정산거리'));
+  })||null;
+}
+const reqDistL=s=>s==='원인자'?'도면거리':'측량 심사내역';
+function reqOpen(file,u8,sh){
+  const bi=baalSourceIdx(sh.labels),fb=guessBaal(file.name,[sh]);
+  const renamed=[],dropped=[];
+  const rows=sh.rows.map(x=>{
+    const v={},conv={};
+    sh.labels.forEach((l,c)=>{
+      if(!l)return;const n=nh(l);
+      if(n==='번호'||n==='순번'||n.toLowerCase()==='no'||/^완료일/.test(n)){if(!dropped.includes(l))dropped.push(l);return;}
+      let L=REQ_MAP[n]||l;
+      if(n.includes('심사내역')||n==='도면거리'||/^측량거리/.test(n))L='@dist';
+      if(L!==l&&!renamed.some(z=>z[0]===l))renamed.push([l,L==='@dist'?'측량거리(km)':L]);
+      const val=x[c];if(val==null||val==='')return;
+      v[L]=typeof val==='string'?val.trim():val;
+    });
+    if(v['@dist']!=null){const num=toNum(v['@dist']);
+      if(num!=null&&num>=REQ_M_MIN){conv['@dist']={orig:v['@dist']};v['@dist']=+(num/1000).toFixed(3);}
+      else if(num!=null)v['@dist']=num;}
+    if(v['측량방법']){const m=nh(v['측량방법']);if(m==='실시간측량')v['측량방법']='실시간';else if(m==='탐사측량')v['측량방법']='탐사';}
+    const src=baalOf(bi>=0?x[bi]:'')||fb||'';
+    const key=keyVals(v['Eng 번호'],v['관리번호'],v['공사명']);
+    const ex=DATA.find(d=>keyVals(d.eng,d.seq,d.work)===key)||null;
+    return {on:!ex,src:src,v:v,conv:conv,ok:{},ex:ex};
+  });
+  const base=String(file.name||'측량의뢰').replace(/\.[^.]+$/,'');
+  REQ={name:file.name,base:base,sheet:sh.name,rows:rows,renamed:renamed,dropped:dropped,skipped:(sh.skipped||[]).length,dwgs:null,busy:false};
+  const mine=REQ;
+  gwOpen('측량 의뢰 확인',file.name+' · 「'+sh.name+'」 탭','<div class="rq"><div class="rq-l" id="rqL"></div><div class="rq-r" id="rqR"></div></div>',[],{onClose:()=>{if(REQ===mine){(REQ.dwgs||[]).forEach(g=>{if(g.url)URL.revokeObjectURL(g.url);});REQ=null;}}});
+  reqRender();
+  /* 도면·개황도 탭을 그림으로 */
+  (async()=>{
+    let ls=[];
+    try{ls=window.gjDrawing?gjDrawing.list(u8).filter(s=>s.sheet!==sh.name&&(s.pics>0||s.shapes>=5)):[];}catch(e){ls=[];}
+    if(REQ!==mine)return;
+    mine.dwgs=ls.map(s=>({sheet:s.sheet,st:'wait',on:true}));reqRender();
+    for(const g of mine.dwgs){
+      try{
+        const r=await gjDrawing.render(u8,g.sheet,{maxSide:6000});
+        const blob=await new Promise(res=>r.canvas.toBlob(res,'image/jpeg',0.85));
+        r.canvas.width=1;r.canvas.height=1;
+        if(!blob)throw new Error('그림으로 바꾸지 못했어요');
+        g.blob=blob;g.url=URL.createObjectURL(blob);g.w=r.w;g.h=r.h;g.st='ok';
+      }catch(e){g.st='err';g.err=String(e&&e.message||e);}
+      if(REQ!==mine){if(g.url)URL.revokeObjectURL(g.url);return;}
+      reqRender();
+    }
+  })();
+}
+function reqPending(){let n=0;if(!REQ)return 0;REQ.rows.forEach(r=>{if(!r.on)return;Object.keys(r.conv).forEach(l=>{if(!r.ok[l])n++;});});return n;}
+function reqCols(){
+  const have=new Set();REQ.rows.forEach(r=>Object.keys(r.v).forEach(l=>have.add(l)));
+  const o=REQ_ORDER.filter(l=>have.has(l)||l==='공사명'||l==='측량방법'||l==='요청일');
+  [...have].forEach(l=>{if(!o.includes(l))o.push(l);});
+  return o;
+}
+function reqRender(){
+  if(!REQ)return;
+  const L=document.getElementById('rqL'),R=document.getElementById('rqR');if(!L||!R)return;
+  const ae=document.activeElement,act=!!(ae&&L.contains(ae)&&ae.isContentEditable);
+  const cols=reqCols(),on=REQ.rows.filter(r=>r.on),pend=reqPending(),tot=REQ.rows.reduce((a,r)=>a+Object.keys(r.conv).length,0);
+  const srcs=[...new Set(on.map(r=>r.src||'미정'))];
+  const ex=REQ.rows.filter(r=>r.ex).length,dw=(REQ.dwgs||[]).filter(g=>g.on&&g.st!=='err');
+  if(!act){
+    let h='<div class="rq-sum"><span class="rq-pill p1">의뢰 '+REQ.rows.length+'건'+(on.length!==REQ.rows.length?' 중 '+on.length+'건 추가':'')+'</span>'+
+      '<span class="rq-pill p2">발주처 '+esc(srcs.join(' · ')||'미정')+'</span>'+
+      (tot?'<span class="rq-pill '+(pend?'p3':'p4')+'">'+(pend?('확인할 칸 '+tot+'곳 중 '+pend+'곳 남음'):('바꾼 칸 '+tot+'곳 확인 끝'))+'</span>':'')+
+      (REQ.dwgs?('<span class="rq-pill p4">도면 '+dw.length+'장</span>'):'<span class="rq-pill p4">도면 찾는 중…</span>')+
+      (REQ.skipped?'<span style="font-size:12.5px;color:#64748b;">빈 줄 '+REQ.skipped+'줄은 건너뜀</span>':'')+'</div>';
+    h+='<table class="gw-t rq-t"><thead><tr><th>추가</th><th>발주처</th>'+cols.map(l=>'<th>'+esc(l==='@dist'?'측량거리 (km)':l)+'</th>').join('')+'</tr></thead><tbody>';
+    REQ.rows.forEach((r,i)=>{
+      h+='<tr class="'+(r.on?'':'off')+'"><td><input type="checkbox" data-rq-on="'+i+'"'+(r.on?' checked':'')+'></td>'+
+        '<td class="'+(r.src?'':'need')+'"><select data-rq-src="'+i+'"><option value="">선택</option>'+['SKT','SKB','원인자'].map(s=>'<option'+(r.src===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td>';
+      cols.forEach(l=>{
+        const v=r.v[l]==null?'':String(r.v[l]),cv=r.conv[l];
+        if(cv){
+          const ok=!!r.ok[l];
+          h+='<td class="'+(ok?'okd':'red')+'"><span class="v" contenteditable="true" data-rq-r="'+i+'" data-rq-l="'+esc(l)+'">'+esc(v)+'</span>'+
+            (ok?'<span class="o">✓ 확인함 (원본 '+esc(String(cv.orig))+')</span>':'<span class="o">원본 '+esc(String(cv.orig))+' → m로 보고 바꿈</span><button type="button" data-rq-ok="'+i+'" data-l="'+esc(l)+'">확인</button>')+'</td>';
+        }else{
+          const cls=(l==='공사명'?'l ':'')+(l==='Eng 번호'&&v&&!engKey(v)?'warnc ':'')+((l==='공사명'||l==='측량방법'||l==='요청일')&&!v&&r.on?'need ':'');
+          h+='<td class="'+cls+'" contenteditable="true" data-rq-r="'+i+'" data-rq-l="'+esc(l)+'">'+esc(v)+(l==='공사명'&&r.ex?'<span class="rq-ex" contenteditable="false">이미 목록에 있음</span>':'')+'</td>';
+        }
+      });
+      h+='</tr>';
+    });
+    h+='</tbody></table>';
+    h+='<div class="gw-note">· <b>붉은 칸</b>은 시스템이 값을 바꿔 넣은 곳이에요. 숫자가 맞으면 <b>확인</b>을 누르고, 틀리면 숫자를 눌러 고쳐요. 전부 확인해야 「추가」가 켜져요.<br>'+
+      '· 칸은 어느 것이든 눌러서 고칠 수 있어요.'+(REQ.rows.some(r=>r.v['Eng 번호']&&!engKey(r.v['Eng 번호']))?' <b>Eng 번호 「미정」</b>은 빈 값으로 보고 중복으로 잡지 않아요.':'')+
+      (ex?'<br>· <b>이미 목록에 있는 사업 '+ex+'건</b>은 추가에서 빼 두었어요. 그래도 넣으려면 왼쪽 「추가」를 체크하세요.':'')+'</div>';
+    if(REQ.renamed.length||REQ.dropped.length)h+='<div class="rq-map"><b>칸 이름 맞춤</b> &nbsp; '+REQ.renamed.map(z=>'<span>'+esc(z[0])+' → <b>'+esc(z[1])+'</b></span>').join('')+(REQ.dropped.length?'<span>'+esc(REQ.dropped.join(' · '))+' → 안 넣음</span>':'')+'</div>';
+    L.innerHTML=h;
+  }
+  /* 오른쪽 : 의뢰 도면 */
+  let r='<h3>의뢰 도면</h3>';
+  if(!REQ.dwgs)r+='<div class="s">도면 탭을 찾는 중…</div>';
+  else if(!REQ.dwgs.length)r+='<div class="s">이 파일에는 도면·개황도 탭이 없어요</div>';
+  else{
+    r+='<div class="s">도면 탭을 그림으로 바꿨어요 · 추가하는 '+on.length+'건 모두에 같은 도면이 붙어요</div>';
+    REQ.dwgs.forEach((g,i)=>{
+      r+='<div class="rq-dw'+(g.on?'':' off')+'"><div class="nm">「'+esc(g.sheet)+'」 탭<span>'+(g.st==='ok'?(g.w+'×'+g.h+' · '+Math.round(g.blob.size/1024).toLocaleString()+' KB'):'')+'</span></div>'+
+        '<div class="im">'+(g.st==='ok'?'<img src="'+g.url+'" data-rq-zoom="'+i+'" alt="의뢰 도면">':(g.st==='err'?'그림으로 바꾸지 못했어요<br>'+esc(g.err||''):'그림으로 바꾸는 중…'))+'</div>'+
+        (g.st==='ok'?'<div class="b"><button type="button" data-rq-zoom="'+i+'">크게 보기</button><button type="button" data-rq-dw="'+i+'">'+(g.on?'이 도면은 빼기':'다시 넣기')+'</button></div>':'')+'</div>';
+    });
+  }
+  R.innerHTML=r;
+  reqButtons();
+}
+function reqButtons(){
+  if(!REQ)return;
+  const on=REQ.rows.filter(r=>r.on),pend=reqPending();
+  const noSrc=on.filter(r=>!r.src).length,noName=on.filter(r=>!String(r.v['공사명']||'').trim()).length;
+  const wait=!REQ.dwgs||REQ.dwgs.some(g=>g.st==='wait');
+  let t=on.length+'건 추가',dis=false;
+  if(REQ.busy){t='추가하는 중…';dis=true;}
+  else if(!on.length){t='추가할 사업 없음';dis=true;}
+  else if(pend){t=on.length+'건 추가 (확인 '+pend+'곳 남음)';dis=true;}
+  else if(noSrc){t=on.length+'건 추가 (발주처 '+noSrc+'건 선택 필요)';dis=true;}
+  else if(noName){t=on.length+'건 추가 (공사명 '+noName+'건 비어 있음)';dis=true;}
+  else if(wait){t=on.length+'건 추가 (도면 변환 중…)';dis=true;}
+  gwButtons([{t:t,cls:'btn-primary',dis:dis,fn:reqAdd},{t:'취소',fn:gwClose}],'추가하면 목록에 올라가고 「오늘 추가한 사업」에 떠요 · 도면은 사업 카드의 「의뢰 도면」에서 보기·다운로드');
+}
+document.getElementById('gwB').addEventListener('click',e=>{
+  if(!REQ)return;
+  const ok=e.target.closest('[data-rq-ok]');if(ok){REQ.rows[+ok.dataset.rqOk].ok[ok.dataset.l]=1;reqRender();return;}
+  const z=e.target.closest('[data-rq-zoom]');if(z){const g=REQ.dwgs[+z.dataset.rqZoom];if(g&&g.url)window.open(g.url,'_blank');return;}
+  const dw=e.target.closest('[data-rq-dw]');if(dw){const g=REQ.dwgs[+dw.dataset.rqDw];g.on=!g.on;reqRender();return;}
+});
+document.getElementById('gwB').addEventListener('change',e=>{
+  if(!REQ)return;
+  if(e.target.dataset.rqOn!==undefined){REQ.rows[+e.target.dataset.rqOn].on=e.target.checked;reqRender();return;}
+  if(e.target.dataset.rqSrc!==undefined){REQ.rows[+e.target.dataset.rqSrc].src=e.target.value;reqRender();return;}
+});
+document.getElementById('gwB').addEventListener('input',e=>{
+  if(!REQ)return;const t=e.target.closest('[data-rq-r]');if(!t)return;
+  const r=REQ.rows[+t.dataset.rqR],l=t.dataset.rqL;
+  let x;if(t.tagName==='TD'){const c=t.cloneNode(true);c.querySelectorAll('.rq-ex').forEach(n=>n.remove());x=c.textContent;}else x=t.textContent;
+  x=String(x||'').replace(/\s+/g,' ').trim();
+  if(l==='@dist'){const n=parseFloat(x.replace(/,/g,''));r.v[l]=(x===''?'':(isNaN(n)?x:n));if(r.conv[l])r.ok[l]=1;}   /* 직접 고친 숫자는 확인한 것으로 본다 */
+  else r.v[l]=x;
+  reqButtons();
+});
+document.getElementById('gwB').addEventListener('focusout',e=>{if(REQ&&e.target.closest&&e.target.closest('[data-rq-r]'))setTimeout(()=>{if(REQ)reqRender();},0);});
+document.getElementById('gwB').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-rq-r]')){e.preventDefault();e.target.blur();}});
+async function reqAdd(){
+  if(!REQ||REQ.busy)return;
+  const R=REQ,rows=R.rows.filter(r=>r.on);if(!rows.length||reqPending())return;
+  R.busy=true;reqButtons();
+  try{
+    const refs=[];
+    for(const g of (R.dwgs||[]).filter(x=>x.on&&x.st==='ok')){
+      const k='rdw:'+cUid(),buf=await g.blob.arrayBuffer(),name=R.base+'_'+g.sheet+'.jpg';
+      const v={name:name,at:Date.now(),size:buf.byteLength,buf:buf,by:cMe()};
+      await tplPut(k,v);
+      if(await cFilePut(k,name,buf.byteLength,buf)){const f=SYNC.files[k];if(f){v.cat=new Date(f.t).getTime();await tplPut(k,v);}}
+      refs.push(g.sheet.replace(/[@|]/g,' ')+'@'+k);
+    }
+    const list=rows.map(r=>{
+      const v={};Object.keys(r.v).forEach(l=>{const x=r.v[l];if(x===''||x==null)return;v[l==='@dist'?reqDistL(r.src):l]=x;});
+      if(refs.length)v[RDW_LABEL]=refs.join(' | ');
+      return {src:r.src,v:v};
+    });
+    const out=addBizRows(list);
+    gwClose();
+    toast('의뢰 '+out.length+'건을 추가했어요'+(refs.length?' · 도면 '+refs.length+'장':''));
+  }catch(e){
+    console.error(e);R.busy=false;if(REQ===R)reqButtons();toast('추가하지 못했어요 · '+(e&&e.message||e),true);
+  }
+}
+
+/* ---------- 사업 카드 : 의뢰 도면 ---------- */
+let DWG_MODE='dwg',RDW_I=0;
+function rdwRefs(d){
+  const c=DISP.find(x=>x.label===RDW_LABEL);if(!c||!d)return [];
+  return String(d.row[c.idx]==null?'':d.row[c.idx]).split('|').map(s=>s.trim()).filter(Boolean).map(s=>{const i=s.lastIndexOf('@');return i<0?null:{name:s.slice(0,i).trim()||'도면',key:s.slice(i+1).trim()};}).filter(x=>x&&/^rdw:/.test(x.key));
+}
+function dwgTabs(d){
+  const refs=rdwRefs(d);
+  [...document.querySelectorAll('#cardPop .dtab')].forEach(b=>{b.classList.toggle('on',b.dataset.dt===DWG_MODE);if(b.dataset.dt==='req'){b.classList.toggle('hide',!refs.length);b.textContent='의뢰 도면'+(refs.length>1?' '+refs.length:'');}});
+  const up=document.getElementById('tcUp');if(up)up.disabled=DWG_MODE==='req';
+}
+async function loadRdw(d){
+  const box=document.getElementById('tcDwg'),dn=document.getElementById('tcDn');if(!box)return;
+  const refs=rdwRefs(d);dwgTabs(d);
+  if(DWG_URL){URL.revokeObjectURL(DWG_URL);DWG_URL=null;}
+  if(!refs.length){DWG_MODE='dwg';return loadDwg(d);}
+  if(RDW_I>=refs.length)RDW_I=0;
+  const ref=refs[RDW_I];
+  box.innerHTML='<div class="tc2-empty">불러오는 중…</div>';dn.disabled=true;
+  let f=null;try{f=await cTplGet(ref.key);}catch(e){}
+  if(String(CARD_ID)!==String(d._id)||DWG_MODE!=='req')return;
+  const tabs=refs.length>1?'<div class="rdw-tabs">'+refs.map((r,i)=>'<button type="button" data-rdw="'+i+'" class="'+(i===RDW_I?'on':'')+'">'+esc(r.name)+'</button>').join('')+'</div>':'';
+  if(!f||!f.buf){box.innerHTML=tabs+'<div class="tc2-empty">의뢰 도면을 불러오지 못했어요<br><span>공용 저장소 연결을 확인해 주세요</span></div>';return;}
+  DWG_URL=URL.createObjectURL(new Blob([f.buf],{type:'image/jpeg'}));
+  box.innerHTML=tabs+'<div class="tc2-fi"><b>'+esc(f.name)+'</b> · '+(f.size?Math.round(f.size/1024).toLocaleString()+' KB':'')+(f.by?' · '+esc(f.by):'')+(f.at?' · '+fmtDate(new Date(f.at)):'')+' · 그림을 누르면 크게 보여요</div>'+
+    '<div class="tc2-pv"><img class="zoomable" id="tcRdwImg" src="'+DWG_URL+'" alt="의뢰 도면"></div>';
+  dn.disabled=false;dn.dataset.name=f.name;
+}
+document.getElementById('cardPop').addEventListener('click',e=>{
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(!d)return;
+  const t=e.target.closest('.dtab');
+  if(t&&!t.classList.contains('on')){DWG_MODE=t.dataset.dt;RDW_I=0;loadDwg(d);return;}
+  const r=e.target.closest('[data-rdw]');if(r){RDW_I=+r.dataset.rdw;loadRdw(d);return;}
+  if(e.target.id==='tcRdwImg'&&DWG_URL){window.open(DWG_URL,'_blank');return;}
+});
+
+/* 목록을 다시 그릴 때마다 「오늘 추가한 사업」도 맞춘다 */
+{const r0=render;render=function(){const x=r0.apply(this,arguments);try{renderToday();}catch(e){}return x;};}
+
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
 if(!loadState()){setDot('','저장된 목록 없음');}
@@ -6391,6 +7273,7 @@ if(location.hash==='#list'){goTab('manage');requestAnimationFrame(syncHbar);}
 if(PWIN)renderPerWin();
 if(SKBWIN)renderSkbWin();
 updateUpMode();showPrevBtn();syncToolbar();syncHbar();
+renderAddForm();renderToday();renderUpSum();admVis();
 document.getElementById('mapBox').innerHTML='';
 bindCloudPop();cloudInit();
 </script>
