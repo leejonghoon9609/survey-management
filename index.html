@@ -1023,6 +1023,39 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 #p-add .ad-act .btn.ad-b2:hover{background:#DBEAFE;}
 #p-add .ad-act .btn.ad-b3{background:#FFB400;border-color:#E6A200;color:#3B2A00;font-weight:700;}
 #p-add .ad-act .btn.ad-b3:hover{background:#F5AC00;}
+/* ===== BUILD 125 : 도면 크게 보기 — 화면 안에서 열고 오른쪽 아래 닫기 ===== */
+#dvPop{position:fixed;inset:0;background:#0b0b0d;z-index:9400;}
+#dvPop.hide{display:none;}
+.dv-s{position:absolute;inset:0;overflow:auto;cursor:grab;}
+.dv-s.drag{cursor:grabbing;}
+.dv-s img{display:block;max-width:none;user-select:none;-webkit-user-drag:none;background:#fff;}
+.dv-s iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;}
+#dvPop.pdf .dv-s{cursor:default;bottom:64px;}
+#dvPop.pdf .dv-zm{display:none;}
+.dv-top{position:absolute;left:18px;top:14px;max-width:60%;pointer-events:none;}
+.dv-top span{display:inline-block;background:rgba(15,23,42,.72);color:#fff;font-size:13px;border-radius:8px;padding:6px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.dv-bar{position:absolute;right:22px;bottom:18px;display:flex;gap:8px;align-items:center;}
+.dv-bar button{border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:8px;padding:8px 14px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);}
+.dv-bar #dvX{background:#EA002C;border-color:#EA002C;color:#fff;font-weight:800;padding:10px 26px;font-size:15px;}
+.dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
+.dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
+.dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 125 : ②③ 을 화면 끝까지 · 오늘 추가한 사업 카드마다 아주 연한 바탕 · 큰 틀 테두리 진하게 ===== */
+#p-add.on{display:flex;flex-direction:column;min-height:calc(100vh - var(--adTop,120px) - var(--adTail,32px));}
+#p-add .ad-top,#p-add #upFlow{flex:none;}
+#p-add .ad-bot{flex:1;}
+.ad-adm{justify-content:flex-start;}
+.ad-adm .ln{flex:none;min-height:68px;}
+#mode-up .drop b{font-size:16.5px;margin-bottom:4px;}
+#tdList .td-row:nth-child(5n+1){background:#FFF9F9;}
+#tdList .td-row:nth-child(5n+2){background:#F7FAFF;}
+#tdList .td-row:nth-child(5n+3){background:#F7FCF8;}
+#tdList .td-row:nth-child(5n+4){background:#FFFCF3;}
+#tdList .td-row:nth-child(5n+5){background:#FAF8FF;}
+#tdList .td-row.sel{background:#FFEFF1;}
+#p-add .card{border:1.5px solid #94A3B8;}
+#p-add .card.ad-adm{border-color:#F08A8A !important;}
+#p-add .ad-tg{border-color:#94A3B8;}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -1414,6 +1447,10 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
   <div class="gw-b" id="gwB"></div>
   <div class="gw-f" id="gwF"></div>
 </div></div>
+<div id="dvPop" class="hide"><div class="dv-s" id="dvS"></div>
+  <div class="dv-top"><span id="dvN"></span></div>
+  <div class="dv-bar"><span class="dv-zm"><button type="button" id="dvOut" title="작게">－</button><b id="dvZ">100%</b><button type="button" id="dvIn" title="크게">＋</button><button type="button" id="dvFitB">화면 맞춤</button></span><button type="button" id="dvDn">다운로드 ↓</button><button type="button" id="dvX">닫기</button></div>
+</div>
 <div id="askPop" class="hide"><div class="view-card ask-card">
   <div class="cell-h"><b id="askTitle">확인</b><span class="cell-x" id="askX">✕</span></div>
   <div class="ask-b" id="askMsg"></div>
@@ -1997,8 +2034,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 122: 새 사업 추가 — 입력 칸을 줄이고 오른쪽에 의뢰 도면 칸(이미지·PDF·엑셀 도면 탭) · 오늘 추가한 사업 「여기서 보기」로 값·도면 보고 고치기
    BUILD 123: 엑셀 올리는 칸 크게·테두리 선명하게(안내 글 없앰) · 관리 줄마다 연한 바탕색
    BUILD 124: 새 사업 추가 아래 버튼마다 다른 색 (빨강 · 파랑 · 노랑)
+   BUILD 125: 도면 「크게 보기」 — 새 탭 대신 화면 안에서 열림 · 오른쪽 아래 닫기 · 휠 확대·끌어서 이동·다운로드 · 사업추가 아래 줄(②③)을 화면 끝까지(올리는 칸 크게) · 오늘 추가한 사업 카드마다 아주 연한 바탕 · 큰 틀 테두리 진하게
    ======================================================================== */
-const BUILD_NO='124';
+const BUILD_NO='125';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -6995,7 +7033,7 @@ document.getElementById('mode-in').addEventListener('click',e=>{
   if(id==='adCard'){const d=viewD();if(d){if(d._id==null)d._id=++idSeq;openCard(d._id);}return;}
   /* 의뢰 도면 칸 */
   if(e.target.closest('[data-dw-pick]')){document.getElementById('adDwFile').click();return;}
-  if(e.target.closest('[data-dw-zoom]')||e.target.id==='adDwImg'){const it=ADD_DW[ADD_DWI];if(it&&it.url)window.open(it.url,'_blank');return;}
+  if(e.target.closest('[data-dw-zoom]')||e.target.id==='adDwImg'){const it=ADD_DW[ADD_DWI];if(it&&it.url)dwgView(it.url,it.type,it.name);return;}
   if(e.target.closest('[data-dw-del]')){addDwSet([]);return;}
   const t=e.target.closest('[data-dw-i]');if(t){ADD_DWI=+t.dataset.dwI;renderAddDw();return;}
 });
@@ -7265,7 +7303,7 @@ function reqButtons(){
 document.getElementById('gwB').addEventListener('click',e=>{
   if(!REQ)return;
   const ok=e.target.closest('[data-rq-ok]');if(ok){REQ.rows[+ok.dataset.rqOk].ok[ok.dataset.l]=1;reqRender();return;}
-  const z=e.target.closest('[data-rq-zoom]');if(z){const g=REQ.dwgs[+z.dataset.rqZoom];if(g&&g.url)window.open(g.url,'_blank');return;}
+  const z=e.target.closest('[data-rq-zoom]');if(z){const g=REQ.dwgs[+z.dataset.rqZoom];if(g&&g.url)dwgView(g.url,'image/jpeg',REQ.base+'_'+g.sheet+'.jpg');return;}
   const dw=e.target.closest('[data-rq-dw]');if(dw){const g=REQ.dwgs[+dw.dataset.rqDw];g.on=!g.on;reqRender();return;}
 });
 document.getElementById('gwB').addEventListener('change',e=>{
@@ -7344,7 +7382,7 @@ document.getElementById('cardPop').addEventListener('click',e=>{
   const t=e.target.closest('.dtab');
   if(t&&!t.classList.contains('on')){DWG_MODE=t.dataset.dt;RDW_I=0;loadDwg(d);return;}
   const r=e.target.closest('[data-rdw]');if(r){RDW_I=+r.dataset.rdw;loadRdw(d);return;}
-  if(e.target.id==='tcRdwImg'&&DWG_URL){window.open(DWG_URL,'_blank');return;}
+  if(e.target.id==='tcRdwImg'&&DWG_URL){dwgView(DWG_URL,'image/jpeg',(document.getElementById('tcDn')||{dataset:{}}).dataset.name);return;}
 });
 
 /* ---------- BUILD 122 : 새 사업 추가 옆 의뢰 도면 칸 · 오늘 추가한 사업 「여기서 보기」 ---------- */
@@ -7377,7 +7415,7 @@ function renderAddDw(){
   if(ADD_DWI>=ADD_DW.length)ADD_DWI=0;
   const it=ADD_DW[ADD_DWI];
   const tabs=ADD_DW.length>1?'<div class="ad-dtabs">'+ADD_DW.map((x,i)=>'<button type="button" data-dw-i="'+i+'" class="'+(i===ADD_DWI?'on':'')+'">'+esc(x.ref||'도면')+'</button>').join('')+'</div>':'';
-  B.innerHTML=(it.url&&it.type!=='application/pdf'?'<button type="button" data-dw-zoom="1">크게 보기</button>':(it.url?'<button type="button" data-dw-zoom="1">새 창</button>':''))+'<button type="button" data-dw-pick="1">바꾸기</button><button type="button" class="x" data-dw-del="1">빼기</button>';
+  B.innerHTML=(it.url?'<button type="button" data-dw-zoom="1">크게 보기</button>':'')+'<button type="button" data-dw-pick="1">바꾸기</button><button type="button" class="x" data-dw-del="1">빼기</button>';
   if(!it.url){
     S.textContent=it.ref||'';
     if(it.err){body.innerHTML=tabs+'<div class="ad-dmsg">도면을 불러오지 못했어요<br>공용 저장소 연결을 확인해 주세요</div>';return;}
@@ -7485,6 +7523,70 @@ async function addViewSave(){
   }catch(err){console.error(err);toast('수정하지 못했어요 · '+(err&&err.message||err),true);}
   finally{ADD_BUSY=false;}
 }
+
+/* ---------- BUILD 125 : 도면 크게 보기 (화면 안에서 · 오른쪽 아래 닫기 · 휠로 확대 · 끌어서 이동) ---------- */
+const DV={s:1,fit:1,nw:0,nh:0,url:'',name:'',pdf:false,drag:null,moved:false};
+function dwgView(url,type,name){
+  const pop=document.getElementById('dvPop'),S=document.getElementById('dvS');
+  DV.url=url;DV.name=name||'의뢰 도면';DV.pdf=type==='application/pdf';
+  document.getElementById('dvN').textContent=DV.name;
+  pop.classList.toggle('pdf',DV.pdf);pop.classList.remove('hide');
+  if(DV.pdf){S.innerHTML='<iframe src="'+url+'" title="의뢰 도면"></iframe>';return;}
+  S.innerHTML='<img id="dvImg" alt="의뢰 도면" draggable="false">';
+  const im=document.getElementById('dvImg');
+  im.onload=()=>{DV.nw=im.naturalWidth;DV.nh=im.naturalHeight;dvFit();};im.src=url;
+}
+function dvClose(){const pop=document.getElementById('dvPop');if(pop.classList.contains('hide'))return false;pop.classList.add('hide');document.getElementById('dvS').innerHTML='';return true;}
+function dvApply(){
+  const S=document.getElementById('dvS'),im=document.getElementById('dvImg');if(!im)return;
+  const w=DV.nw*DV.s,h=DV.nh*DV.s;
+  im.style.width=w+'px';im.style.height=h+'px';
+  im.style.marginLeft=Math.max(0,(S.clientWidth-w)/2)+'px';im.style.marginTop=Math.max(0,(S.clientHeight-h)/2)+'px';
+  document.getElementById('dvZ').textContent=Math.round(DV.s*100)+'%';
+}
+function dvFit(){
+  const S=document.getElementById('dvS');if(!DV.nw)return;
+  DV.fit=Math.min(S.clientWidth/DV.nw,S.clientHeight/DV.nh,1);DV.s=DV.fit;dvApply();S.scrollTo(0,0);
+}
+/* f 배만큼 확대·축소 — (px,py) 자리의 그림이 그대로 그 자리에 있게 */
+function dvZoom(f,px,py){
+  const S=document.getElementById('dvS'),im=document.getElementById('dvImg');if(!im||!DV.nw)return;
+  const old=DV.s,s=Math.max(DV.fit,Math.min(4,old*f));if(Math.abs(s-old)<1e-5)return;
+  if(px==null){px=S.clientWidth/2;py=S.clientHeight/2;}
+  const ml=parseFloat(im.style.marginLeft)||0,mt=parseFloat(im.style.marginTop)||0;
+  const ix=(S.scrollLeft+px-ml)/old,iy=(S.scrollTop+py-mt)/old;
+  DV.s=s;dvApply();
+  S.scrollLeft=ix*s+(parseFloat(im.style.marginLeft)||0)-px;S.scrollTop=iy*s+(parseFloat(im.style.marginTop)||0)-py;
+}
+(function(){
+  const S=document.getElementById('dvS');
+  const at=e=>{const r=S.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+  S.addEventListener('wheel',e=>{if(DV.pdf)return;e.preventDefault();const p=at(e);dvZoom(e.deltaY<0?1.2:1/1.2,p[0],p[1]);},{passive:false});
+  S.addEventListener('mousedown',e=>{if(DV.pdf||e.button!==0)return;DV.drag={x:e.clientX,y:e.clientY,l:S.scrollLeft,t:S.scrollTop};DV.moved=false;S.classList.add('drag');e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!DV.drag)return;const dx=e.clientX-DV.drag.x,dy=e.clientY-DV.drag.y;if(Math.abs(dx)+Math.abs(dy)>4)DV.moved=true;S.scrollLeft=DV.drag.l-dx;S.scrollTop=DV.drag.t-dy;});
+  window.addEventListener('mouseup',()=>{if(DV.drag){DV.drag=null;S.classList.remove('drag');}});
+  S.addEventListener('dblclick',e=>{if(DV.pdf)return;const p=at(e);if(DV.s<=DV.fit*1.01)dvZoom(1/DV.s,p[0],p[1]);else dvFit();});
+  document.getElementById('dvIn').addEventListener('click',()=>dvZoom(1.3));
+  document.getElementById('dvOut').addEventListener('click',()=>dvZoom(1/1.3));
+  document.getElementById('dvFitB').addEventListener('click',dvFit);
+  document.getElementById('dvX').addEventListener('click',dvClose);
+  document.getElementById('dvDn').addEventListener('click',()=>{const a=document.createElement('a');a.href=DV.url;a.download=DV.name||'의뢰 도면';document.body.appendChild(a);a.click();a.remove();});
+  window.addEventListener('resize',()=>{if(!document.getElementById('dvPop').classList.contains('hide')&&!DV.pdf&&DV.s<=DV.fit*1.01)dvFit();});
+  /* Esc 는 이 창만 닫는다 (뒤에 열린 카드·확인 창은 그대로) */
+  document.addEventListener('keydown',e=>{if(e.key!=='Escape'||document.getElementById('dvPop').classList.contains('hide'))return;if(!document.getElementById('askPop').classList.contains('hide'))return;e.preventDefault();e.stopImmediatePropagation();dvClose();},true);
+})();
+
+/* ---------- BUILD 125 : 사업추가 탭 아래 줄(②③)을 화면 끝까지 — 탭이 시작하는 높이를 재서 넘긴다 ---------- */
+function adFit(){
+  const pg=document.getElementById('p-add');if(!pg||!pg.classList.contains('on'))return;
+  const top=Math.round(pg.getBoundingClientRect().top+(window.scrollY||0));
+  if(top>0)document.documentElement.style.setProperty('--adTop',top+'px');
+  let tail=0;for(let e=pg.parentElement;e;e=e.parentElement){const cs=getComputedStyle(e);tail+=(parseFloat(cs.paddingBottom)||0)+(parseFloat(cs.marginBottom)||0)+(parseFloat(cs.borderBottomWidth)||0);}
+  document.documentElement.style.setProperty('--adTail',Math.ceil(tail)+'px');
+}
+window.addEventListener('resize',adFit);
+{const g0=goTab;goTab=function(){const x=g0.apply(this,arguments);try{adFit();}catch(e){}return x;};}
+requestAnimationFrame(adFit);setTimeout(adFit,400);
 
 /* 목록을 다시 그릴 때마다 「오늘 추가한 사업」도 맞춘다 */
 {const r0=render;render=function(){const x=r0.apply(this,arguments);try{renderToday();}catch(e){}return x;};}
