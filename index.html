@@ -1007,6 +1007,17 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .td-row.sel{border-color:#EA002C;box-shadow:0 0 0 2px #fecdd3;background:#fff5f6;}
 .td-row .b button.go{border-color:#EA002C;color:#EA002C;font-weight:700;}
 @media (max-width:1250px){.ad-grid{grid-template-columns:minmax(0,1fr);}}
+/* ===== BUILD 123 : 엑셀 올리는 칸 크게·테두리 선명하게 · 안내 글 없앰 · 관리 줄마다 연한 바탕 ===== */
+#mode-up{display:flex;flex-direction:column;}
+#mode-up #upmodeNote{display:none;}
+#mode-up .drop{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;border:2.5px dashed #EA002C;background:#FFFAFA;color:#475569;}
+#mode-up .drop b{color:#0f172a;font-size:15.5px;}
+#mode-up .drop:hover,#mode-up .drop.over{border-color:#B8001F;background:#FFF0F2;color:#B8001F;}
+.ad-adm{display:flex;flex-direction:column;gap:8px;}
+.ad-adm .ln{flex:1;border:1px solid var(--bd);border-bottom:1px solid var(--bd) !important;background:var(--bg);border-radius:9px;padding:9px 12px;}
+.ad-adm .ln:nth-child(1){--bg:#F5F3FF;--bd:#DDD6FE;}
+.ad-adm .ln:nth-child(2){--bg:#EFF6FF;--bd:#BFDBFE;}
+.ad-adm .ln:nth-child(3){--bg:#FEF2F2;--bd:#FECACA;}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -1979,8 +1990,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 120: 사업추가 — 새 사업 추가·엑셀로 올리기·관리를 한 화면에 · 발주처별 입력 양식 · 오늘 추가한 사업 · 측량 의뢰 양식 확인 창(m→km 붉은 칸 확인) · 도면 탭을 그림으로(의뢰 도면) · Eng 번호 「미정」은 중복 아님
    BUILD 121: 추가사업 현황 — 열면 항상 「일별」부터 (주간·월간은 누르면 바뀜)
    BUILD 122: 새 사업 추가 — 입력 칸을 줄이고 오른쪽에 의뢰 도면 칸(이미지·PDF·엑셀 도면 탭) · 오늘 추가한 사업 「여기서 보기」로 값·도면 보고 고치기
+   BUILD 123: 엑셀 올리는 칸 크게·테두리 선명하게(안내 글 없앰) · 관리 줄마다 연한 바탕색
    ======================================================================== */
-const BUILD_NO='122';
+const BUILD_NO='123';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
