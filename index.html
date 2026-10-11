@@ -1609,7 +1609,7 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
     const zip = openZip(u8);
     return sheets(zip).filter(s => s.drawing).map(s => {
       const t = zip.text(s.drawing) || '';
-      return { sheet: s.sheet, drawing: s.drawing, shapes: (t.match(/<xdr:(sp|pic|cxnSp) /g) || []).length, pics: (t.match(/<xdr:pic>/g) || []).length };
+      return { sheet: s.sheet, drawing: s.drawing, shapes: (t.match(/<(?:\w+:)?(sp|pic|cxnSp)[ >]/g) || []).length, pics: (t.match(/<(?:\w+:)?pic[ >]/g) || []).length };
     });
   }
 
@@ -2581,8 +2581,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 125: 도면 「크게 보기」 — 새 탭 대신 화면 안에서 열림 · 오른쪽 아래 닫기 · 휠 확대·끌어서 이동·다운로드 · 사업추가 아래 줄(②③)을 화면 끝까지(올리는 칸 크게) · 오늘 추가한 사업 카드마다 아주 연한 바탕 · 큰 틀 테두리 진하게
    BUILD 126: 의뢰 도면에 DXF(캐드 도면) — 그림으로 바꿔서 붙임 · ② 엑셀 올리는 칸에 DXF 를 올려도 ① 의뢰 도면 칸으로
    BUILD 127: 목록 비우기 잠금(흐리게 잠겨 있고 한 번 눌러야 풀림 · 10초 뒤 다시 잠김) · 사업 카드에 「삭제」(경고 창 → 확인하면 삭제)
+   BUILD 128: 업로드용 「측량 의뢰 양식」 인식 — 측량일시(→측량예정일·시간은 비고) · 거리(m)(→km) · 맨홀(기)(→비고) · 발주처 칸 · 글자 날짜(26.10.07 · 10/7)도 읽음 · 요청일이 비면 오늘
    ======================================================================== */
-const BUILD_NO='127';
+const BUILD_NO='128';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7713,38 +7714,76 @@ function openDedupWin(){
 }
 
 /* ---------- 측량 의뢰 양식 ---------- */
-const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정'};
-const REQ_ORDER=['관리번호','시행시기','지역본부','공사협력사','행정구역','공사명','@dist','굴착 작업일정','측량방법','요청일','Eng 번호','담당Manager','사업유형','비고','사업자'];
+const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
+const REQ_ORDER=['관리번호','시행시기','지역본부','공사협력사','행정구역','공사명','@dist','굴착 작업일정','측량방법','요청일','측량예정일','Eng 번호','담당Manager','사업유형','비고','사업자'];
 const REQ_M_MIN=30;   /* 측량거리가 이 값 이상이면 m 로 보고 km 로 바꾼다 */
 let REQ=null;
 /* 굴착업체·발주처가 주는 측량 의뢰 양식인지 : 공구명·요청일은 있고, 리스트에만 있는 칸은 없다 */
 function reqDetect(sheets){
   return sheets.find(sh=>{
     if(!sh.count)return false;
+    if(/작성\s*방법|예시|설명/.test(sh.name))return false;
     const N=sh.labels.map(l=>nh(l).toLowerCase()),has=x=>N.includes(x);
-    return has('공구명')&&has('요청일')&&!has('측량예정일')&&!has('tango업로드')&&!has('진행상황')&&!has('정산상황')&&!N.some(x=>x.includes('정산거리'));
+    /* BUILD 128 : 업로드용 「측량 의뢰 양식」 — 공사명 + (측량일시 또는 거리(m)) */
+    const tpl=has('공사명')&&(N.some(x=>x.indexOf('측량일시')===0)||N.some(reqIsM));
+    return (has('공구명')||tpl)&&has('요청일')&&!has('측량예정일')&&!has('tango업로드')&&!has('진행상황')&&!has('정산상황')&&!N.some(x=>x.includes('정산거리'));
   })||null;
 }
 const reqDistL=s=>s==='원인자'?'도면거리':'측량 심사내역';
+const reqIsM=x=>/^(측량)?거리\(m\)$/.test(x);   /* 머리글에 (m) 라고 적힌 거리 칸 — 값이 작아도 m 로 본다 */
+/* 글자로 적은 날짜를 YYYY-MM-DD 로 : 26.10.07 · 2026-10-7 · 10/7 · 10월 7일 … 뒤에 붙은 글(20시~)은 rest 로 */
+function reqDateHead(v){
+  const s=String(v==null?'':v).trim();if(!s)return null;
+  const p=n=>String(n).padStart(2,'0'),ok=(y,m,d)=>m>=1&&m<=12&&d>=1&&d<=31&&y>=2000&&y<=2099;
+  const tidy=r=>String(r||'').replace(/^[\s,·:~\-]+/,'').replace(/^\((.*)\)$/,'$1').trim();
+  let m=s.match(/^(\d{4}|\d{2})\s*[-.\/년]\s*(\d{1,2})\s*[-.\/월]\s*(\d{1,2})\s*일?\.?(?!\d)(.*)$/);
+  if(m){const y=m[1].length===2?2000+ +m[1]:+m[1];if(ok(y,+m[2],+m[3]))return {d:y+'-'+p(m[2])+'-'+p(m[3]),rest:tidy(m[4])};}
+  m=s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)(.*)$/);
+  if(m&&ok(+m[1],+m[2],+m[3]))return {d:m[1]+'-'+m[2]+'-'+m[3],rest:tidy(m[4])};
+  m=s.match(/^(\d{1,2})\s*[\/월]\s*(\d{1,2})\s*일?(?!\d)(.*)$/);
+  if(m){const y=new Date().getFullYear();if(ok(y,+m[1],+m[2]))return {d:y+'-'+p(m[1])+'-'+p(m[2]),rest:tidy(m[3])};}
+  return null;
+}
 function reqOpen(file,u8,sh){
   const bi=baalSourceIdx(sh.labels),fb=guessBaal(file.name,[sh]);
+  const strictSrc=bi>=0&&nh(sh.labels[bi])==='발주처';   /* 「발주처」 칸이 따로 있으면 그 칸만 믿는다 (못 알아보면 고르게 함) */
   const renamed=[],dropped=[];
-  const rows=sh.rows.map(x=>{
-    const v={},conv={};
+  /* BUILD 128 : 양식의 예시 줄(공사명이 「(예시)」로 시작)은 올리지 않는다 */
+  const wi=sh.col&&sh.col.공구명,isEx=x=>wi>=0&&/^\s*[(\[〔（]\s*예시?\s*[)\]〕）]/.test(String(x[wi]==null?'':x[wi]));
+  const srcRows=sh.rows.filter(x=>!isEx(x));
+  if(srcRows.length<sh.rows.length)dropped.push('(예시) 줄');
+  if(!srcRows.length){toast('양식에 적은 사업이 없어요 · 예시 줄 아래에 적은 뒤 올려 주세요',true);return;}
+  const rows=srcRows.map(x=>{
+    const v={},conv={},memo=[];let forceM=false;
     sh.labels.forEach((l,c)=>{
       if(!l)return;const n=nh(l);
       if(n==='번호'||n==='순번'||n.toLowerCase()==='no'||/^완료일/.test(n)){if(!dropped.includes(l))dropped.push(l);return;}
+      /* BUILD 128 : 업로드용 양식의 칸 */
+      if(n==='발주처')return;                                   /* 발주처는 아래 src 로만 쓴다 */
+      if(/^맨홀(\(기\)|수)?$/.test(n)){const k=toNum(x[c]);if(k>0)memo.push('맨홀 '+k+'기');if(!renamed.some(z=>z[0]===l))renamed.push([l,'비고']);return;}
+      if(n.indexOf('측량일시')===0){
+        if(!renamed.some(z=>z[0]===l))renamed.push([l,'측량예정일']);
+        const raw=x[c];if(raw==null||String(raw).trim()==='')return;
+        const dh=reqDateHead(raw);
+        if(dh){v['측량예정일']=dh.d;if(dh.rest)memo.push('측량 '+dh.rest);}else memo.push('측량일시 '+String(raw).trim());
+        return;
+      }
       let L=REQ_MAP[n]||l;
+      if(reqIsM(n.toLowerCase())){L='@dist';forceM=true;}
       if(n.includes('심사내역')||n==='도면거리'||/^측량거리/.test(n))L='@dist';
       if(L!==l&&!renamed.some(z=>z[0]===l))renamed.push([l,L==='@dist'?'측량거리(km)':L]);
       const val=x[c];if(val==null||val==='')return;
       v[L]=typeof val==='string'?val.trim():val;
     });
     if(v['@dist']!=null){const num=toNum(v['@dist']);
-      if(num!=null&&num>=REQ_M_MIN){conv['@dist']={orig:v['@dist']};v['@dist']=+(num/1000).toFixed(3);}
+      if(num!=null&&(forceM?num>0:num>=REQ_M_MIN)){conv['@dist']={orig:v['@dist']};v['@dist']=+(num/1000).toFixed(3);}
       else if(num!=null)v['@dist']=num;}
     if(v['측량방법']){const m=nh(v['측량방법']);if(m==='실시간측량')v['측량방법']='실시간';else if(m==='탐사측량')v['측량방법']='탐사';}
-    const src=baalOf(bi>=0?x[bi]:'')||fb||'';
+    else if(v['비고']){const b=nh(v['비고']);if(/실시간/.test(b))v['측량방법']='실시간';else if(/탐사/.test(b))v['측량방법']='탐사';}   /* 비고에 「실시간 측량」이라고만 적은 경우 */
+    if(memo.length)v['비고']=[v['비고']].concat(memo).filter(Boolean).join(' · ');
+    /* 요청일 : 글자로 적은 날짜도 YYYY-MM-DD 로 · 비어 있으면 오늘 */
+    {const q=v['요청일'];if(q==null||String(q).trim()==='')v['요청일']=fmtDate(new Date());else if(typeof q==='string'){const dh=reqDateHead(q);if(dh&&!dh.rest)v['요청일']=dh.d;}}
+    const src=baalOf(bi>=0?x[bi]:'')||(strictSrc?'':fb)||'';
     const key=keyVals(v['Eng 번호'],v['관리번호'],v['공사명']);
     const ex=DATA.find(d=>keyVals(d.eng,d.seq,d.work)===key)||null;
     return {on:!ex,src:src,v:v,conv:conv,ok:{},ex:ex};
@@ -7820,7 +7859,7 @@ function reqRender(){
   /* 오른쪽 : 의뢰 도면 */
   let r='<h3>의뢰 도면</h3>';
   if(!REQ.dwgs)r+='<div class="s">도면 탭을 찾는 중…</div>';
-  else if(!REQ.dwgs.length)r+='<div class="s">이 파일에는 도면·개황도 탭이 없어요</div>';
+  else if(!REQ.dwgs.length)r+='<div class="s">이 파일에는 도면·개황도 그림이 없어요</div>';
   else{
     r+='<div class="s">도면 탭을 그림으로 바꿨어요 · 추가하는 '+on.length+'건 모두에 같은 도면이 붙어요</div>';
     REQ.dwgs.forEach((g,i)=>{
