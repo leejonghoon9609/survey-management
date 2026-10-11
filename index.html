@@ -2595,8 +2595,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 128: 업로드용 「측량 의뢰 양식」 인식 — 측량일시(→측량예정일·시간은 비고) · 거리(m)(→km) · 맨홀(기)(→비고) · 발주처 칸 · 글자 날짜(26.10.07 · 10/7)도 읽음 · 요청일이 비면 오늘
    BUILD 129: 새 사업 추가 — 「굴착 작업일정」 입력 칸 이름을 「측량시작일」로(저장 칸은 그대로) · 같은 사업이 있으면 빨갛게 강조(알림 줄·겹친 칸·확인 창·의뢰 확인 창)
    BUILD 130: 요청일과 측량시작일을 따로 관리 — 양식의 측량시작일(측량일시)은 「굴착 작업일정」 칸으로(전에는 측량예정일) · 의뢰 확인 창 머리글도 「측량시작일」
+   BUILD 131: 새 사업 추가 — 공사명·사업자 칸을 줄이고 옆에 「탱고 번호 (Eng 번호)」 칸 (꼭 적는 칸 아님 · 리스트의 Eng 번호 칸에 저장)
    ======================================================================== */
-const BUILD_NO='130';
+const BUILD_NO='131';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7509,12 +7510,12 @@ function viewD(){return ADD_VIEW?(DATA.find(d=>d._uid===ADD_VIEW)||null):null;}
 const M2=['실시간','탐사'];
 const ADD_AUTO=new Set(['지역본부','사업자','대표사업자']);
 const ADD_FORM={
-  SKT:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자'],['측량작업자 이름/연락처',{t:'측량작업자'}]]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) T26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
-  SKB:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자',{w:2}]]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) B26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+  SKT:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:3,ph:'공사 전체 이름',nolist:1}],['사업자'],['Eng 번호',{t:'탱고 번호 (Eng 번호)',ph:'예) T26… · 없으면 비워 두기',nolist:1}],['측량작업자 이름/연락처',{t:'측량작업자'}]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+  SKB:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:3,ph:'공사 전체 이름',nolist:1}],['사업자'],['Eng 번호',{t:'탱고 번호 (Eng 번호)',ph:'예) B26… · 없으면 비워 두기',nolist:1,w:2}]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
   '원인자':[['사업 기본',[['관리번호',{req:1,ph:'예) 1-238',nolist:1}],['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['공사명',{req:1,w:3,ph:'공사 전체 이름',nolist:1}],['행정구역'],['대표사업자'],['사업자 (정산 업체)']]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['도면거리',{t:'도면거리 (km)',num:1}],['Eng 번호',{nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['협력사 연락처',{w:2,nolist:1}],['이슈사항',{w:2,nolist:1}],['비고',{w:2,nolist:1}]]]]
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['도면거리',{t:'도면거리 (km)',num:1}],['Eng 번호',{t:'탱고 번호 (Eng 번호)',ph:'없으면 비워 두기',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['협력사 연락처',{w:2,nolist:1}],['이슈사항',{w:2,nolist:1}],['비고',{w:2,nolist:1}]]]]
 };
 function addFields(){const o=[];ADD_FORM[ADD_SRC].forEach(g=>g[1].forEach(f=>o.push({l:f[0],o:f[1]||{}})));return o;}
 function todayYmd(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -7579,7 +7580,7 @@ function addDupCheck(){
   if(x.d._id==null)x.d._id=++idSeq;
   /* BUILD 129 : 같은 사업이 있으면 빨갛게 — 알림 줄 + 겹친 입력 칸 */
   const fe=document.querySelector('#adForm [data-l="'+x.by+'"]'),fb=fe&&fe.closest('.ad-f');if(fb)fb.classList.add('dup');
-  box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'"><span class="ic">!</span><span class="tx"><b>이미 있는 사업이에요</b> · '+x.by+(x.by==='공사명'?'이':'가')+' 같아요'+(x.block?' (관리번호는 겹칠 수 없어요)':'')+'<i>'+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,70))+'」</i></span><button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
+  box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'"><span class="ic">!</span><span class="tx"><b>이미 있는 사업이에요</b> · '+(x.by==='Eng 번호'?'탱고 번호(Eng 번호)':x.by)+(x.by==='공사명'?'이':'가')+' 같아요'+(x.block?' (관리번호는 겹칠 수 없어요)':'')+'<i>'+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,70))+'」</i></span><button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
   return x;
 }
 document.getElementById('mode-in').addEventListener('click',e=>{
@@ -7730,7 +7731,7 @@ function openDedupWin(){
 }
 
 /* ---------- 측량 의뢰 양식 ---------- */
-const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정','굴착작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
+const REQ_MAP={'탱고번호':'Eng 번호','탱고번호(eng번호)':'Eng 번호','탱고번호(Eng번호)':'Eng 번호','공구명':'공사명','작업일정':'굴착 작업일정','굴착작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
 const REQ_ORDER=['관리번호','시행시기','지역본부','공사협력사','행정구역','공사명','@dist','굴착 작업일정','측량방법','요청일','측량예정일','Eng 번호','담당Manager','사업유형','비고','사업자'];
 const REQ_M_MIN=30;   /* 측량거리가 이 값 이상이면 m 로 보고 km 로 바꾼다 */
 let REQ=null;
