@@ -1040,6 +1040,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
 .dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
 .dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 126 : DXF 도면 ===== */
+#mode-up .drop small.up-dxf{display:block;margin-top:6px;font-size:12px;color:#1d4ed8;}
+.ad-dw.flash{box-shadow:0 0 0 3px #FFB400;transition:box-shadow .2s;}
 /* ===== BUILD 125 : ②③ 을 화면 끝까지 · 오늘 추가한 사업 카드마다 아주 연한 바탕 · 큰 틀 테두리 진하게 ===== */
 #p-add.on{display:flex;flex-direction:column;min-height:calc(100vh - var(--adTop,120px) - var(--adTail,32px));}
 #p-add .ad-top,#p-add #upFlow{flex:none;}
@@ -1100,7 +1103,7 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
             <div class="ad-dw" id="adDw">
               <div class="ad-dh"><b>의뢰 도면</b><span id="adDwS"></span><span class="ad-dbt" id="adDwB"></span></div>
               <div class="ad-db" id="adDwBody"></div>
-              <input type="file" id="adDwFile" class="hide" accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.pdf,.xlsx,.xlsm">
+              <input type="file" id="adDwFile" class="hide" accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.pdf,.dxf,.xlsx,.xlsm">
             </div>
           </div>
           <div class="ad-act" id="adAct"></div>
@@ -1124,7 +1127,8 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
           <div class="drop" id="drop">
             <b>공정 리스트 · 측량 의뢰 엑셀을 올려주세요</b>
             .xls / .xlsx 파일을 끌어다 놓거나 클릭해서 선택
-            <input type="file" id="file" accept=".xls,.xlsx" class="hide">
+            <small class="up-dxf">도면(.dxf)을 올리면 ① 의뢰 도면 칸에 그림으로 들어가요</small>
+            <input type="file" id="file" accept=".xls,.xlsx,.dxf" class="hide">
           </div>
           <div class="up-sum" id="upSum"></div>
           <div id="upmodeNote"></div>
@@ -1850,6 +1854,533 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 
 </script>
 <script>
+/* DXF(캐드 도면)를 그림 한 장으로 — 브라우저 전용 (canvas)
+   gjDxf.render(u8, {maxSide}) → Promise<{canvas, w, h, info}>
+   info = {ver, ents, drawn, skipped:{종류:개수}, paper, trimmed} */
+(function (G) {
+  'use strict';
+  const FONT = "'Malgun Gothic','맑은 고딕','Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif";
+  const ACI_HEX = '000000ff0000ffff0000ff0000ffff0000ffff00ffffffff808080c0c0c0ff0000ff7f7fa50000a552527f00007f3f3f4c00004c2626260000261313ff3f00ff9f7fa52900a567527f1f007f4f3f4c13004c2f26260900261713ff7f00ffbf7fa55200a57c527f3f007f5f3f4c26004c3926261300261c13ffbf00ffdf7fa57c00a591527f5f007f6f3f4c39004c4226261c00262113ffff00ffff7fa5a500a5a5527f7f007f7f3f4c4c004c4c26262600262613bfff00dfff7f7ca50091a5525f7f006f7f3f394c00424c261c26002126137fff00bfff7f52a5007ca5523f7f005f7f3f264c00394c261326001c26133fff009fff7f29a50067a5521f7f004f7f3f134c002f4c2609260017261300ff007fff7f00a50052a552007f003f7f3f004c00264c2600260013261300ff3f7fff9f00a52952a567007f1f3f7f4f004c13264c2f00260913581700ff7f7fffbf00a55252a57c007f3f3f7f5f004c26264c3900261313581c00ffbf7fffdf00a57c52a591007f5f3f7f6f004c39264c4200261c13585800ffff7fffff00a5a552a5a5007f7f3f7f7f004c4c264c4c00262613585800bfff7fdfff007ca55291a5005f7f3f6f7f00394c26427e001c26135858007fff7fbfff0052a5527ca5003f7f3f5f7f00264c26397e001326131c58003fff7f9fff0029a55267a5001f7f3f4f7f00134c262f7e0009261317580000ff7f7fff0000a55252a500007f3f3f7f00004c26267e0000261313583f00ff9f7fff2900a56752a51f007f4f3f7f13004c2f267e0900261713587f00ffbf7fff5200a57c52a53f007f5f3f7f26004c39267e1300261c1358bf00ffdf7fff7c00a59152a55f007f6f3f7f39004c42264c1c0026581358ff00ffff7fffa500a5a552a57f007f7f3f7f4c004c4c264c260026581358ff00bfff7fdfa5007ca552917f005f7f3f6f4c00394c264226001c581358ff007fff7fbfa50052a5527c7f003f7f3f5f4c00264c263926001358131cff003fff7f9fa50029a552677f001f7f3f4f4c00134c262f260009581317000000656565666666999999ccccccffffff';
+  const D2R = Math.PI / 180, TAU = Math.PI * 2, TXK = 1.2;   /* 캐드 글자 높이 → 글꼴 크기 */
+  const CP = { ANSI_949: 'euc-kr', ANSI_932: 'shift_jis', ANSI_936: 'gbk', ANSI_950: 'big5', ANSI_1252: 'windows-1252', ANSI_1250: 'windows-1250', ANSI_1251: 'windows-1251' };
+
+  /* ---------- 글자 풀기 ---------- */
+  function decode(u8) {
+    let head = '';
+    for (let i = 0, n = Math.min(u8.length, 22); i < n; i++) head += String.fromCharCode(u8[i]);
+    if (head.indexOf('AutoCAD Binary DXF') === 0) throw new Error('바이너리 DXF 는 읽지 못해요 · 캐드에서 「다른 이름으로 저장 → DXF」(ASCII)로 저장해 주세요');
+    if (head.indexOf('AC10') === 0) throw new Error('DWG 파일이에요 · 캐드에서 DXF 로 저장해서 올려 주세요');
+    let s = 0;
+    if (u8.length > 3 && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) s = 3;
+    const body = s ? u8.subarray(s) : u8;
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(body); } catch (e) { /* 예전 캐드 : 코드페이지 */ }
+    const h = new TextDecoder('windows-1252').decode(body.subarray(0, Math.min(body.length, 200000)));
+    const m = /\$DWGCODEPAGE\s+3\s+(\S+)/.exec(h);
+    let enc = (m && CP[m[1].toUpperCase()]) || 'euc-kr';
+    try { return new TextDecoder(enc).decode(body); } catch (e) { return new TextDecoder('euc-kr').decode(body); }
+  }
+
+  /* ---------- 읽기 ---------- */
+  const isStr = c => c < 10 || (c >= 100 && c <= 109) || (c >= 300 && c <= 369) || (c >= 390 && c <= 399) || (c >= 410 && c <= 419) || (c >= 430 && c <= 439) || (c >= 470 && c <= 481) || c === 999 || (c >= 1000 && c <= 1009);
+  const dropC = c => c === 5 || c === 100 || c === 102 || c === 105 || (c >= 300 && c <= 369) || (c >= 390 && c <= 399) || (c >= 410 && c <= 419) || c === 999 || c >= 1000;
+
+  function parse(t) {
+    if (t.indexOf('\n') < 0) t = t.replace(/\r/g, '\n');
+    const n = t.length;
+    let p = 0, code = 0, val = '';
+    function next() {
+      if (p >= n) return false;
+      let e = t.indexOf('\n', p); if (e < 0) e = n;
+      const c = parseInt(t.slice(p, e), 10); p = e + 1;
+      if (p > n) return false;
+      e = t.indexOf('\n', p); if (e < 0) e = n;
+      let s = t.slice(p, e); p = e + 1;
+      if (s.charCodeAt(s.length - 1) === 13) s = s.slice(0, -1);
+      code = c === c ? c : -1; val = s; return true;
+    }
+    const D = { ver: '', layers: new Map(), blocks: new Map(), ents: [], n: 0 };
+    let sec = '', inTable = '', tblLayer = null, blk = null, ent = null, holder = null, lastHdr = '';
+    const mk = ty => ({ t: ty, L: null, c: null, tc: -1, ps: 0, inv: 0, lw: -1, p: [], sub: null, stop: 0 });
+    function place(e, list) {
+      D.n++;
+      if (e.t === 'VERTEX') { if (holder && holder.t === 'POLYLINE') holder.sub.push(e); return; }
+      if (e.t === 'ATTRIB') { if (holder && holder.t === 'INSERT') holder.sub.push(e); else list.push(e); return; }
+      if (e.t === 'SEQEND') { holder = null; return; }
+      holder = null;
+      if (e.t === 'POLYLINE' || e.t === 'INSERT') { e.sub = []; holder = e; }
+      list.push(e);
+    }
+    while (next()) {
+      if (code === 0) {
+        const ty = val.trim().toUpperCase();
+        ent = null; tblLayer = null;
+        if (ty === 'SECTION') { if (next()) sec = val.trim().toUpperCase(); continue; }
+        if (ty === 'ENDSEC') { sec = ''; continue; }
+        if (ty === 'EOF') break;
+        if (sec === 'TABLES') {
+          if (ty === 'TABLE') { if (next()) inTable = val.trim().toUpperCase(); }
+          else if (ty === 'ENDTAB') inTable = '';
+          else if (ty === 'LAYER' && inTable === 'LAYER') tblLayer = { name: '', c: 7, tc: -1, fl: 0 };
+          continue;
+        }
+        if (sec === 'BLOCKS') {
+          if (ty === 'BLOCK') { blk = { name: '', bx: 0, by: 0, fl: 0, ents: [], hdr: true }; holder = null; continue; }
+          if (ty === 'ENDBLK') { if (blk) D.blocks.set(blk.name.toUpperCase(), blk); blk = null; holder = null; continue; }
+          if (!blk) continue;
+          blk.hdr = false; ent = mk(ty); place(ent, blk.ents); continue;
+        }
+        if (sec === 'ENTITIES') { ent = mk(ty); place(ent, D.ents); }
+        continue;
+      }
+      if (sec === 'HEADER') { if (code === 9) lastHdr = val.trim(); else if (lastHdr === '$ACADVER' && code === 1) D.ver = val.trim(); continue; }
+      if (tblLayer) {
+        if (code === 2) { tblLayer.name = val.trim(); D.layers.set(tblLayer.name.toUpperCase(), tblLayer); }
+        else if (code === 62) tblLayer.c = parseInt(val, 10) || 7;
+        else if (code === 70) tblLayer.fl = parseInt(val, 10) || 0;
+        else if (code === 420) tblLayer.tc = parseInt(val, 10);
+        continue;
+      }
+      if (blk && blk.hdr && !ent) {
+        if (code === 2) blk.name = val.trim(); else if (code === 10) blk.bx = +val || 0; else if (code === 20) blk.by = +val || 0; else if (code === 70) blk.fl = parseInt(val, 10) || 0;
+        continue;
+      }
+      if (!ent || ent.stop) continue;
+      if (code === 101) { ent.stop = 1; continue; }
+      if (code < 0 || dropC(code)) continue;
+      let v;
+      if (isStr(code)) v = val; else { v = parseFloat(val); if (v !== v) v = 0; }
+      if (code === 8) { if (ent.L === null) ent.L = val.trim(); continue; }
+      if (code === 62) { if (ent.c === null) { ent.c = v | 0; continue; } }
+      else if (code === 420) { if (ent.tc < 0) { ent.tc = v; continue; } }
+      else if (code === 67) { if (v) ent.ps = 1; continue; }
+      else if (code === 60) { if (v) ent.inv = 1; }
+      else if (code === 370) { if (ent.lw < 0 && v > 0) ent.lw = v; continue; }
+      ent.p.push(code, v);
+    }
+    return D;
+  }
+
+  /* ---------- 도우미 ---------- */
+  const g = (e, c, d) => { const p = e.p; for (let i = 0; i < p.length; i += 2) if (p[i] === c) return p[i + 1]; return d; };
+  const has = (e, c) => { const p = e.p; for (let i = 0; i < p.length; i += 2) if (p[i] === c) return true; return false; };
+  const mul = (A, B) => [A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1], A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3], A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5]];
+  const mscale = M => Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2]));
+  function tx(M, pts) { const o = new Array(pts.length); for (let i = 0; i < pts.length; i += 2) { const x = pts[i], y = pts[i + 1]; o[i] = M[0] * x + M[2] * y + M[4]; o[i + 1] = M[1] * x + M[3] * y + M[5]; } return o; }
+  function arcN(r, sweep, k) {
+    sweep = Math.abs(sweep);
+    if (!k) return Math.max(4, Math.ceil(sweep / (Math.PI / 12)));
+    const rp = Math.abs(r) * k; if (rp < 0.6) return 2;
+    const st = 2 * Math.acos(Math.max(-1, 1 - 0.2 / rp));
+    return Math.max(3, Math.min(1440, Math.ceil(sweep / st)));
+  }
+  /* 가운데 (cx,cy) · 반지름 (rx 방향 벡터 ax,ay · 직각 벡터 bx,by) · t0 에서 sweep 만큼 */
+  function ellPts(out, cx, cy, ax, ay, bx, by, t0, sweep, k, skipFirst) {
+    const n = arcN(Math.max(Math.hypot(ax, ay), Math.hypot(bx, by)), sweep, k);
+    for (let i = skipFirst ? 1 : 0; i <= n; i++) { const t = t0 + sweep * i / n, c = Math.cos(t), s = Math.sin(t); out.push(cx + ax * c + bx * s, cy + ay * c + by * s); }
+  }
+  function bulgePts(out, x1, y1, x2, y2, b, k) {
+    const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+    if (!b || d < 1e-12) { out.push(x2, y2); return; }
+    const th = 4 * Math.atan(b), r = d / (2 * Math.sin(th / 2)), h = r * Math.cos(th / 2);
+    const cx = (x1 + x2) / 2 - dy / d * h, cy = (y1 + y2) / 2 + dx / d * h, R = Math.abs(r), a0 = Math.atan2(y1 - cy, x1 - cx);
+    const n = arcN(R, th, k);
+    for (let i = 1; i < n; i++) { const a = a0 + th * i / n; out.push(cx + R * Math.cos(a), cy + R * Math.sin(a)); }
+    out.push(x2, y2);
+  }
+  /* vs = [x,y,bulge, …] */
+  function polyPts(vs, closed, k) {
+    const out = [], n = vs.length / 3; if (!n) return out;
+    out.push(vs[0], vs[1]);
+    for (let i = 0; i < n - 1; i++) bulgePts(out, vs[i * 3], vs[i * 3 + 1], vs[i * 3 + 3], vs[i * 3 + 4], vs[i * 3 + 2], k);
+    if (closed && n > 1 && vs[(n - 1) * 3 + 2]) bulgePts(out, vs[(n - 1) * 3], vs[(n - 1) * 3 + 1], vs[0], vs[1], vs[(n - 1) * 3 + 2], k);
+    return out;
+  }
+  function splinePts(deg, knots, ctrl, wts, closed) {
+    const n = ctrl.length / 2;
+    if (n < 2) return ctrl.slice();
+    if (deg < 1) deg = 1; if (deg > n - 1) deg = n - 1;
+    if (knots.length !== n + deg + 1) { knots = []; for (let i = 0; i < n + deg + 1; i++) knots.push(i <= deg ? 0 : (i >= n ? n - deg : i - deg)); }
+    const t0 = knots[deg], t1 = knots[n], out = [], N = Math.min(4000, Math.max(12, n * 12));
+    const dx = new Array(deg + 1), dy = new Array(deg + 1), dw = new Array(deg + 1);
+    let k = deg;
+    for (let s = 0; s <= N; s++) {
+      let t = t0 + (t1 - t0) * s / N; if (s === N) t = t1 - (t1 - t0) * 1e-10;
+      while (k < n - 1 && t >= knots[k + 1]) k++;
+      for (let j = 0; j <= deg; j++) { const ci = k - deg + j, w = wts.length === n ? wts[ci] : 1; dx[j] = ctrl[ci * 2] * w; dy[j] = ctrl[ci * 2 + 1] * w; dw[j] = w; }
+      for (let r = 1; r <= deg; r++) for (let j = deg; j >= r; j--) {
+        const i0 = j + k - deg, den = knots[i0 + deg - r + 1] - knots[i0], a = den ? (t - knots[i0]) / den : 0;
+        dx[j] = (1 - a) * dx[j - 1] + a * dx[j]; dy[j] = (1 - a) * dy[j - 1] + a * dy[j]; dw[j] = (1 - a) * dw[j - 1] + a * dw[j];
+      }
+      const w = dw[deg] || 1; out.push(dx[deg] / w, dy[deg] / w);
+    }
+    return out;
+  }
+  /* 맞춤점만 있는 스플라인 : 점을 지나는 부드러운 곡선 (Catmull-Rom) */
+  function fitPts(f) {
+    const n = f.length / 2; if (n < 3) return f.slice();
+    const out = [f[0], f[1]], P = i => { i = Math.max(0, Math.min(n - 1, i)); return [f[i * 2], f[i * 2 + 1]]; };
+    for (let i = 0; i < n - 1; i++) {
+      const a = P(i - 1), b = P(i), c = P(i + 1), d = P(i + 2);
+      for (let s = 1; s <= 16; s++) { const t = s / 16, t2 = t * t, t3 = t2 * t;
+        out.push(0.5 * (2 * b[0] + (c[0] - a[0]) * t + (2 * a[0] - 5 * b[0] + 4 * c[0] - d[0]) * t2 + (3 * b[0] - a[0] - 3 * c[0] + d[0]) * t3),
+                 0.5 * (2 * b[1] + (c[1] - a[1]) * t + (2 * a[1] - 5 * b[1] + 4 * c[1] - d[1]) * t2 + (3 * b[1] - a[1] - 3 * c[1] + d[1]) * t3)); }
+    }
+    return out;
+  }
+  function pct(s) { return s.replace(/%%([dDpPcCuUoO%]|\d{3})/g, (m, a) => { const c = a.toLowerCase(); return c === 'd' ? '°' : c === 'p' ? '±' : c === 'c' ? 'Ø' : c === '%' ? '%' : (c === 'u' || c === 'o') ? '' : String.fromCharCode(parseInt(a, 10)); }); }
+  const uni = s => s.replace(/\\[Uu]\+([0-9A-Fa-f]{4})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+  function mtextLines(s) {
+    s = uni(s); let out = '', i = 0; const n = s.length;
+    while (i < n) {
+      const ch = s[i];
+      if (ch === '\\' && i + 1 < n) {
+        const c = s[i + 1];
+        if (c === 'P' || c === 'X' || c === 'N') { out += '\n'; i += 2; continue; }
+        if (c === '~') { out += ' '; i += 2; continue; }
+        if (c === '\\' || c === '{' || c === '}') { out += c; i += 2; continue; }
+        if (c === 'S') { const e = s.indexOf(';', i + 2), b = e < 0 ? s.slice(i + 2) : s.slice(i + 2, e); out += b.replace(/[\^#]/g, '/'); i = e < 0 ? n : e + 1; continue; }
+        if ('LlOoKk'.indexOf(c) >= 0) { i += 2; continue; }
+        if ('fFHhWwQqTtAaCcp'.indexOf(c) >= 0) { const e = s.indexOf(';', i + 2); i = e < 0 ? n : e + 1; continue; }
+        out += c; i += 2; continue;
+      }
+      if (ch === '{' || ch === '}') { i++; continue; }
+      if (ch === '^' && i + 1 < n) { const c = s[i + 1]; if (c === 'I') { out += '  '; i += 2; continue; } if (c === 'J' || c === 'M') { if (c === 'J') out += '\n'; i += 2; continue; } }
+      out += ch; i++;
+    }
+    return pct(out).split('\n');
+  }
+
+  /* ---------- 색 (흰 바탕용) ---------- */
+  const cssCache = new Map(), rawOf = new Map();
+  function css(r, gg, b) {
+    const key = (r << 16) | (gg << 8) | b; let v = cssCache.get(key); if (v) return v;
+    const r0 = r, g0 = gg, b0 = b;
+    if (r > 235 && gg > 235 && b > 235) { r = gg = b = 0; }
+    else { const L = 0.2126 * r + 0.7152 * gg + 0.0722 * b; if (L > 195) { const f = 0.68; r = Math.round(r * f); gg = Math.round(gg * f); b = Math.round(b * f); } }
+    v = 'rgb(' + r + ',' + gg + ',' + b + ')'; cssCache.set(key, v);
+    /* 선·글자는 흰 바탕에서 보이게 어둡게, 면 채우기는 원래 색 그대로 */
+    if (!rawOf.has(v)) rawOf.set(v, (r0 > 235 && g0 > 235 && b0 > 235) ? v : 'rgb(' + r0 + ',' + g0 + ',' + b0 + ')');
+    return v;
+  }
+  const aci = i => { i = Math.abs(i) | 0; if (i < 1 || i > 255 || i === 7) return css(255, 255, 255); const h = ACI_HEX.substr(i * 6, 6); return css(parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)); };
+  const rgbInt = v => css((v >> 16) & 255, (v >> 8) & 255, v & 255);
+
+  /* ---------- 그리기 (sink 에 넘김) ---------- */
+  const FILL_T = { HATCH: 1, SOLID: 1, TRACE: 1 };
+  const SKIP_NAME = { IMAGE: '이미지', OLE2FRAME: 'OLE 개체', MLEADER: '다중 지시선', MULTILEADER: '다중 지시선', MLINE: '다중선', '3DSOLID': '3D 솔리드', BODY: '3D 솔리드', REGION: '영역', MESH: '메시', SURFACE: '곡면', PDFUNDERLAY: 'PDF 언더레이', DGNUNDERLAY: 'DGN 언더레이', DWFUNDERLAY: 'DWF 언더레이', TOLERANCE: '기하 공차', XREF: '외부 참조' };
+
+  function hatchPaths(e, k) {
+    const p = e.p, n = p.length, paths = []; let i = 0;
+    const need = c => { while (i < n && p[i] !== c) i += 2; if (i >= n) return 0; const v = p[i + 1]; i += 2; return v; };
+    const np = need(91);
+    for (let q = 0; q < np && i < n; q++) {
+      const fl = need(92); if (i >= n && !fl) break;
+      if (fl & 2) {
+        let hasB = 0, closed = 1;
+        while (i < n && p[i] !== 93) { if (p[i] === 72) hasB = p[i + 1]; else if (p[i] === 73) closed = p[i + 1]; i += 2; }
+        const nv = need(93), vs = [];
+        for (let v = 0; v < nv && i < n; v++) {
+          const x = need(10); let y = 0, b = 0;
+          if (p[i] === 20) { y = p[i + 1]; i += 2; }
+          if (p[i] === 42) { b = p[i + 1]; i += 2; }
+          vs.push(x, y, hasB ? b : 0);
+        }
+        if (vs.length >= 6) paths.push(polyPts(vs, closed, k));
+      } else {
+        const ne = need(93), out = [];
+        for (let ed = 0; ed < ne && i < n; ed++) {
+          const et = need(72);
+          if (et === 1) { const x1 = need(10), y1 = need(20), x2 = need(11), y2 = need(21); out.push(x1, y1, x2, y2); }
+          else if (et === 2) {
+            const cx = need(10), cy = need(20), r = need(40), sa = need(50), ea = need(51), ccw = need(73);
+            let sw = (ea - sa) % 360; if (sw <= 1e-9) sw += 360;
+            if (ccw) ellPts(out, cx, cy, r, 0, 0, r, sa * D2R, sw * D2R, k, false); else ellPts(out, cx, cy, r, 0, 0, r, -sa * D2R, -sw * D2R, k, false);
+          } else if (et === 3) {
+            const cx = need(10), cy = need(20), mx = need(11), my = need(21), ra = need(40), sa = need(50), ea = need(51), ccw = need(73);
+            let sw = (ea - sa) % 360; if (sw <= 1e-9) sw += 360;
+            if (ccw) ellPts(out, cx, cy, mx, my, -my * ra, mx * ra, sa * D2R, sw * D2R, k, false); else ellPts(out, cx, cy, mx, my, -my * ra, mx * ra, -sa * D2R, -sw * D2R, k, false);
+          } else if (et === 4) {
+            const deg = need(94); need(73); need(74); const nk = need(95), nc = need(96), kn = [], ct = [], wt = [];
+            for (let a = 0; a < nk && i < n; a++) kn.push(need(40));
+            for (let a = 0; a < nc && i < n; a++) { const x = need(10), y = need(20); ct.push(x, y); if (p[i] === 42) { wt.push(p[i + 1]); i += 2; } }
+            if (p[i] === 97) { const nf = p[i + 1]; i += 2; for (let a = 0; a < nf && i < n; a++) { need(11); need(21); } }
+            while (i < n && (p[i] === 12 || p[i] === 22 || p[i] === 13 || p[i] === 23)) i += 2;
+            const sp = splinePts(deg, kn, ct, wt, false); for (let a = 0; a < sp.length; a++) out.push(sp[a]);
+          } else break;
+        }
+        if (out.length >= 6) paths.push(out);
+      }
+    }
+    /* 무늬 선 정의 (각도 · 기준점 · 줄 간격) */
+    const defs = [], nd = need(78);
+    for (let q = 0; q < nd && q < 16 && i < n; q++) { const a = need(53), bx = need(43), by = need(44), ox = need(45), oy = need(46); defs.push([a * D2R, bx, by, ox, oy]); }
+    paths.defs = defs;
+    return paths;
+  }
+
+  function Walker(D, sink) {
+    const layers = D.layers, blocks = D.blocks, skipped = sink.skipped;
+    const skip = t => { skipped[t] = (skipped[t] || 0) + 1; };
+    function text(M, sink, x, y, h, ang, str, ha, va, wf, col) {
+      if (!str || !(h > 0)) return;
+      const dx = Math.cos(ang), dy = Math.sin(ang);
+      const X = M[0] * x + M[2] * y + M[4], Y = M[1] * x + M[3] * y + M[5];
+      const a2 = Math.atan2(M[1] * dx + M[3] * dy, M[0] * dx + M[2] * dy);
+      sink.text(X, Y, h * mscale(M), a2, str, ha, va, wf || 1, col);
+    }
+    function ent(e, M, ctx, depth, top) {
+      if (e.inv) return;
+      const ty = e.t, isFill = FILL_T[ty] === 1;
+      if (sink.pass === 'fill' && !isFill && ty !== 'INSERT' && ty !== 'DIMENSION' && ty !== 'ACAD_TABLE') return;
+      if (sink.pass === 'line' && isFill) return;
+      let lname = e.L || '0';
+      if (ctx.L && lname === '0') lname = ctx.L;
+      const lay = layers.get(lname.toUpperCase());
+      if (lay && (lay.c < 0 || (lay.fl & 1))) return;
+      let col;
+      if (e.tc >= 0) col = rgbInt(e.tc);
+      else {
+        const a = e.c === null ? 256 : e.c;
+        if (a === 0) col = ctx.col || aci(7);
+        else if (a === 256 || a < 0 || a > 256) col = lay ? (lay.tc >= 0 ? rgbInt(lay.tc) : aci(lay.c)) : aci(7);
+        else col = aci(a);
+      }
+      const nz = g(e, 230, 1);
+      const M2 = nz < 0 && ty !== 'LINE' && ty !== 'POINT' && ty !== 'SPLINE' && ty !== 'ELLIPSE' && ty !== '3DFACE' && ty !== 'LEADER' && ty !== 'MTEXT' ? mul(M, [-1, 0, 0, 1, 0, 0]) : M;
+      const k = sink.S * mscale(M2);
+      const p = e.p;
+      switch (ty) {
+        case 'LINE': sink.path(tx(M, [g(e, 10, 0), g(e, 20, 0), g(e, 11, 0), g(e, 21, 0)]), false, col, 0, e.lw); break;
+        case 'XLINE': case 'RAY': break;
+        case 'POINT': { const q = tx(M, [g(e, 10, 0), g(e, 20, 0)]); sink.dot(q[0], q[1], col); break; }
+        case 'CIRCLE': { const o = [], r = g(e, 40, 0); ellPts(o, g(e, 10, 0), g(e, 20, 0), r, 0, 0, r, 0, TAU, k, false); sink.path(tx(M2, o), true, col, 0, e.lw); break; }
+        case 'ARC': {
+          const o = [], r = g(e, 40, 0), sa = g(e, 50, 0); let sw = (g(e, 51, 0) - sa) % 360; if (sw <= 1e-9) sw += 360;
+          ellPts(o, g(e, 10, 0), g(e, 20, 0), r, 0, 0, r, sa * D2R, sw * D2R, k, false); sink.path(tx(M2, o), false, col, 0, e.lw); break;
+        }
+        case 'ELLIPSE': {
+          const mx = g(e, 11, 1), my = g(e, 21, 0), ra = g(e, 40, 1), s = nz < 0 ? -1 : 1, t0 = g(e, 41, 0); let sw = g(e, 42, TAU) - t0;
+          if (sw <= 1e-9) sw += TAU; const o = [];
+          ellPts(o, g(e, 10, 0), g(e, 20, 0), mx, my, -my * ra * s, mx * ra * s, t0, sw, k, false);
+          sink.path(tx(M, o), Math.abs(sw - TAU) < 1e-6, col, 0, e.lw); break;
+        }
+        case 'LWPOLYLINE': {
+          const vs = []; let fl = 0, cw = 0;
+          for (let i = 0; i < p.length; i += 2) { const c = p[i], v = p[i + 1]; if (c === 10) vs.push(v, 0, 0); else if (c === 20) { if (vs.length) vs[vs.length - 2] = v; } else if (c === 42) { if (vs.length) vs[vs.length - 1] = v; } else if (c === 70) fl = v; else if (c === 43) cw = v; }
+          if (vs.length >= 6) sink.path(tx(M2, polyPts(vs, fl & 1, k)), !!(fl & 1), col, cw * mscale(M2), e.lw);
+          else if (vs.length === 3) { const q = tx(M2, [vs[0], vs[1]]); sink.dot(q[0], q[1], col); }
+          break;
+        }
+        case 'POLYLINE': {
+          const fl = g(e, 70, 0); if (fl & 80) { skip('MESH'); break; }
+          const vs = []; let cw = g(e, 40, 0);
+          for (const v of e.sub || []) { const vf = g(v, 70, 0); if (vf & 16) continue; vs.push(g(v, 10, 0), g(v, 20, 0), g(v, 42, 0)); if (!cw) cw = g(v, 40, 0); }
+          if (vs.length >= 6) sink.path(tx(fl & 8 ? M : M2, polyPts(vs, fl & 1, k)), !!(fl & 1), col, cw * mscale(M2), e.lw);
+          break;
+        }
+        case 'SPLINE': {
+          const kn = [], ct = [], wt = [], ft = []; let deg = 3, fl = 0;
+          for (let i = 0; i < p.length; i += 2) { const c = p[i], v = p[i + 1]; if (c === 40) kn.push(v); else if (c === 10) ct.push(v, 0); else if (c === 20) { if (ct.length) ct[ct.length - 1] = v; } else if (c === 41) wt.push(v); else if (c === 11) ft.push(v, 0); else if (c === 21) { if (ft.length) ft[ft.length - 1] = v; } else if (c === 71) deg = v; else if (c === 70) fl = v; }
+          const o = ct.length >= 4 ? splinePts(deg, kn, ct, wt, fl & 1) : fitPts(ft);
+          if (o.length >= 4) sink.path(tx(M, o), false, col, 0, e.lw); break;
+        }
+        case 'TEXT': case 'ATTRIB': case 'ATTDEF': {
+          let str;
+          if (ty === 'ATTDEF') { const af = g(e, 70, 0); if (af & 1) break; if (af & 2) str = g(e, 1, ''); else if (top) str = g(e, 2, ''); else break; }
+          else { if (ty === 'ATTRIB' && (g(e, 70, 0) & 1)) break; str = g(e, 1, ''); }
+          str = pct(uni(String(str))); if (!str.trim()) break;
+          const ha = g(e, 72, 0), va = ty === 'TEXT' ? g(e, 73, 0) : g(e, 74, 0), h = g(e, 40, 1);
+          let x = g(e, 10, 0), y = g(e, 20, 0), ang = g(e, 50, 0) * D2R, H = ha, V = va;
+          if ((ha || va) && has(e, 11)) {
+            const x2 = g(e, 11, 0), y2 = g(e, 21, 0);
+            if (ha === 3 || ha === 5) { ang = Math.atan2(y2 - y, x2 - x); H = 0; V = 0; }
+            else { x = x2; y = y2; if (ha === 4) { H = 1; V = 2; } }
+          } else { H = 0; V = 0; }
+          text(M2, sink, x, y, h, ang, str, H, V, g(e, 41, 1), col); break;
+        }
+        case 'MTEXT': {
+          let s = ''; for (let i = 0; i < p.length; i += 2) if (p[i] === 3) s += p[i + 1]; s += g(e, 1, '');
+          const h = g(e, 40, 1), at = g(e, 71, 1), wd = g(e, 41, 0), lsf = g(e, 44, 1) || 1;
+          const ang = has(e, 11) ? Math.atan2(g(e, 21, 0), g(e, 11, 1)) : g(e, 50, 0) * D2R;
+          let lines = mtextLines(String(s));
+          if (wd > 0) { const o = []; for (const ln of lines) { if (sink.measure(ln, h) <= wd * 1.02) { o.push(ln); continue; } let cur = ''; for (const w of ln.split(/(\s+)/)) { if (cur && sink.measure(cur + w, h) > wd) { o.push(cur.replace(/\s+$/, '')); cur = w.trim() ? w : ''; } else cur += w; } o.push(cur); } lines = o; }
+          while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+          if (!lines.length) break;
+          const lh = h * 5 / 3 * lsf, Hh = h + (lines.length - 1) * lh, row = Math.floor((at - 1) / 3), colm = (at - 1) % 3;
+          const topOff = row === 0 ? 0 : row === 1 ? Hh / 2 : Hh, x = g(e, 10, 0), y = g(e, 20, 0), sx = Math.sin(ang), cx = Math.cos(ang);
+          for (let i = 0; i < lines.length; i++) { if (!lines[i].trim()) continue; const d = h + i * lh - topOff; text(M, sink, x + d * sx, y - d * cx, h, ang, lines[i], colm, 0, 1, col); }
+          break;
+        }
+        case 'SOLID': case 'TRACE': { const o = [g(e, 10, 0), g(e, 20, 0), g(e, 11, 0), g(e, 21, 0), g(e, 13, g(e, 12, 0)), g(e, 23, g(e, 22, 0)), g(e, 12, 0), g(e, 22, 0)]; sink.fill([tx(M2, o)], col, 1); break; }
+        case '3DFACE': sink.path(tx(M, [g(e, 10, 0), g(e, 20, 0), g(e, 11, 0), g(e, 21, 0), g(e, 12, 0), g(e, 22, 0), g(e, 13, 0), g(e, 23, 0)]), true, col, 0, e.lw); break;
+        case 'LEADER': { const o = []; for (let i = 0; i < p.length; i += 2) { if (p[i] === 10) o.push(p[i + 1], 0); else if (p[i] === 20 && o.length) o[o.length - 1] = p[i + 1]; } if (o.length >= 4) sink.path(tx(M, o), false, col, 0, e.lw); break; }
+        case 'HATCH': {
+          const paths = hatchPaths(e, k); if (!paths.length) break;
+          const solid = g(e, 70, 0) === 1, grad = g(e, 450, 0) === 1;
+          const wp = paths.map(q => tx(M2, q));
+          if (!solid && !grad && sink.hatch && paths.defs.length && M2[0] === 1 && M2[1] === 0 && M2[2] === 0 && M2[3] === 1 && sink.hatch(wp, col, paths.defs.map(d => [d[0], d[1] + M2[4], d[2] + M2[5], d[3], d[4]]))) break;
+          sink.fill(wp, col, grad ? 0.45 : solid ? 1 : 0.16); break;
+        }
+        case 'INSERT': case 'ACAD_TABLE': {
+          const b = blocks.get(String(g(e, 2, '')).toUpperCase());
+          if (!b) break; if (b.fl & 4) { if (sink.pass !== 'fill') skip('XREF'); break; } if (depth > 14) break;
+          const ix = g(e, 10, 0), iy = g(e, 20, 0), isT = ty === 'ACAD_TABLE', sx = isT ? 1 : g(e, 41, 1), sy = isT ? 1 : g(e, 42, 1), rot = (isT ? 0 : g(e, 50, 0)) * D2R;
+          const nc = isT ? 1 : Math.max(1, g(e, 70, 1) | 0), nr = isT ? 1 : Math.max(1, g(e, 71, 1) | 0), dc = g(e, 44, 0), dr = g(e, 45, 0);
+          const c = Math.cos(rot), s = Math.sin(rot), ctx2 = { L: lname, col: col };
+          for (let r = 0; r < nr && r < 200; r++) for (let q = 0; q < nc && q < 200; q++) {
+            const ox = q * dc, oy = r * dr;
+            const T = mul(M2, [c * sx, s * sx, -s * sy, c * sy, ix + c * ox - s * oy - (c * sx * b.bx - s * sy * b.by), iy + s * ox + c * oy - (s * sx * b.bx + c * sy * b.by)]);
+            for (const ch of b.ents) ent(ch, T, ctx2, depth + 1, false);
+          }
+          if (e.sub) for (const a of e.sub) ent(a, M, ctx2, depth + 1, false);
+          break;
+        }
+        case 'DIMENSION': { const b = blocks.get(String(g(e, 2, '')).toUpperCase()); if (b && depth <= 14) { const ctx2 = { L: lname, col: col }; for (const ch of b.ents) ent(ch, M, ctx2, depth + 1, false); } break; }
+        case 'VIEWPORT': case 'WIPEOUT': break;
+        default: if (sink.pass !== 'fill') skip(ty);
+      }
+    }
+    this.run = function (list, ps) { const ctx = { L: null, col: null }, I = [1, 0, 0, 1, 0, 0]; for (const e of list) if (!!e.ps === ps) ent(e, I, ctx, 0, true); };
+  }
+
+  /* 글자 너비 어림 (높이 h 기준) */
+  function estW(s, h) { let w = 0; for (let i = 0; i < s.length; i++) w += s.charCodeAt(i) > 0x2E7F ? 1.15 : 0.66; return w * h; }
+
+  function BoundsSink() {
+    const xs = [], ys = [];
+    this.S = 0; this.pass = 'all'; this.skipped = {}; this.n = 0; this.xs = xs; this.ys = ys;
+    this.path = function (pts) { this.n++; for (let i = 0; i < pts.length; i += 2) { const x = pts[i], y = pts[i + 1]; if (x === x && y === y && isFinite(x) && isFinite(y)) { xs.push(x); ys.push(y); } } };
+    this.fill = function (paths) { for (const q of paths) this.path(q); };
+    this.dot = function (x, y) { this.n++; if (isFinite(x) && isFinite(y)) { xs.push(x); ys.push(y); } };
+    this.measure = estW;
+    this.text = function (x, y, h, ang, str, ha, va, wf) {
+      if (!isFinite(x) || !isFinite(y)) return; this.n++;
+      const w = estW(str, h) * wf, c = Math.cos(ang), s = Math.sin(ang), x0 = ha === 1 ? -w / 2 : ha === 2 ? -w : 0, y0 = va === 2 ? -h / 2 : va === 3 ? -h : 0;
+      for (const q of [[x0, y0], [x0 + w, y0], [x0 + w, y0 + h], [x0, y0 + h]]) { xs.push(x + q[0] * c - q[1] * s); ys.push(y + q[0] * s + q[1] * c); }
+    };
+  }
+  /* 동떨어진 점(원점에 남은 찌꺼기 등)은 빼고 범위를 잡는다 */
+  function bounds(xs, ys) {
+    const n = xs.length; if (!n) return null;
+    const range = a => { let lo = Infinity, hi = -Infinity; for (let i = 0; i < a.length; i++) { const v = a[i]; if (v < lo) lo = v; if (v > hi) hi = v; } return [lo, hi]; };
+    const fx = range(xs), fy = range(ys);
+    const q = a => { const s = Float64Array.from(a).sort(); return [s[Math.floor((n - 1) * 0.02)], s[Math.ceil((n - 1) * 0.98)]]; };
+    const qx = q(xs), qy = q(ys), sp = Math.max(qx[1] - qx[0], qy[1] - qy[0]);
+    if (!(sp > 0)) return { x0: fx[0], x1: fx[1], y0: fy[0], y1: fy[1], trimmed: false };
+    const m = sp * 1.5, bx0 = qx[0] - m, bx1 = qx[1] + m, by0 = qy[0] - m, by1 = qy[1] + m;
+    if (fx[0] >= bx0 && fx[1] <= bx1 && fy[0] >= by0 && fy[1] <= by1) return { x0: fx[0], x1: fx[1], y0: fy[0], y1: fy[1], trimmed: false };
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (let i = 0; i < n; i++) { const x = xs[i], y = ys[i]; if (x < bx0 || x > bx1 || y < by0 || y > by1) continue; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    return { x0: x0, x1: x1, y0: y0, y1: y1, trimmed: true };
+  }
+
+  function CanvasSink(ctx, B, S, pad, W, H, base) {
+    const X = x => (x - B.x0) * S + pad, Y = y => (B.y1 - y) * S + pad;
+    let lastFont = '', lastKey = '', lastPath = null;
+    /* 같은 색·굵기의 선은 모아서 한 번에 긋고, 글자는 선 위에 마지막으로 쓴다 (선이 아주 많은 도면도 빠르게) */
+    const groups = new Map(), texts = [];
+    this.S = S; this.pass = 'fill'; this.skipped = {}; this.n = 0;
+    const CHUNK = 400;
+    const strokeG = (key, g2) => { const i = key.lastIndexOf('|'), w = +key.slice(i + 1); ctx.strokeStyle = key.slice(0, i); ctx.lineWidth = w; const rd = w >= 2.5 ? 'round' : 'butt'; ctx.lineCap = rd; ctx.lineJoin = w >= 2.5 ? 'round' : 'bevel'; ctx.stroke(g2.p); };
+    const flush = () => {
+      for (const [key, g2] of groups) if (g2.n) strokeG(key, g2);
+      groups.clear(); lastKey = ''; lastPath = null;
+      for (const t of texts) drawText(t);
+      texts.length = 0;
+    };
+    this.flush = flush;
+    this.path = function (pts, closed, col, ww, lw) {
+      const n = pts.length; if (n < 4) return;
+      let w = base; if (lw > 0) w = Math.max(base, Math.min(base * 9, lw / 100 * base * 4.2)); if (ww > 0) w = Math.max(w, ww * S);
+      w = Math.round(w * 10) / 10;
+      const key = col + '|' + w;
+      let gr = lastPath;
+      if (key !== lastKey) { gr = groups.get(key); if (!gr) { gr = { p: new Path2D(), n: 0 }; groups.set(key, gr); } lastKey = key; lastPath = gr; }
+      const g2 = gr.p;
+      let x = X(pts[0]), y = Y(pts[1]), any = false, px = x, py = y;
+      g2.moveTo(x, y);
+      for (let i = 2; i < n; i += 2) { x = X(pts[i]); y = Y(pts[i + 1]); if (Math.abs(x - px) + Math.abs(y - py) < 0.15 && i < n - 2) continue; g2.lineTo(x, y); px = x; py = y; any = true; }
+      if (!any) g2.lineTo(x + 0.01, y);
+      if (closed) g2.closePath();
+      gr.n += (n >> 1);
+      if (gr.n >= CHUNK) { strokeG(key, gr); gr.p = new Path2D(); gr.n = 0; }
+      this.n++;
+    };
+    this.fill = function (paths, col, alpha) {
+      ctx.beginPath();
+      for (const q of paths) { if (q.length < 6) continue; ctx.moveTo(X(q[0]), Y(q[1])); for (let i = 2; i < q.length; i += 2) ctx.lineTo(X(q[i]), Y(q[i + 1])); ctx.closePath(); }
+      ctx.globalAlpha = alpha; ctx.fillStyle = rawOf.get(col) || col; ctx.fill('evenodd'); ctx.globalAlpha = 1; this.n++;
+    };
+    /* 무늬 해치 : 경계 안에 평행선 (너무 촘촘하면 false → 옅게 칠함) */
+    this.hatch = function (paths, col, defs) {
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (const q of paths) for (let i = 0; i < q.length; i += 2) { if (q[i] < x0) x0 = q[i]; if (q[i] > x1) x1 = q[i]; if (q[i + 1] < y0) y0 = q[i + 1]; if (q[i + 1] > y1) y1 = q[i + 1]; }
+      if (!(x1 > x0) || !(y1 > y0)) return false;
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, R = Math.hypot(x1 - x0, y1 - y0) / 2, jobs = []; let total = 0;
+      for (const d of defs) {
+        const dx = Math.cos(d[0]), dy = Math.sin(d[0]), sp = -d[3] * dy + d[4] * dx;
+        if (Math.abs(sp) * S < 3.5) return false;
+        const c0 = -(cx - d[1]) * dy + (cy - d[2]) * dx, k0 = Math.ceil((c0 - R) / sp), k1 = Math.floor((c0 + R) / sp), ka = Math.min(k0, k1), kb = Math.max(k0, k1);
+        total += kb - ka + 1; if (total > 3000) return false;
+        jobs.push([dx, dy, d, ka, kb]);
+      }
+      ctx.save(); ctx.beginPath();
+      for (const q of paths) { if (q.length < 6) continue; ctx.moveTo(X(q[0]), Y(q[1])); for (let i = 2; i < q.length; i += 2) ctx.lineTo(X(q[i]), Y(q[i + 1])); ctx.closePath(); }
+      ctx.clip('evenodd'); ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, base * 0.75);
+      for (const j of jobs) { const dx = j[0], dy = j[1], d = j[2];
+        for (let k = j[3]; k <= j[4]; k++) { const px = d[1] + k * d[3], py = d[2] + k * d[4], t = (cx - px) * dx + (cy - py) * dy; ctx.moveTo(X(px + (t - R) * dx), Y(py + (t - R) * dy)); ctx.lineTo(X(px + (t + R) * dx), Y(py + (t + R) * dy)); } }
+      ctx.stroke(); ctx.restore(); this.n++; return true;
+    };
+    this.dot = function (x, y, col) { const r = Math.max(1, base); this.path([x - r / S, y, x + r / S, y], false, col, 0, -1); };
+    const setFont = px => { const f = px.toFixed(1) + 'px ' + FONT; if (f !== lastFont) { ctx.font = f; lastFont = f; } };
+    this.measure = function (s, h) { setFont(100); return ctx.measureText(s).width / 100 * h * TXK; };
+    this.text = function (x, y, h, ang, str, ha, va, wf, col) {
+      const px = h * S * TXK; if (px < 2.2) return;
+      const cx = X(x), cy = Y(y); if (cx < -W || cx > 2 * W || cy < -H || cy > 2 * H) return;
+      texts.push([px, cx, cy, ang, str, ha, va, wf, col]); this.n++;
+    };
+    function drawText(t) {
+      setFont(t[0]);
+      const c = Math.cos(-t[3]), s = Math.sin(-t[3]), wf = t[7], ha = t[5], va = t[6];
+      ctx.setTransform(c * wf, s * wf, -s, c, t[1], t[2]);
+      ctx.fillStyle = t[8]; ctx.textAlign = ha === 1 ? 'center' : ha === 2 ? 'right' : 'left'; ctx.textBaseline = va === 1 ? 'bottom' : va === 2 ? 'middle' : va === 3 ? 'top' : 'alphabetic';
+      ctx.fillText(t[4], 0, 0); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  }
+
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  async function render(u8, opt) {
+    opt = opt || {}; const maxSide = opt.maxSide || 6000;
+    const D = parse(decode(u8));
+    if (!D.ents.length && !D.blocks.size) throw new Error('DXF 에서 도면 요소를 찾지 못했어요');
+    await tick();
+    let ps = false, bs = new BoundsSink();
+    new Walker(D, bs).run(D.ents, false);
+    if (!bs.xs.length) { const b2 = new BoundsSink(); new Walker(D, b2).run(D.ents, true); if (b2.xs.length) { bs = b2; ps = true; } }
+    const B = bounds(bs.xs, bs.ys);
+    if (!B) throw new Error('그릴 수 있는 도면 요소가 없어요');
+    let bw = B.x1 - B.x0, bh = B.y1 - B.y0; const mx = Math.max(bw, bh);
+    if (!(mx > 0)) { B.x0 -= 1; B.x1 += 1; B.y0 -= 1; B.y1 += 1; bw = bh = 2; }
+    else { if (bw < mx * 0.02) { const a = (mx * 0.02 - bw) / 2; B.x0 -= a; B.x1 += a; bw = mx * 0.02; } if (bh < mx * 0.02) { const a = (mx * 0.02 - bh) / 2; B.y0 -= a; B.y1 += a; bh = mx * 0.02; } }
+    const pad = Math.round(maxSide * 0.012), S = (maxSide - pad * 2) / Math.max(bw, bh);
+    const W = Math.max(8, Math.round(bw * S) + pad * 2), H = Math.max(8, Math.round(bh * S) + pad * 2);
+    await tick();
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'); if (!ctx) throw new Error('그림판을 만들지 못했어요');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    const cs = new CanvasSink(ctx, B, S, pad, W, H, Math.max(1, maxSide / 4200));
+    const wk = new Walker(D, cs);
+    cs.pass = 'fill'; wk.run(D.ents, ps); cs.flush();
+    await tick();
+    cs.pass = 'line'; wk.run(D.ents, ps); cs.flush();
+    const sk = {}; for (const t in cs.skipped) { const nm = SKIP_NAME[t]; if (nm) sk[nm] = (sk[nm] || 0) + cs.skipped[t]; }
+    return { canvas: cv, w: W, h: H, info: { ver: D.ver, ents: D.n, drawn: cs.n, skipped: sk, skippedRaw: cs.skipped, paper: ps, trimmed: B.trimmed, layers: D.layers.size, blocks: D.blocks.size } };
+  }
+  G.gjDxf = { render: render, _parse: parse, _decode: decode };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
 /* ========================================================================
    공정관리 현황 — BUILD 02
    BUILD 01: 측량구분 유연 인식 / 컬럼 매핑 검증 / 데이터 점검 /
@@ -2035,8 +2566,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 123: 엑셀 올리는 칸 크게·테두리 선명하게(안내 글 없앰) · 관리 줄마다 연한 바탕색
    BUILD 124: 새 사업 추가 아래 버튼마다 다른 색 (빨강 · 파랑 · 노랑)
    BUILD 125: 도면 「크게 보기」 — 새 탭 대신 화면 안에서 열림 · 오른쪽 아래 닫기 · 휠 확대·끌어서 이동·다운로드 · 사업추가 아래 줄(②③)을 화면 끝까지(올리는 칸 크게) · 오늘 추가한 사업 카드마다 아주 연한 바탕 · 큰 틀 테두리 진하게
+   BUILD 126: 의뢰 도면에 DXF(캐드 도면) — 그림으로 바꿔서 붙임 · ② 엑셀 올리는 칸에 DXF 를 올려도 ① 의뢰 도면 칸으로
    ======================================================================== */
-const BUILD_NO='125';
+const BUILD_NO='126';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7410,7 +7942,7 @@ function renderAddDw(){
   if(ADD_DW_BUSY){S.textContent='';B.innerHTML='';body.innerHTML='<div class="ad-dmsg">도면을 그림으로 바꾸는 중…</div>';return;}
   if(!ADD_DW.length){
     S.textContent=ADD_VIEW?'이 사업에는 도면이 없어요':'이 사업에 붙일 도면';B.innerHTML='';
-    body.innerHTML='<div class="ad-drop" data-dw-pick="1"><b>도면을 올려 주세요</b>이미지 · PDF · 엑셀(도면 탭)<br>끌어다 놓거나 눌러서 선택<small>엑셀 도면 탭은 그림으로 바꿔서 보여 줘요</small></div>';return;
+    body.innerHTML='<div class="ad-drop" data-dw-pick="1"><b>도면을 올려 주세요</b>이미지 · PDF · DXF · 엑셀(도면 탭)<br>끌어다 놓거나 눌러서 선택<small>DXF · 엑셀 도면 탭은 그림으로 바꿔서 보여 줘요</small></div>';return;
   }
   if(ADD_DWI>=ADD_DW.length)ADD_DWI=0;
   const it=ADD_DW[ADD_DWI];
@@ -7433,9 +7965,11 @@ function renderAddDw(){
 async function addDwFile(file){
   if(!file||ADD_DW_BUSY)return;
   const ext=(String(file.name).split('.').pop()||'').toLowerCase();
+  if(ext==='dxf'){return addDwDxf(file);}
+  if(ext==='dwg'){toast('DWG 는 읽지 못해요 · 캐드에서 DXF 로 저장해서 올려 주세요',true);return;}
   if(file.size>20*1024*1024){toast('20MB 보다 큰 파일은 올릴 수 없어요 ('+Math.round(file.size/1048576)+'MB)',true);return;}
   if(ADW_MIME[ext]){addDwSet([{ref:'도면',name:file.name,blob:file,type:ADW_MIME[ext],url:URL.createObjectURL(file)}]);return;}
-  if(ext!=='xlsx'&&ext!=='xlsm'){toast(ext==='xls'?'예전 엑셀(.xls)은 도면을 읽지 못해요 · .xlsx 로 저장해서 올려 주세요':'이미지 · PDF · 엑셀(.xlsx) 파일만 올릴 수 있어요',true);return;}
+  if(ext!=='xlsx'&&ext!=='xlsm'){toast(ext==='xls'?'예전 엑셀(.xls)은 도면을 읽지 못해요 · .xlsx 로 저장해서 올려 주세요':'이미지 · PDF · DXF · 엑셀(.xlsx) 파일만 올릴 수 있어요',true);return;}
   ADD_DW_BUSY++;renderAddDw();
   const out=[];
   try{
@@ -7452,6 +7986,41 @@ async function addDwFile(file){
   ADD_DW_BUSY--;
   if(out.length)addDwSet(out);else renderAddDw();
 }
+/* ---------- BUILD 126 : DXF(캐드 도면) → 그림 한 장 ---------- */
+const DXF_MAX_MB=60;
+async function addDwDxf(file){
+  if(ADD_DW_BUSY)return false;
+  if(file.size>DXF_MAX_MB*1024*1024){toast(DXF_MAX_MB+'MB 보다 큰 DXF 는 올릴 수 없어요 ('+Math.round(file.size/1048576)+'MB) · 필요한 부분만 따로 저장해서 올려 주세요',true);return false;}
+  ADD_DW_BUSY++;renderAddDw();
+  let it=null;
+  try{
+    await new Promise(r=>setTimeout(r,40));   /* 「바꾸는 중…」 글이 먼저 보이게 */
+    const u8=new Uint8Array(await file.arrayBuffer());
+    const toB=(cv,type,q)=>new Promise(res=>cv.toBlob(res,type,q));
+    let r=await gjDxf.render(u8,{maxSide:6000});
+    const base=String(file.name).replace(/\.[^.]+$/,'');
+    let blob=await toB(r.canvas,'image/png'),name=base+'.png',type='image/png';
+    /* 선이 아주 빽빽한 도면은 PNG 가 커진다 → JPG, 그래도 크면 조금 작게 */
+    if(blob&&blob.size>4*1024*1024){const j=await toB(r.canvas,'image/jpeg',0.88);if(j&&j.size<blob.size){blob=j;name=base+'.jpg';type='image/jpeg';}}
+    if(blob&&blob.size>8*1024*1024){r.canvas.width=1;r.canvas.height=1;r=await gjDxf.render(u8,{maxSide:4000});const j=await toB(r.canvas,'image/jpeg',0.85);if(j){blob=j;name=base+'.jpg';type='image/jpeg';}}
+    r.canvas.width=1;r.canvas.height=1;
+    if(!blob)throw new Error('그림으로 만들지 못했어요');
+    it={ref:'도면',name:name,blob:blob,type:type,url:URL.createObjectURL(blob)};
+    const sk=Object.keys(r.info.skipped).map(k=>k+' '+r.info.skipped[k]+'개');
+    toast('DXF 도면을 그림으로 바꿨어요'+(r.info.paper?' · 배치(종이) 공간 도면':'')+(sk.length?' · 표시하지 못한 것: '+sk.join(', '):''),sk.length>0);
+  }catch(e){console.error(e);toast('DXF 를 그림으로 바꾸지 못했어요 · '+(e&&e.message||e),true);}
+  ADD_DW_BUSY--;
+  if(it)addDwSet([it]);else renderAddDw();
+  return !!it;
+}
+/* ② 엑셀 올리는 칸에 도면(DXF)을 올리면 ① 의뢰 도면 칸으로 */
+{const r0=readFile;readFile=function(file){
+  const ext=(String(file&&file.name||'').split('.').pop()||'').toLowerCase();
+  if(ext==='dxf'||ext==='dwg'){try{document.getElementById('file').value='';}catch(e){}
+    if(ADD_DW_BUSY){toast('도면을 바꾸는 중이에요 · 끝난 뒤 다시 올려 주세요',true);return;}
+    addDwFile(file).then(ok=>{if(ok){const z=document.getElementById('adDw');if(z){z.scrollIntoView({block:'nearest',behavior:'smooth'});z.classList.add('flash');setTimeout(()=>z.classList.remove('flash'),1600);}}});
+    return;}
+  return r0.apply(this,arguments);};}
 /* 아직 저장 안 된 도면을 저장하고 '이름@rdw:고유번호' 목록을 돌려준다 */
 async function addDwRefs(){
   const refs=[];
