@@ -1040,6 +1040,17 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
 .dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
 .dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 129 : 같은 사업이 있으면 빨갛게 강조 ===== */
+.ad-dup,.ad-dup.block{margin-top:9px;border:2px solid #B8001F;background:#EA002C;color:#fff;border-radius:9px;padding:9px 12px;font-size:13.5px;line-height:1.5;display:flex;align-items:center;gap:11px;box-shadow:0 3px 10px rgba(234,0,44,.28);}
+.ad-dup.block{background:#B8001F;border-color:#7F0015;}
+.ad-dup .ic{flex:none;width:24px;height:24px;border-radius:50%;background:#fff;color:#EA002C;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.ad-dup .tx{min-width:0;}
+.ad-dup .tx b{font-size:14.5px;font-weight:800;}
+.ad-dup .tx i{display:block;font-style:normal;font-size:12.5px;opacity:.95;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ad-dup button{margin:0 0 0 auto;border:0;background:#fff;color:#B8001F;border-radius:7px;padding:5px 13px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+#p-add .ad-f.dup input,#p-add .ad-f.dup select{border:2px solid #EA002C;background:#FFE4E8;color:#7F0015;font-weight:700;}
+#p-add .ad-f.dup label{color:#EA002C;font-weight:800;}
+.rq-ex{color:#fff !important;background:#EA002C !important;font-size:11.5px !important;padding:2px 8px !important;}
 /* ===== BUILD 127 : 목록 비우기 잠금 · 사업 카드 삭제 ===== */
 .ad-adm .ln.wlk{opacity:.42;cursor:pointer;filter:saturate(.6);transition:opacity .18s,filter .18s;}
 .ad-adm .ln.wlk:hover{opacity:.6;}
@@ -2582,8 +2593,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 126: 의뢰 도면에 DXF(캐드 도면) — 그림으로 바꿔서 붙임 · ② 엑셀 올리는 칸에 DXF 를 올려도 ① 의뢰 도면 칸으로
    BUILD 127: 목록 비우기 잠금(흐리게 잠겨 있고 한 번 눌러야 풀림 · 10초 뒤 다시 잠김) · 사업 카드에 「삭제」(경고 창 → 확인하면 삭제)
    BUILD 128: 업로드용 「측량 의뢰 양식」 인식 — 측량일시(→측량예정일·시간은 비고) · 거리(m)(→km) · 맨홀(기)(→비고) · 발주처 칸 · 글자 날짜(26.10.07 · 10/7)도 읽음 · 요청일이 비면 오늘
+   BUILD 129: 새 사업 추가 — 「굴착 작업일정」 입력 칸 이름을 「측량시작일」로(저장 칸은 그대로) · 같은 사업이 있으면 빨갛게 강조(알림 줄·겹친 칸·확인 창·의뢰 확인 창)
    ======================================================================== */
-const BUILD_NO='128';
+const BUILD_NO='129';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7497,11 +7509,11 @@ const M2=['실시간','탐사'];
 const ADD_AUTO=new Set(['지역본부','사업자','대표사업자']);
 const ADD_FORM={
   SKT:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자'],['측량작업자 이름/연락처',{t:'측량작업자'}]]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) T26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) T26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
   SKB:[['사업 기본',[['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['행정구역'],['공사명',{req:1,w:4,ph:'공사 전체 이름',nolist:1}],['사업자',{w:2}]]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) B26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['측량 심사내역',{t:'측량거리 (km)',num:1}],['Eng 번호',{ph:'예) B26…',nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['이슈사항',{w:3,nolist:1}],['비고',{w:3,nolist:1}]]]],
   '원인자':[['사업 기본',[['관리번호',{req:1,ph:'예) 1-238',nolist:1}],['시행시기'],['지역본부'],['담당Manager'],['사업유형'],['공사협력사'],['공사명',{req:1,w:3,ph:'공사 전체 이름',nolist:1}],['행정구역'],['대표사업자'],['사업자 (정산 업체)']]],
-       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{ph:'예) 미굴착 · 굴착완료'}],['도면거리',{t:'도면거리 (km)',num:1}],['Eng 번호',{nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['협력사 연락처',{w:2,nolist:1}],['이슈사항',{w:2,nolist:1}],['비고',{w:2,nolist:1}]]]]
+       ['측량 요청',[['요청일',{req:1,date:1}],['측량방법',{req:1,sel:M2}],['굴착 작업일정',{t:'측량시작일',ph:'예) 2026-10-07',nolist:1}],['도면거리',{t:'도면거리 (km)',num:1}],['Eng 번호',{nolist:1}],['측량예정일',{ph:'비우면 「미착수」'}],['협력사 연락처',{w:2,nolist:1}],['이슈사항',{w:2,nolist:1}],['비고',{w:2,nolist:1}]]]]
 };
 function addFields(){const o=[];ADD_FORM[ADD_SRC].forEach(g=>g[1].forEach(f=>o.push({l:f[0],o:f[1]||{}})));return o;}
 function todayYmd(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -7561,9 +7573,12 @@ function addFindDup(v,self){
 function addDupCheck(){
   const box=document.getElementById('adDup');if(!box)return null;
   const x=addFindDup(ADD_VAL,viewD());
+  [...document.querySelectorAll('#adForm .ad-f.dup')].forEach(el=>el.classList.remove('dup'));
   if(!x){box.innerHTML='';return null;}
   if(x.d._id==null)x.d._id=++idSeq;
-  box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'">⚠ 같은 <b>'+x.by+'</b>'+(x.by==='공사명'?'이':'가')+' 이미 있어요 — '+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,60))+'」'+(x.block?' · 관리번호는 겹칠 수 없어요':'')+'<button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
+  /* BUILD 129 : 같은 사업이 있으면 빨갛게 — 알림 줄 + 겹친 입력 칸 */
+  const fe=document.querySelector('#adForm [data-l="'+x.by+'"]'),fb=fe&&fe.closest('.ad-f');if(fb)fb.classList.add('dup');
+  box.innerHTML='<div class="ad-dup'+(x.block?' block':'')+'"><span class="ic">!</span><span class="tx"><b>이미 있는 사업이에요</b> · '+x.by+(x.by==='공사명'?'이':'가')+' 같아요'+(x.block?' (관리번호는 겹칠 수 없어요)':'')+'<i>'+esc([x.d._src||x.d.baal,x.d.seq,x.d.eng].filter(Boolean).join(' '))+' 「'+esc(String(x.d.work).slice(0,70))+'」</i></span><button type="button" data-ad-open="'+x.d._id+'">그 사업 보기</button></div>';
   return x;
 }
 document.getElementById('mode-in').addEventListener('click',e=>{
@@ -7617,7 +7632,7 @@ function addBizGo(more){
   };
   if(ADD_DW_BUSY){toast('도면을 그림으로 바꾸는 중이에요 · 잠시 뒤에 눌러 주세요',true);return;}
   if(dup&&dup.block){toast('같은 관리번호가 이미 있어요 — 관리번호를 확인해 주세요',true);addDupCheck();return;}
-  if(dup)askConfirm('같은 '+dup.by+(dup.by==='공사명'?'이':'가')+' 이미 있어요.\n\n· '+[dup.d._src||dup.d.baal,dup.d.seq,dup.d.eng].filter(Boolean).join(' ')+' 「'+String(dup.d.work).slice(0,50)+'」\n\n그래도 새 사업으로 추가할까요?',go,{title:'이미 있는 사업',ok:'추가'});
+  if(dup)askConfirm('같은 '+dup.by+(dup.by==='공사명'?'이':'가')+' 이미 있어요.\n\n· '+[dup.d._src||dup.d.baal,dup.d.seq,dup.d.eng].filter(Boolean).join(' ')+' 「'+String(dup.d.work).slice(0,50)+'」\n\n그래도 새 사업으로 추가할까요?',go,{title:'이미 있는 사업',ok:'그래도 추가',danger:true});
   else go();
 }
 /* 발주처(SKT·SKB·원인자)를 담는 칸 — 없으면 만든다 (엑셀 업로드가 쓰는 '발주처(자동)' 과 같은 칸) */
