@@ -1040,6 +1040,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
 .dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
 .dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 132 : 카드 준공도면 DXF 미리보기 ===== */
+.tc2-pvn{color:#1d4ed8;}
+#tcDwg .tc2-pv img{cursor:zoom-in;}
 /* ===== BUILD 129 : 같은 사업이 있으면 빨갛게 강조 ===== */
 .ad-dup,.ad-dup.block{margin-top:9px;border:2px solid #B8001F;background:#EA002C;color:#fff;border-radius:9px;padding:9px 12px;font-size:13.5px;line-height:1.5;display:flex;align-items:center;gap:11px;box-shadow:0 3px 10px rgba(234,0,44,.28);}
 .ad-dup.block{background:#B8001F;border-color:#7F0015;}
@@ -2596,8 +2599,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 129: 새 사업 추가 — 「굴착 작업일정」 입력 칸 이름을 「측량시작일」로(저장 칸은 그대로) · 같은 사업이 있으면 빨갛게 강조(알림 줄·겹친 칸·확인 창·의뢰 확인 창)
    BUILD 130: 요청일과 측량시작일을 따로 관리 — 양식의 측량시작일(측량일시)은 「굴착 작업일정」 칸으로(전에는 측량예정일) · 의뢰 확인 창 머리글도 「측량시작일」
    BUILD 131: 새 사업 추가 — 공사명·사업자 칸을 줄이고 옆에 「탱고 번호 (Eng 번호)」 칸 (꼭 적는 칸 아님 · 리스트의 Eng 번호 칸에 저장)
+   BUILD 132: 사업 카드 준공도면에 올린 DXF 도 그림으로 바꿔 미리보기(원본은 그대로 · 다운로드는 원본 DXF) · 카드의 도면 그림은 누르면 크게 보기
    ======================================================================== */
-const BUILD_NO='131';
+const BUILD_NO='132';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -5294,6 +5298,7 @@ async function loadDwg(d){
   const ext=(String(f.name).split('.').pop()||'').toLowerCase(),mime=DWG_MIME[ext]||'application/octet-stream';
   DWG_URL=URL.createObjectURL(new Blob([f.buf],{type:mime}));
   const info='<div class="tc2-fi"><b>'+esc(f.name)+'</b> · '+(f.size?Math.round(f.size/1024).toLocaleString()+' KB':'')+(f.by?' · '+esc(f.by):'')+(f.at?' · '+fmtDate(new Date(f.at)):'')+'</div>';
+  if(ext==='dxf'&&window.gjDxf){dn.disabled=false;dn.dataset.name=f.name;return cardDxfPreview(d,f,box,info);}   /* BUILD 132 */
   box.innerHTML=info+(/^image\//.test(mime)?'<div class="tc2-pv"><img src="'+DWG_URL+'" alt="준공도면"></div>':(mime==='application/pdf'?'<iframe class="tc2-pdf" src="'+DWG_URL+'" title="준공도면"></iframe>':'<div class="tc2-empty">미리보기가 없는 파일이에요 · 「다운로드 ↓」로 받아서 여세요</div>'));
   dn.disabled=false;dn.dataset.name=f.name;
 }
@@ -7985,7 +7990,8 @@ document.getElementById('cardPop').addEventListener('click',e=>{
   const t=e.target.closest('.dtab');
   if(t&&!t.classList.contains('on')){DWG_MODE=t.dataset.dt;RDW_I=0;loadDwg(d);return;}
   const r=e.target.closest('[data-rdw]');if(r){RDW_I=+r.dataset.rdw;loadRdw(d);return;}
-  if(e.target.id==='tcRdwImg'&&DWG_URL){dwgView(DWG_URL,'image/jpeg',(document.getElementById('tcDn')||{dataset:{}}).dataset.name);return;}
+  /* 카드의 도면 그림(의뢰 도면 · 준공도면 · DXF 미리보기)은 누르면 크게 보기 */
+  {const im=e.target.closest('#tcDwg .tc2-pv img');if(im&&im.src){const nm=String((document.getElementById('tcDn')||{dataset:{}}).dataset.name||'도면');dwgView(im.src,'image/png',im.id==='tcDxfImg'?nm.replace(/\.dxf$/i,'')+'.png':nm);return;}}
 });
 
 /* ---------- BUILD 122 : 새 사업 추가 옆 의뢰 도면 칸 · 오늘 추가한 사업 「여기서 보기」 ---------- */
@@ -8057,6 +8063,38 @@ async function addDwFile(file){
   ADD_DW_BUSY--;
   if(out.length)addDwSet(out);else renderAddDw();
 }
+/* ---------- BUILD 132 : 사업 카드 준공도면에 올린 DXF — 그림으로 바꿔 미리보기 (원본 DXF 는 그대로 두고 다운로드) ---------- */
+const DXF_PV=new Map();
+async function cardDxfPreview(d,f,box,info){
+  const k=dwgKey(d),sig=k+'|'+(f.at||0)+'|'+(f.size||0);
+  const stale=()=>String(CARD_ID)!==String(d._id)||DWG_MODE!=='dwg';
+  const show=url=>{box.innerHTML=info.replace(/<\/div>$/,' · <span class="tc2-pvn">그림으로 바꾼 미리보기 (다운로드는 원본 DXF)</span></div>')+'<div class="tc2-pv"><img class="zoomable" id="tcDxfImg" src="'+url+'" alt="준공도면"></div>';};
+  const hit=DXF_PV.get(sig);if(hit){show(hit);return;}
+  box.innerHTML=info+'<div class="tc2-empty">DXF 도면을 그림으로 바꾸는 중…</div>';
+  try{
+    let blob=null,pv=null;
+    try{pv=await tplGet('pv:'+k);}catch(e){}            /* 이 브라우저에 만들어 둔 미리보기 */
+    if(pv&&pv.sig===sig&&pv.buf)blob=new Blob([pv.buf],{type:pv.type||'image/png'});
+    else{
+      await new Promise(r=>setTimeout(r,40));
+      const toB=(cv,type,q)=>new Promise(res=>cv.toBlob(res,type,q));
+      const r=await gjDxf.render(new Uint8Array(f.buf),{maxSide:6000});
+      blob=await toB(r.canvas,'image/png');
+      if(blob&&blob.size>4*1024*1024){const j=await toB(r.canvas,'image/jpeg',0.88);if(j&&j.size<blob.size)blob=j;}
+      r.canvas.width=1;r.canvas.height=1;
+      if(!blob)throw new Error('그림으로 만들지 못했어요');
+      try{await tplPut('pv:'+k,{sig:sig,type:blob.type,buf:await blob.arrayBuffer(),at:Date.now()});}catch(e){}
+    }
+    const url=URL.createObjectURL(blob);
+    DXF_PV.set(sig,url);if(DXF_PV.size>6){const o=DXF_PV.keys().next().value;URL.revokeObjectURL(DXF_PV.get(o));DXF_PV.delete(o);}
+    if(stale())return;
+    show(url);
+  }catch(e){
+    console.error(e);if(stale())return;
+    box.innerHTML=info+'<div class="tc2-empty">DXF 미리보기를 만들지 못했어요<br><span style="font-size:12.5px;font-weight:400;">'+esc(String(e&&e.message||e))+' · 「다운로드 ↓」로 받아서 여세요</span></div>';
+  }
+}
+
 /* ---------- BUILD 126 : DXF(캐드 도면) → 그림 한 장 ---------- */
 const DXF_MAX_MB=60;
 async function addDwDxf(file){
