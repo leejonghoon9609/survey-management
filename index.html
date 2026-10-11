@@ -2594,8 +2594,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 127: 목록 비우기 잠금(흐리게 잠겨 있고 한 번 눌러야 풀림 · 10초 뒤 다시 잠김) · 사업 카드에 「삭제」(경고 창 → 확인하면 삭제)
    BUILD 128: 업로드용 「측량 의뢰 양식」 인식 — 측량일시(→측량예정일·시간은 비고) · 거리(m)(→km) · 맨홀(기)(→비고) · 발주처 칸 · 글자 날짜(26.10.07 · 10/7)도 읽음 · 요청일이 비면 오늘
    BUILD 129: 새 사업 추가 — 「굴착 작업일정」 입력 칸 이름을 「측량시작일」로(저장 칸은 그대로) · 같은 사업이 있으면 빨갛게 강조(알림 줄·겹친 칸·확인 창·의뢰 확인 창)
+   BUILD 130: 요청일과 측량시작일을 따로 관리 — 양식의 측량시작일(측량일시)은 「굴착 작업일정」 칸으로(전에는 측량예정일) · 의뢰 확인 창 머리글도 「측량시작일」
    ======================================================================== */
-const BUILD_NO='129';
+const BUILD_NO='130';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7729,7 +7730,7 @@ function openDedupWin(){
 }
 
 /* ---------- 측량 의뢰 양식 ---------- */
-const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
+const REQ_MAP={'공구명':'공사명','작업일정':'굴착 작업일정','굴착작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
 const REQ_ORDER=['관리번호','시행시기','지역본부','공사협력사','행정구역','공사명','@dist','굴착 작업일정','측량방법','요청일','측량예정일','Eng 번호','담당Manager','사업유형','비고','사업자'];
 const REQ_M_MIN=30;   /* 측량거리가 이 값 이상이면 m 로 보고 km 로 바꾼다 */
 let REQ=null;
@@ -7740,7 +7741,7 @@ function reqDetect(sheets){
     if(/작성\s*방법|예시|설명/.test(sh.name))return false;
     const N=sh.labels.map(l=>nh(l).toLowerCase()),has=x=>N.includes(x);
     /* BUILD 128 : 업로드용 「측량 의뢰 양식」 — 공사명 + (측량일시 또는 거리(m)) */
-    const tpl=has('공사명')&&(N.some(x=>x.indexOf('측량일시')===0)||N.some(reqIsM));
+    const tpl=has('공사명')&&(N.some(x=>x.indexOf('측량일시')===0)||has('측량시작일')||N.some(reqIsM));
     return (has('공구명')||tpl)&&has('요청일')&&!has('측량예정일')&&!has('tango업로드')&&!has('진행상황')&&!has('정산상황')&&!N.some(x=>x.includes('정산거리'));
   })||null;
 }
@@ -7776,11 +7777,12 @@ function reqOpen(file,u8,sh){
       /* BUILD 128 : 업로드용 양식의 칸 */
       if(n==='발주처')return;                                   /* 발주처는 아래 src 로만 쓴다 */
       if(/^맨홀(\(기\)|수)?$/.test(n)){const k=toNum(x[c]);if(k>0)memo.push('맨홀 '+k+'기');if(!renamed.some(z=>z[0]===l))renamed.push([l,'비고']);return;}
-      if(n.indexOf('측량일시')===0){
-        if(!renamed.some(z=>z[0]===l))renamed.push([l,'측량예정일']);
+      /* BUILD 130 : 측량일시·측량시작일 = 측량을 시작하는 날 = 리스트의 「굴착 작업일정」 칸 (요청일과는 따로 관리) */
+      if(n.indexOf('측량일시')===0||n==='측량시작일'){
+        if(n!=='측량시작일'&&!renamed.some(z=>z[0]===l))renamed.push([l,'측량시작일']);
         const raw=x[c];if(raw==null||String(raw).trim()==='')return;
         const dh=reqDateHead(raw);
-        if(dh){v['측량예정일']=dh.d;if(dh.rest)memo.push('측량 '+dh.rest);}else memo.push('측량일시 '+String(raw).trim());
+        if(dh){v['굴착 작업일정']=dh.d;if(dh.rest)memo.push('측량 '+dh.rest);}else v['굴착 작업일정']=String(raw).trim();
         return;
       }
       let L=REQ_MAP[n]||l;
@@ -7847,7 +7849,7 @@ function reqRender(){
       (tot?'<span class="rq-pill '+(pend?'p3':'p4')+'">'+(pend?('확인할 칸 '+tot+'곳 중 '+pend+'곳 남음'):('바꾼 칸 '+tot+'곳 확인 끝'))+'</span>':'')+
       (REQ.dwgs?('<span class="rq-pill p4">도면 '+dw.length+'장</span>'):'<span class="rq-pill p4">도면 찾는 중…</span>')+
       (REQ.skipped?'<span style="font-size:12.5px;color:#64748b;">빈 줄 '+REQ.skipped+'줄은 건너뜀</span>':'')+'</div>';
-    h+='<table class="gw-t rq-t"><thead><tr><th>추가</th><th>발주처</th>'+cols.map(l=>'<th>'+esc(l==='@dist'?'측량거리 (km)':l)+'</th>').join('')+'</tr></thead><tbody>';
+    h+='<table class="gw-t rq-t"><thead><tr><th>추가</th><th>발주처</th>'+cols.map(l=>'<th>'+esc(l==='@dist'?'측량거리 (km)':l==='굴착 작업일정'?'측량시작일':l)+'</th>').join('')+'</tr></thead><tbody>';
     REQ.rows.forEach((r,i)=>{
       h+='<tr class="'+(r.on?'':'off')+'"><td><input type="checkbox" data-rq-on="'+i+'"'+(r.on?' checked':'')+'></td>'+
         '<td class="'+(r.src?'':'need')+'"><select data-rq-src="'+i+'"><option value="">선택</option>'+['SKT','SKB','원인자'].map(s=>'<option'+(r.src===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td>';
