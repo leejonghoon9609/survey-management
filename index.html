@@ -1040,6 +1040,23 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
 .dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
 .dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 133 : 중복 정리 — 줄마다 남김 / 지움 ===== */
+.dd-t tr.g0 td{border-top:2px solid #94a3b8;}
+.dd-t td.dd-c{padding:4px 8px;}
+.dd-sw{display:inline-flex;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;background:#fff;}
+.dd-sw button{border:0;background:#fff;padding:4px 11px;font-size:12.5px;font-family:inherit;color:#94a3b8;cursor:pointer;white-space:nowrap;}
+.dd-sw button+button{border-left:1px solid #cbd5e1;}
+.dd-sw button:hover{background:#f1f5f9;color:#334155;}
+.dd-sw button.on[data-dd="keep"]{background:#15803D;color:#fff;font-weight:800;}
+.dd-sw button.on[data-dd="kill"]{background:#EA002C;color:#fff;font-weight:800;}
+.dd-tag{font-size:11.5px;font-weight:700;margin-top:3px;white-space:normal;}
+.dd-tag.all{display:table;margin:4px auto 0;color:#fff;background:#EA002C;border-radius:4px;padding:1px 7px;}
+.dd-tag.multi{color:#92400e;}
+.dd-sum{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px;position:sticky;top:0;background:#fff;padding:6px 0;z-index:2;}
+.dd-sum span{border-radius:20px;padding:4px 12px;font-size:12.5px;font-weight:700;border:1px solid;}
+.dd-sum .k{color:#EA002C;border-color:#fecaca;background:#fff5f5;}.dd-sum .p{color:#15803D;border-color:#bbf7d0;background:#f0fdf4;}
+.dd-sum .a{color:#fff;border-color:#EA002C;background:#EA002C;}.dd-sum .m{color:#92400e;border-color:#fde68a;background:#fffbeb;}
+.dd-t th{top:39px;}
 /* ===== BUILD 132 : 카드 준공도면 DXF 미리보기 ===== */
 .tc2-pvn{color:#1d4ed8;}
 #tcDwg .tc2-pv img{cursor:zoom-in;}
@@ -2600,8 +2617,9 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
    BUILD 130: 요청일과 측량시작일을 따로 관리 — 양식의 측량시작일(측량일시)은 「굴착 작업일정」 칸으로(전에는 측량예정일) · 의뢰 확인 창 머리글도 「측량시작일」
    BUILD 131: 새 사업 추가 — 공사명·사업자 칸을 줄이고 옆에 「탱고 번호 (Eng 번호)」 칸 (꼭 적는 칸 아님 · 리스트의 Eng 번호 칸에 저장)
    BUILD 132: 사업 카드 준공도면에 올린 DXF 도 그림으로 바꿔 미리보기(원본은 그대로 · 다운로드는 원본 DXF) · 카드의 도면 그림은 누르면 크게 보기
+   BUILD 133: 중복 정리 — 줄마다 「남김 · 지움」을 골라서 정리(처음대로 · 모두 지움 경고)
    ======================================================================== */
-const BUILD_NO='132';
+const BUILD_NO='133';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7716,24 +7734,64 @@ function admVis(){
   const show=!(SYNC&&SYNC.on)||cIsAdmin();
   c.classList.toggle('hide',!show);document.getElementById('adBot').classList.toggle('noadm',!show);
 }
+/* BUILD 133 : 중복 정리 — 줄마다 「남김 / 지움」을 골라서 정리 */
+let DD=null;
 function openDedupWin(){
   if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
   const dup=dupList();
   if(!dup.length){toast('공사코드가 겹치는 건이 없어요');return;}
-  const g={},order=[];DATA.forEach((d,i)=>{const k=engKey(d.eng);if(!k)return;if(!g[k]){g[k]=[];order.push(k);}g[k].push(i);});
+  ensureIds();
+  const g={},order=[];DATA.forEach(d=>{const k=engKey(d.eng);if(!k)return;if(!g[k]){g[k]=[];order.push(k);}g[k].push(d);});
   const keys=order.filter(k=>g[k].length>1);
-  let h='<div class="gw-pad"><div class="gw-note" style="margin-top:0">공사코드가 같은 사업이에요. <b>먼저 들어온 한 건만 남기고</b> 붉게 표시한 <b>'+dup.length+'건</b>을 지워요. 리스트가 서로 다른 건(SKT·SKB 양쪽에 있는 사업)도 한 건만 남으니 표를 보고 정해 주세요. 지운 뒤 「직전 목록 되살리기」로 되돌릴 수 있어요.</div>'+
-    '<table class="gw-t"><thead><tr><th>공사코드</th><th>리스트</th><th>관리번호</th><th>공사명</th><th>단계</th><th>처리</th></tr></thead><tbody>';
-  keys.forEach(k=>g[k].forEach((i,j)=>{const d=DATA[i];
-    h+='<tr class="'+(j?'kill':'')+'"><td>'+(j?'':esc(d.eng))+'</td><td>'+esc(d._src||d.baal||'')+'</td><td>'+esc(d.seq||'')+'</td><td class="l">'+esc(d.work||'')+'</td><td>'+esc(d._cancel?'취소':workStage(d))+'</td><td>'+(j?'지움':'남김')+'</td></tr>';}));
+  DD={keys:keys,g:g,kill:new Set()};
+  keys.forEach(k=>g[k].forEach((d,j)=>{if(j)DD.kill.add(d._uid);}));      /* 처음에는 먼저 들어온 한 건만 남김 */
+  let h='<div class="gw-pad"><div class="gw-note" style="margin-top:0">공사코드가 같은 사업이에요. 처음에는 <b>먼저 들어온 한 건만 남김</b>으로 해 뒀어요. 줄마다 오른쪽의 <b>남김 · 지움</b>을 눌러서 바꿀 수 있어요. 지운 뒤 「직전 목록 되살리기」로 되돌릴 수 있어요.</div>'+
+    '<div class="dd-sum" id="ddSum"></div>'+
+    '<table class="gw-t dd-t"><thead><tr><th>공사코드</th><th>리스트</th><th>관리번호</th><th>공사명</th><th>단계</th><th>처리</th></tr></thead><tbody>';
+  keys.forEach(k=>g[k].forEach((d,j)=>{const kl=DD.kill.has(d._uid);
+    h+='<tr class="'+(j?'':'g0 ')+(kl?'kill':'')+'" data-u="'+esc(d._uid)+'" data-k="'+esc(k)+'"><td>'+(j?'':esc(d.eng)+'<div class="dd-tag" data-kt="'+esc(k)+'"></div>')+'</td><td>'+esc(d._src||d.baal||'')+'</td><td>'+esc(d.seq||'')+'</td><td class="l">'+esc(d.work||'')+'</td><td>'+esc(d._cancel?'취소':workStage(d))+'</td>'+
+      '<td class="dd-c"><span class="dd-sw"><button type="button" data-dd="keep"'+(kl?'':' class="on"')+'>남김</button><button type="button" data-dd="kill"'+(kl?' class="on"':'')+'>지움</button></span></td></tr>';}));
   h+='</tbody></table></div>';
-  gwOpen('중복 정리',keys.length+'개 공사코드 · 겹친 '+dup.length+'건',h,[
-    {t:'붉은 '+dup.length+'건 지우기',cls:'btn-primary',fn:()=>askConfirm('공사코드가 같은 건 중 먼저 들어온 건만 남기고\n뒤의 '+dup.length+'건을 지웁니다.\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
-      stashPrev();const kill=new Set(dupList());DATA=DATA.filter((d,i)=>!kill.has(i));
-      pruneFilters();afterDataChange();updateUpMode();gwClose();toast(kill.size+'건 중복 정리 · 남은 목록 '+DATA.length+'건');
-    },{title:'중복 정리',ok:'지우기'})},
-    {t:'닫기',fn:gwClose}],{sm:true});
+  const mine=DD;
+  gwOpen('중복 정리',keys.length+'개 공사코드 · 겹친 '+dup.length+'건',h,[],{sm:true,onClose:()=>{if(DD===mine)DD=null;}});
+  ddSum();
 }
+/* 지움·남김 수를 다시 세어 위 요약 · 공사코드별 표시 · 아래 버튼을 맞춘다 */
+function ddStat(){
+  let all=0,multi=0,tot=0;
+  DD.keys.forEach(k=>{const a=DD.g[k],kn=a.filter(d=>DD.kill.has(d._uid)).length;tot+=a.length;if(kn===a.length)all++;else if(a.length-kn>1)multi++;});
+  return {kill:DD.kill.size,keep:tot-DD.kill.size,all:all,multi:multi};
+}
+function ddSum(){
+  if(!DD)return;const st=ddStat();
+  DD.keys.forEach(k=>{const a=DD.g[k],kn=a.filter(d=>DD.kill.has(d._uid)).length,t=document.querySelector('#gwB [data-kt="'+CSS.escape(k)+'"]');if(!t)return;
+    if(kn===a.length){t.className='dd-tag all';t.textContent='모두 지움 — 목록에서 사라져요';}
+    else if(a.length-kn>1){t.className='dd-tag multi';t.textContent=(a.length-kn)+'건 남김 (겹친 채로)';}
+    else{t.className='dd-tag';t.textContent='';}});
+  const b=document.getElementById('ddSum');
+  if(b)b.innerHTML='<span class="k">지움 <b>'+st.kill+'</b>건</span><span class="p">남김 <b>'+st.keep+'</b>건</span>'+(st.all?'<span class="a">모두 지움 '+st.all+'곳 — 한 건도 안 남아요</span>':'')+(st.multi?'<span class="m">겹친 채 남김 '+st.multi+'곳</span>':'');
+  gwButtons([{t:st.kill?'붉은 '+st.kill+'건 지우기':'지울 건 없음',cls:'btn-primary',dis:!st.kill,fn:ddGo},{t:'처음대로',fn:ddReset},{t:'닫기',fn:gwClose}],'줄마다 「남김 · 지움」을 눌러서 고를 수 있어요');
+}
+function ddSet(u,kill){
+  if(!DD)return;if(kill)DD.kill.add(u);else DD.kill.delete(u);
+  const tr=document.querySelector('#gwB tr[data-u="'+CSS.escape(u)+'"]');
+  if(tr){tr.classList.toggle('kill',!!kill);tr.querySelector('[data-dd="keep"]').classList.toggle('on',!kill);tr.querySelector('[data-dd="kill"]').classList.toggle('on',!!kill);}
+}
+function ddReset(){if(!DD)return;DD.keys.forEach(k=>DD.g[k].forEach((d,j)=>ddSet(d._uid,j>0)));ddSum();}
+function ddGo(){
+  if(!DD)return;const st=ddStat();if(!st.kill)return;
+  const kill=new Set(DD.kill);
+  askConfirm('고른 '+st.kill+'건을 목록에서 지웁니다.'+(st.all?'\n\n★ '+st.all+'개 공사코드는 「모두 지움」이라 그 사업이 한 건도 남지 않아요.':'')+(st.multi?'\n· '+st.multi+'개 공사코드는 겹친 채로 남아요.':'')+
+    (SYNC&&SYNC.on?'\n· 공용 저장소에서도 지워져서 모든 작업자 화면에서 사라져요.':'')+'\n\n(지운 뒤 "직전 목록 되살리기"로 되돌릴 수 있어요)\n\n계속할까요?',()=>{
+    stashPrev();const n0=DATA.length;DATA=DATA.filter(d=>!kill.has(d._uid));
+    pruneFilters();afterDataChange();updateUpMode();gwClose();toast((n0-DATA.length)+'건 중복 정리 · 남은 목록 '+DATA.length+'건');
+  },{title:'중복 정리',ok:'지우기',danger:st.all>0});
+}
+document.getElementById('gwB').addEventListener('click',e=>{
+  if(!DD)return;const b=e.target.closest('[data-dd]');if(!b)return;
+  const tr=b.closest('tr[data-u]');if(!tr)return;
+  ddSet(tr.dataset.u,b.dataset.dd==='kill');ddSum();
+});
 
 /* ---------- 측량 의뢰 양식 ---------- */
 const REQ_MAP={'탱고번호':'Eng 번호','탱고번호(eng번호)':'Eng 번호','탱고번호(Eng번호)':'Eng 번호','공구명':'공사명','작업일정':'굴착 작업일정','굴착작업일정':'굴착 작업일정','공사구분':'사업유형','협력사':'공사협력사','협력사명':'공사협력사'};
