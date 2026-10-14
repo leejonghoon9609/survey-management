@@ -614,6 +614,42 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .pd2-body span,.pd-y span,.pd-p span{font-size:12.5px;color:#A8B3C2;letter-spacing:.2px;}
 .pd-y,.pd-p{border:1px dashed #DDE3EA;background:#FBFCFD;border-radius:14px;}
 @media (max-width:1500px){.pd2-sh{font-size:11px;gap:3px;letter-spacing:-.2px;}.pd2-sh::after{left:15%;right:15%;}.pd2-sh i{width:6px;height:6px;}.pd2-lh{padding:0 10px 9px;}}
+
+/* ===== BUILD 152 : 가운데 표 선 진하게 · 오른쪽 리스트 지역별 묶기 ===== */
+.pd2{border:1.5px solid #94A3B8;}
+.pd2-lh{border-bottom:1.5px solid #94A3B8;background:#F4F6F9;color:#334155;}
+.pd2-p{border-left:1px solid #CBD5E1;}
+.pd2-sh{border-bottom:1.5px solid #94A3B8;}
+.pd2-col{border-left:1px solid #CBD5E1;}
+.pd2-col.l{background:#FAFBFC;}
+.pd2-col.e{border-right:1.5px solid #94A3B8;}
+.pd2-col[style*="grid-column:3"]{border-left:0;}
+.pd2-col[style*="grid-column:1"]{border-left:0;}
+.pd2-col[style*="grid-column:2"]{border-left:1px solid #CBD5E1;}
+.pd2-grp.g1{border-color:#94A3B8;box-shadow:inset 1.5px 0 0 #94A3B8,inset -1.5px 0 0 #94A3B8;}
+.pd2-grp.g1 span{color:#64748B;}
+.pd2-grp.g2{border-color:#E59BBE;box-shadow:inset 1.5px 0 0 #E59BBE,inset -1.5px 0 0 #E59BBE;}
+.pd2-grp.g2 span{color:#DB2777;}
+.pd-y,.pd-p{border:1.5px dashed #B6C2D0;}
+.pm-lh button+button{margin-left:6px;}
+#pNew .pm-lh .pm-gbtn+.pm-lwin{margin-left:6px;}
+.pm-lh .pm-gbtn{border:1.5px solid #2563EB;color:#2563EB;font-weight:800;background:#fff;}
+.pm-lh .pm-gbtn:hover{background:#EFF6FF;}
+.pm-lh .pm-gbtn.on{background:#2563EB;color:#fff;}
+.pm-gtool{display:flex;align-items:center;gap:8px;padding:0 2px 6px;font-size:12px;color:#64748b;}
+.pm-gtool button{margin-left:auto;border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:2px 9px;font-size:11.5px;font-family:inherit;color:#334155;cursor:pointer;}
+.pm-g{border:1.5px solid #CBD5E1;border-left:5px solid var(--c);border-radius:9px;margin-bottom:7px;background:#fff;overflow:hidden;}
+.pm-g.op{border-color:color-mix(in srgb,var(--c) 45%,#CBD5E1);border-left-color:var(--c);}
+.pm-gh{display:grid;grid-template-columns:14px auto auto auto minmax(40px,1fr);align-items:center;gap:8px;width:100%;border:0;background:#fff;padding:8px 10px;font-family:inherit;cursor:pointer;text-align:left;}
+.pm-g.op .pm-gh{background:color-mix(in srgb,var(--c) 7%,#fff);border-bottom:1px solid #E2E8F0;}
+.pm-gh:hover{background:color-mix(in srgb,var(--c) 9%,#fff);}
+.pm-gh .ar{color:var(--c);font-size:12px;}
+.pm-gh b{font-size:14px;color:var(--c);white-space:nowrap;}
+.pm-gh .n{font-size:14px;font-weight:800;color:#0f172a;white-space:nowrap;}.pm-gh .n small{font-size:11px;font-weight:600;color:#64748b;margin-left:1px;}
+.pm-gh .k{font-size:12px;color:#475569;white-space:nowrap;}
+.pm-gh .bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:#e2e8f0;gap:1px;}
+.pm-gh .bar i{display:block;height:100%;}
+.pm-gb{padding:7px 7px 1px;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -2956,7 +2992,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='151';
+const BUILD_NO='152';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -8873,7 +8909,7 @@ window.addEventListener('resize',adFit);
 requestAnimationFrame(adFit);setTimeout(adFit,400);
 
 /* ---------- BUILD 135 : 사업 공정관리 — 전체물량 · 발주처 · 기간별 / 측량방법(전체·실시간·탐사) / 왼쪽 공정판 · 오른쪽 리스트 ---------- */
-const PM={mode:'all',baal:'SKT',per:'d',date:null,basis:'req',meth:'',stage:'',row:'',cap:300};
+const PM={mode:'all',baal:'SKT',per:'d',date:null,basis:'req',meth:'',stage:'',row:'',cap:300,grp:(()=>{try{return localStorage.getItem('gongjeong_pmgrp_v1')==='1';}catch(e){return false;}})(),gOpen:new Set()};
 const PM_MODES=[{k:'all',t:'전체물량',c:'#2563EB'},{k:'baal',t:'발주처',c:'#EA002C'},{k:'per',t:'기간별',c:'#B7791F'}];
 const PM_BAAL=['SKT','SKB','원인자'];
 const PM_PER=[{k:'d',t:'일별'},{k:'w',t:'주간'},{k:'m',t:'월별'}];
@@ -8983,15 +9019,31 @@ function pmRender(){
   list=list.slice().sort((a,b)=>(ord[a._pst]-ord[b._pst])||((b.elapsed==null?-1:b.elapsed)-(a.elapsed==null?-1:a.elapsed)));
   const lkm=list.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
   const ltitle=[PM.row,PM.stage].filter(Boolean).join(' · ')||'전체';
-  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage)?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+'<button type="button" class="winbtn pm-lwin" data-pm-lwin="1" title="지금 고른 사업들을 표로 — 별도 창 (다른 모니터로 옮길 수 있어요)">리스트 보기 ↗</button>'+'</div><div class="pm-ls" id="pmLs">';
+  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage)?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+'<button type="button" class="pm-gbtn'+(PM.grp?' on':'')+'" data-pm-grp="1" title="리스트를 지역(지사)별로 묶어요 · 다시 누르면 풀려요">지역별</button>'+'<button type="button" class="winbtn pm-lwin" data-pm-lwin="1" title="지금 고른 사업들을 표로 — 별도 창 (다른 모니터로 옮길 수 있어요)">리스트 보기 ↗</button>'+'</div><div class="pm-ls" id="pmLs">';
   if(!list.length)h+='<div class="pm-empty">해당하는 사업이 없어요</div>';
-  list.slice(0,PM.cap).forEach(d=>{
+  const pmCardH=d=>{let h='';
     if(d._id==null)d._id=++idSeq;
     const x=distOf(d),src=pmSrc(d),rq=parseDate(d.req);
     const el=d.elapsed!=null?d.elapsed+'일째':(d.days!=null?'소요 '+d.days+'일':'');
     h+='<div class="pm-r" data-pm-open="'+d._id+'" style="--c:'+wsColor(d._pst)+'"><div class="a">'+wsBadge(d)+'<span class="src" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src)+'</span>'+(d.mKey?'<span class="mt">'+esc(d.mKey)+'</span>':'')+'<span class="el">'+(rq?'요청 '+pmYmd(rq):'')+(el?(rq?' · ':'')+el:'')+'</span></div>'+
-      '<div class="nm">'+esc(d.work||'(공사명 없음)')+'</div><div class="b"><span>'+esc([d.jisa,d.region].filter(Boolean).join(' · '))+'</span><span class="km'+(x?'':' z')+'">'+(x?x.v.toFixed(3)+' km':'— km')+'</span></div></div>';});
-  if(list.length>PM.cap)h+='<button type="button" class="pm-more" data-pm-more="1">… 외 '+(list.length-PM.cap).toLocaleString()+'건 더 보기</button>';
+      '<div class="nm">'+esc(d.work||'(공사명 없음)')+'</div><div class="b"><span>'+esc([d.jisa,d.region].filter(Boolean).join(' · '))+'</span><span class="km'+(x?'':' z')+'">'+(x?x.v.toFixed(3)+' km':'— km')+'</span></div></div>';    return h;};
+  if(PM.grp&&list.length){
+    /* BUILD 152 : 지역(지사)별로 묶기 — 머리를 누르면 펼치고 접어요 */
+    const gk=d=>String(d.jisa||'').trim()||'(지역 없음)',G={};
+    list.forEach(d=>{(G[gk(d)]=G[gk(d)]||[]).push(d);});
+    const keys=Object.keys(G).sort((a,b)=>{const x=JISA_ORDER.indexOf(a),y=JISA_ORDER.indexOf(b);if(x>=0||y>=0)return (x<0?99:x)-(y<0?99:y);if(a==='(지역 없음)')return 1;if(b==='(지역 없음)')return -1;return G[b].length-G[a].length||a.localeCompare(b);});
+    const allOpen=keys.every(k=>PM.gOpen.has(k));
+    h+='<div class="pm-gtool"><span>'+keys.length+'개 지역</span><button type="button" data-pm-gall="'+(allOpen?'0':'1')+'">'+(allOpen?'모두 접기':'모두 펼치기')+'</button></div>';
+    keys.forEach(k=>{const a=G[k],op=PM.gOpen.has(k),km=a.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0),c=JISA_TC[k]||'#475569';
+      const st={};a.forEach(d=>{st[d._pst]=(st[d._pst]||0)+1;});
+      h+='<div class="pm-g'+(op?' op':'')+'" style="--c:'+c+'"><button type="button" class="pm-gh" data-pm-g="'+esc(k)+'"><span class="ar">'+(op?'▾':'▸')+'</span><b>'+esc(k)+'</b><span class="n">'+a.length.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(km)+' km</span>'+
+        '<span class="bar">'+WSTAGES.map(s=>st[s.k]?'<i style="flex:'+st[s.k]+';background:'+s.c+'" title="'+esc(s.k)+' '+st[s.k]+'건"></i>':'').join('')+'</span></button>';
+      if(op)h+='<div class="pm-gb">'+a.map(pmCardH).join('')+'</div>';
+      h+='</div>';});
+  }else{
+    list.slice(0,PM.cap).forEach(d=>{h+=pmCardH(d);});
+    if(list.length>PM.cap)h+='<button type="button" class="pm-more" data-pm-more="1">… 외 '+(list.length-PM.cap).toLocaleString()+'건 더 보기</button>';
+  }
   h+='</div></div></div></div>';
   box.innerHTML=h;
   pmFit();
@@ -9033,6 +9085,9 @@ window.addEventListener('resize',pmFit);
     if((b=q('[data-pm-nav]'))){pmShift(+b.dataset.pmNav);PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-meth]'))){PM.meth=b.dataset.pmMeth;PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-clear]'))){PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
+    if(q('[data-pm-grp]')){PM.grp=!PM.grp;try{localStorage.setItem('gongjeong_pmgrp_v1',PM.grp?'1':'0');}catch(x){}pmRender();return;}
+    if((b=q('[data-pm-gall]'))){if(b.dataset.pmGall==='1')document.querySelectorAll('#pmLs [data-pm-g]').forEach(x=>PM.gOpen.add(x.dataset.pmG));else PM.gOpen.clear();const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
+    if((b=q('[data-pm-g]'))){const k=b.dataset.pmG;if(PM.gOpen.has(k))PM.gOpen.delete(k);else PM.gOpen.add(k);const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
     if((b=q('[data-pm-more]'))){const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;PM.cap+=300;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
     if((b=q('[data-pm-row]'))){const r=b.dataset.pmRow,s=b.dataset.pmSt||'';
       if(PM.row===r&&PM.stage===s){PM.row='';PM.stage='';}else{PM.row=r;PM.stage=s;}PM.cap=300;pmRender();return;}
