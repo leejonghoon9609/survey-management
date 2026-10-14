@@ -887,6 +887,21 @@ body.pj-dragging .pd-p{border-color:#EA002C;}
 .pj-foot{position:sticky;bottom:-12px;background:#fff;padding:6px 0 0;z-index:2;}
 @media (max-height:900px){.pc-g button{height:22px;font-size:12px;}.pc-t{font-size:12.5px;margin-bottom:2px;}.pj-ed{padding:8px 12px;gap:6px;}.pj-eh{font-size:13.5px;padding-bottom:5px;}.pc-nav button{padding:2px 8px;font-size:11.5px;}}
 @media (max-width:1500px){.pj-side{padding:8px;gap:6px;}.pj-add,.pj-del{font-size:11px;padding:6px 3px;}.pj-f{grid-template-columns:56px minmax(0,1fr);gap:5px;}.pj-l{font-size:11px;white-space:nowrap;letter-spacing:-.4px;}.pj-v{padding:5px 6px;font-size:11.5px;}.pj-c .br b{display:none;}.pj-c.cu .br b{display:inline;}.pj-c.cu .br s{display:none;}.pj-c .br{padding:0 3px;}}
+
+/* ===== BUILD 160 : 점 타임라인 ===== */
+.pj-r>div{min-height:32px;}
+.pj-c.tl{flex-direction:column;justify-content:flex-start;align-items:center;padding-top:7px;overflow:visible;}
+.pj-c.tl .ln{position:absolute;left:0;right:0;top:11px;height:2px;background:#E2E8F0;}
+.pj-c.tl .ln.on{background:var(--c);}
+.pj-c.tl .ln.hf{background:linear-gradient(90deg,var(--c) 50%,#E2E8F0 50%);}
+.pj-c.tl.na .ln{background:repeating-linear-gradient(90deg,#E2E8F0 0 3px,transparent 3px 7px);}
+.pj-c.tl .dt{position:relative;z-index:1;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #CBD5E1;flex:none;}
+.pj-c.tl .dt.d{background:var(--c);border-color:var(--c);}
+.pj-c.tl .dt.cu{width:11px;height:11px;border:3px solid var(--c);margin-top:-1px;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 20%,transparent);}
+.pj-c.tl s{position:relative;z-index:1;text-decoration:none;font-size:9px;color:#64748b;margin-top:1px;white-space:nowrap;letter-spacing:-.2px;font-variant-numeric:tabular-nums;}
+.pj-c.tl em{position:absolute;z-index:2;top:2px;left:calc(50% + 9px);font-style:normal;font-size:9.5px;font-weight:800;color:var(--c);white-space:nowrap;background:color-mix(in srgb,#fff 85%,transparent);padding:0 2px;border-radius:3px;}
+.pj-r:hover .pj-c.tl em{background:#FFF8E1;}
+@media (max-width:1500px){.pj-c.tl em{font-size:8.5px;left:calc(50% + 7px);}.pj-c.tl s{font-size:8.5px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3229,7 +3244,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='159';
+const BUILD_NO='160';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -4855,7 +4870,7 @@ const WSTAGES=[
   {k:'미착수',    sh:'미착수', c:'#64748B',bg:'#F8FAFC'},
   {k:'대기(불가)',sh:'대기',   c:'#A16207',bg:'#FFFCF2'},
   {k:'실시간측량',sh:'실시간', c:'#E11D48',bg:'#FFF7F8'},
-  {k:'결선',      sh:'결선',   c:'#0D9488',bg:'#F4FCFB'},
+  {k:'결선',      sh:'결선',   c:'#22C55E',bg:'#F3FCF6'},
   {k:'후측량',    sh:'후측량', c:'#EA580C',bg:'#FFFAF5'},
   {k:'탱고',      sh:'탱고',   c:'#2563EB',bg:'#F7FAFF'},
   {k:'정위치DB',  sh:'정위치', c:'#7C3AED',bg:'#FAF8FF'},
@@ -9305,7 +9320,7 @@ function pdPeriodHTML(P){
   const lt=left>0?left+'일 남음':(left===0?'오늘 마감':(-left)+'일 지남');
   return '<b>프로젝트 기간</b>'+(P.name?'<span class="nm">'+esc(P.name)+'</span>':'')+'<span class="dt">'+pdYmd(a)+' ~ '+pdYmd(b)+'</span><span class="lf'+(left<0?' over':'')+'">('+lt+')</span>';
 }
-const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#0D9488'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
+const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#22C55E'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
 function pmMidHTML(){
   /* BUILD 156 : 프로젝트 — 위 표(작업자 · 프로젝트 · 사업 줄) + 아래(프로젝트 칸 · 고치는 칸) */
   if(!PJ.loaded&&!PJ.loading){PJ.loading=true;pjLoad().finally(()=>{PJ.loading=false;pjR();});}
@@ -9490,15 +9505,13 @@ function pjRowsHTML(){
     const k=workStage(d),ci=PJ_COL[k]!=null?PJ_COL[k]:-1,tam=d.mKey==='탐사',DT=pjStageDates(d);
     const pre=(k==='미착수'||k==='대기(불가)')?'<span class="pj-st" style="--c:'+wsColor(k)+'">'+esc(k==='대기(불가)'?'대기':k)+'</span>':'';
     let h='<div class="pj-r" data-pj-open="'+d._id+'" title="'+esc(d.work||'')+' · '+esc(k)+'"><div class="pj-n"><em>'+(i+1)+'</em>'+pre+'<span>'+esc(d.work||'(공사명 없음)')+'</span></div>';
-    /* BUILD 159 : 단계를 이어진 막대로 — 지난 단계는 옅은 색 막대(완료 · 날짜), 지금 단계는 진한 색 머리(진행중 · 시작일) */
-    let first=true;const last=(k==='완료')?6:-1;
+    /* BUILD 160 : 점 타임라인 — 가는 줄 위에 점 · 지난 단계 ●(끝난 날) · 지금 단계 테두리 점 + 「진행중」(시작일~) · 아직은 빈 점 */
     PD_ST.forEach((s,j)=>{
-      if(tam&&j<2){h+='<div class="pj-c na" title="탐사 — 해당 없음"></div>';return;}
-      const done=ci>j||(k==='완료'&&j===6),cur=ci===j&&k!=='완료',dt=DT[j];
-      if(done){const r=dt.s&&dt.e?dt.s+'–'+dt.e:(dt.e||(dt.s?dt.s+'~':''));
-        h+='<div class="pj-c dn'+(first?' f':'')+(j===last?' end':'')+'" style="--c:'+s.c+'" title="'+esc(s.k)+' 완료'+(r?' · '+r:'')+'"><div class="br"><b>완료</b>'+(r?'<s>'+r+'</s>':'')+'</div></div>';first=false;return;}
-      if(cur){h+='<div class="pj-c cu'+(first?' f':'')+'" style="--c:'+s.c+'" title="'+esc(s.k)+' 진행중'+(dt.s?' · '+dt.s+'부터':'')+'"><div class="br"><i></i><b>진행중</b>'+(dt.s?'<s>'+dt.s+'~</s>':'')+'</div></div>';first=false;return;}
-      h+='<div class="pj-c td"></div>';});
+      if(tam&&j<2){h+='<div class="pj-c tl na" title="탐사 — 해당 없음"><span class="ln"></span></div>';return;}
+      const done=ci>j||(k==='완료'&&j===6),cur=ci===j&&k!=='완료',dt=DT[j],r=dt.s&&dt.e?dt.s+'–'+dt.e:(dt.e||(dt.s?dt.s+'~':''));
+      if(done){h+='<div class="pj-c tl" style="--c:'+s.c+'" title="'+esc(s.k)+' 완료'+(r?' · '+r:'')+'"><span class="ln on"></span><span class="dt d"></span><s>'+(dt.e||dt.s||'')+'</s></div>';return;}
+      if(cur){h+='<div class="pj-c tl" style="--c:'+s.c+'" title="'+esc(s.k)+' 진행중'+(dt.s?' · '+dt.s+'부터':'')+'"><span class="ln hf"></span><span class="dt cu"></span><em>진행중</em><s>'+(dt.s?dt.s+'~':'')+'</s></div>';return;}
+      h+='<div class="pj-c tl" style="--c:'+s.c+'"><span class="ln"></span><span class="dt"></span></div>';});
     return h+'</div>';}).join('');
 }
 
