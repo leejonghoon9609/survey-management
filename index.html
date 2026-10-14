@@ -291,7 +291,7 @@ td .why{margin-top:3px;font-size:11px;font-weight:700;color:#DC2626;line-height:
 .gcard .gl button span{display:block;font-size:10px;color:#64748b;}
 .gcard .gl button b{display:block;font-size:13px;font-variant-numeric:tabular-nums;color:#1e293b;}
 .gcard .gl button.z b{color:#cbd5e1;font-weight:500;}
-.gcard .gl{grid-template-columns:repeat(8,1fr) !important;gap:2px !important;}
+.gcard .gl{grid-template-columns:repeat(9,1fr) !important;gap:2px !important;}
 .gcard .gl button span{font-size:9.5px !important;letter-spacing:-.4px;white-space:nowrap;}
 .gcard .gl button[data-ph]{border:1.5px solid var(--s);}
 .gcard .gl button span{color:var(--s) !important;font-weight:700;}
@@ -1116,7 +1116,7 @@ body.pgwin #pgWin{height:100vh;padding:10px 14px;box-sizing:border-box;backgroun
 .pm-h .k{font-size:14px;font-weight:700;color:#334155;}
 .pm-h .d{margin-left:auto;font-size:13px;color:#475569;}.pm-h .d b{color:#0f172a;}
 .pm-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#e2e8f0;margin-bottom:12px;gap:1px;}
-.pm-tiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;}
+.pm-tiles{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:7px;}
 .pm-tile{border:1.5px solid color-mix(in srgb,var(--c) 45%,#fff);background:var(--bg);border-radius:10px;padding:9px 6px 8px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;position:relative;border-top:4px solid var(--c);}
 .pm-tile .nm{font-size:13px;font-weight:800;color:var(--c);white-space:nowrap;}
 .pm-tile .v b{font-size:26px;font-weight:800;color:#0f172a;line-height:1.15;}.pm-tile .v small{font-size:12px;color:#64748b;margin-left:1px;}
@@ -1263,6 +1263,14 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
 .swc-btn{background:#FFB400;border:0;color:#1e293b;font-weight:800;}
 .swc-btn:hover{background:#f5a800;}
 .swc-btn.on{background:#EA9A00;color:#1e293b;box-shadow:inset 0 0 0 2px #b45309;}
+
+/* BUILD 140 : 측량방법을 공정판 카드 안 제목 앞으로 */
+.pm-grid{grid-template-rows:minmax(0,1fr);}
+.pm-h{align-items:center;}
+.pm-h .pm-meth{display:inline-flex;align-items:center;gap:8px;flex:none;}
+.pm-h .pm-meth .pm-lb{font-size:13px;}
+.pm-hsep{width:1.5px;height:26px;background:#cbd5e1;margin:0 4px;flex:none;}
+.pm-hint2{margin:-4px 0 8px;}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -2775,8 +2783,10 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 137: 사업 공정관리 오른쪽 리스트에 「리스트 보기 ↗」 — 지금 고른 범위의 사업들을 표로 보여 주는 별도 창
    BUILD 138: 「리스트 보기」·「사업진행현황」 창에 「컬럼 설정」(보일 칸·순서, 리스트의 다른 칸도) · 「리스트 보기 ↗」 버튼을 리스트 머리 오른쪽 끝으로
    BUILD 139: 두 별도 창 — 머리 칸 가운데 정렬 · 머리 경계를 끌어 칸 너비 조절(두 번 누르면 처음 너비) · 「컬럼 설정」 노란 버튼
+   BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
+   BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='139';
+const BUILD_NO='141';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -4406,6 +4416,7 @@ const WSTAGES=[
   {k:'후측량',    sh:'후측량', c:'#EA580C',bg:'#FFFAF5'},
   {k:'탱고',      sh:'탱고',   c:'#2563EB',bg:'#F7FAFF'},
   {k:'정위치DB',  sh:'정위치', c:'#7C3AED',bg:'#FAF8FF'},
+  {k:'정산진행중',sh:'정산',   c:'#DB2777',bg:'#FFF5FA'},
   {k:'완료',      sh:'완료',   c:'#15803D',bg:'#F6FDF8'}
 ];
 function wsColor(k){const x=WSTAGES.find(z=>z.k===k);return x?x.c:'#64748b';}
@@ -4424,6 +4435,8 @@ function workStage(d){
   const st=workStage0(d,jin,sim,distIn);
   /* 정산제외 : 측량이 끝난 건만 취소로 본다 (진행 중인 건은 그 단계 그대로) */
   if(d.jeongKey==='정산제외'&&/탱고|정위치DB|완료/.test(st)){d._cancel=true;return '완료';}
+  /* BUILD 141 : 일은 끝났는데 정산상황이 「정산완료」가 아니면(미정산·정산예정·빈칸) 정산진행중 */
+  if(st==='완료'&&d.jeongKey!=='정산완료')return '정산진행중';
   return st;
 }
 function workStage0(d,jin,sim,distIn){
@@ -5162,7 +5175,7 @@ function cardFlow(d,K0){
   else cur=jDone?S.length:((d.jeongKey==='정산예정'||jrD)?ix('정산완료'):ix('정산접수'));   /* 미지급·미정산·빈칸 = 정산접수 단계 */
   const prevD=i=>{for(let j=i-1;j>=0;j--)if(S[j].d)return S[j].d;return null;};
   const steps=S.map((x,i)=>{
-    const na=x.sim&&!simNeed&&(/불필요/.test(sim)||i<cur||K0==='완료'||K0==='탱고');
+    const na=x.sim&&!simNeed&&(/불필요/.test(sim)||i<cur||K0==='완료'||K0==='정산진행중'||K0==='탱고');
     if(na&&i!==cur)return {k:x.k,st:'na',v:'불필요'};
     if(i<cur)return {k:x.k,st:'done',v:x.d?fmtDate(x.d):(x.k==='성과심사완료'&&simDone?'완료':(x.k==='정산접수'?(x.d?fmtDate(x.d):'완료'):(x.jr&&ns(d.jeong)?String(d.jeong).trim().slice(0,12):(x.raw?x.raw.slice(0,10):'완료'))))};
     if(i===cur){
@@ -8613,12 +8626,12 @@ function pmRender(){
       '<span class="pm-lb">기준</span><select id="pmBasis">'+Object.keys(PM_BASIS).map(k=>'<option value="'+k+'"'+(PM.basis===k?' selected':'')+'>'+PM_BASIS[k]+'</option>').join('')+'</select>';}
   else sub='<span class="pm-hint">목록 전체의 공정을 봐요</span>';
   let h='<div class="pm"><div class="pm-top"><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
-  /* ── 공정판 위 : 측량방법 ── */
-  h+='<div class="pm-grid"><div class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span>'+
-    (PM.mode==='per'&&sc.nodate?'<span class="pm-hint">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</span>':'')+'</div><div class="pm-meth2"></div>';
+  /* ── BUILD 140 : 측량방법을 공정판 카드 안, 제목 앞으로 ── */
+  const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
+  h+='<div class="pm-grid">';
   /* ── 왼쪽 : 공정판 ── */
-  h+='<div class="card pm-board"><div class="pm-h"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span>'+
-    '<span class="d">진행 중 <b>'+act.toLocaleString()+'</b>건 · 완료 <b>'+done.toLocaleString()+'</b>건'+(st.n?' ('+Math.round(done/st.n*100)+'%)':'')+'</span></div>';
+  h+='<div class="card pm-board"><div class="pm-h">'+methH+'<span class="pm-hsep"></span><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span>'+
+    '<span class="d">진행 중 <b>'+act.toLocaleString()+'</b>건 · 완료 <b>'+done.toLocaleString()+'</b>건'+(st.n?' ('+Math.round(done/st.n*100)+'%)':'')+'</span></div>'+(PM.mode==='per'&&sc.nodate?'<div class="pm-hint pm-hint2">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</div>':'');
   if(!st.n)h+='<div class="pm-empty">'+(DATA.length?'여기에 해당하는 사업이 없어요':'리스트를 먼저 불러와 주세요 (사업추가 → ② 엑셀로 올리기)')+'</div>';
   else{
     h+='<div class="pm-bar">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return n?'<span style="flex:'+n+';background:'+s.c+'" title="'+esc(s.k)+' '+n+'건"></span>':'';}).join('')+'</div>';
@@ -8687,7 +8700,7 @@ renderProcess=function(){pmRender();};
 let PGWIN=false;
 (function(){if(location.hash==='#progress'){PGWIN=true;document.body.classList.add('pgwin');document.title='사업 진행 현황 · 공정관리 현황';}})();
 const PG={baal:'',meth:'',sort:'old',done:false,q:''};
-const PG_L1=['미착수','대기(불가)','실시간측량','결선','후측량','탱고','정위치DB','완료'],PG_L2=['미착수','대기(불가)','후측량','탱고','정위치DB','완료'];
+const PG_L1=['미착수','대기(불가)','실시간측량','결선','후측량','탱고','정위치DB','정산진행중','완료'],PG_L2=['미착수','대기(불가)','후측량','탱고','정위치DB','정산진행중','완료'];
 const pgDays=d=>d.wait!=null?d.wait:(d.elapsed!=null?d.elapsed:null);
 function openPgWin(){
   try{saveState(true);}catch(e){}
