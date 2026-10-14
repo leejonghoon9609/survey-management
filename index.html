@@ -679,6 +679,20 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 #pNew .pm-lh .pm-gbtn+.pm-gbtn{margin-left:6px;}
 .pm-gh{grid-template-columns:14px auto auto auto auto minmax(40px,1fr);}
 .pm-gh .sub{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+
+/* ===== BUILD 155 : 프로젝트 기간 줄 · 사업명 칸 30% 줄이고 단계 칸 넓힘 ===== */
+.pd3{grid-template-columns:calc(var(--lw)*.42) calc(var(--lw)*.58) minmax(90px,2.8fr) repeat(7,minmax(40px,1fr));grid-template-rows:30px 40px minmax(0,1fr);}
+.pd3 .pd2-lh{grid-row:2;}
+.pd3-per{grid-row:1;grid-column:1/4;display:flex;align-items:center;gap:10px;padding:0 14px;background:#F4F6F9;border-bottom:1px solid #CBD5E1;border-right:1.5px solid #94A3B8;white-space:nowrap;overflow:hidden;min-width:0;}
+.pd3-per b{font-size:12px;font-weight:800;color:#475569;letter-spacing:.3px;}
+.pd3-per .nm{font-size:13px;font-weight:800;color:#0f172a;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.pd3-per .dt{font-size:14px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;}
+.pd3-per .lf{font-size:13.5px;font-weight:800;color:#EA002C;}
+.pd3-per .lf.over{background:#EA002C;color:#fff;border-radius:5px;padding:0 6px;}
+.pd3-per .z{font-size:12px;color:#94a3b8;}
+.pd3 .pd2-grp.g1,.pd3 .pd2-grp.g2{margin-top:11px;}
+.pd3 .pd2-sh{font-size:12px;}
+@media (max-width:1500px){.pd3 .pd2-sh{font-size:10.5px;}.pd3-per{gap:6px;padding:0 8px;}.pd3-per .dt{font-size:12.5px;}.pd3-per .lf{font-size:12px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3021,7 +3035,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='154';
+const BUILD_NO='155';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9083,12 +9097,26 @@ function pmRender(){
 /* ===== BUILD 150 : 가운데 세부공정 자리 — 칸 나누기(뼈대) =====
    위 : [작업자 | 프로젝트] + 단계 머리(실시간측량 · 결선 · 후측량 · 탱고 · 정위치 · 정산진행중 · 정산완료) + 사업 목록별 현황
    아래 : 왼쪽 칸 + 세부공정 칸 — 내용은 다음 빌드부터 하나씩 */
+
+/* ===== BUILD 155 : 프로젝트 기간 줄 — 「26.10.14 ~ 26.11.01 (18일 남음)」 =====
+   PD.proj = {name, start:'YYYY-MM-DD', end:'YYYY-MM-DD'} — 프로젝트 설정(다음 빌드)에서 채워요 */
+const PD={proj:null};
+function pdYmd(t){const p=n=>String(n).padStart(2,'0');return String(t.getFullYear()).slice(2)+'.'+p(t.getMonth()+1)+'.'+p(t.getDate());}
+function pdPeriodHTML(P){
+  const a=P&&parseDate(P.start),b=P&&parseDate(P.end);
+  if(!a||!b)return '<b>프로젝트 기간</b><span class="z">프로젝트를 고르면 기간이 나와요</span>';
+  const t0=new Date();t0.setHours(0,0,0,0);const e0=new Date(b);e0.setHours(0,0,0,0);
+  const left=Math.round((e0-t0)/86400000);
+  const lt=left>0?left+'일 남음':(left===0?'오늘 마감':(-left)+'일 지남');
+  return '<b>프로젝트 기간</b>'+(P.name?'<span class="nm">'+esc(P.name)+'</span>':'')+'<span class="dt">'+pdYmd(a)+' ~ '+pdYmd(b)+'</span><span class="lf'+(left<0?' over':'')+'">('+lt+')</span>';
+}
 const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#0D9488'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
 function pmMidHTML(){
   /* BUILD 153 : [작업자 | 프로젝트 | 사업명 | 단계 7칸(좁게)] — 프로젝트를 고르면 사업이 한 줄씩 (사업명 + 단계 칸) */
   const LB={'실시간측량':'실시간<wbr>측량','정산진행중':'정산<wbr>진행중','정산완료':'정산<wbr>완료'};
   let h='<div class="pm-mid pd" id="pmMid">';
   h+='<div class="pd2 pd3">';
+  h+='<div class="pd3-per" id="pdPer">'+pdPeriodHTML(PD.proj)+'</div>';
   h+='<div class="pd2-lh pd2-w">작업자</div><div class="pd2-lh pd2-p">프로젝트</div><div class="pd2-lh pd3-n">사업명</div>';
   h+='<div class="pd2-grp g1"><span>진행중</span></div><div class="pd2-grp g2"><span>정산</span></div>';
   h+=PD_ST.map((x,i)=>'<div class="pd2-sh" style="--c:'+x.c+';grid-column:'+(i+4)+'" title="'+esc(x.k)+'"><i></i><em>'+(LB[x.k]||esc(x.k))+'</em></div>').join('');
