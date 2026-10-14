@@ -851,6 +851,14 @@ body.pj-dragging .pd-p{border-color:#EA002C;}
 .pj-c.cu{background:color-mix(in srgb,var(--c) 16%,#fff);box-shadow:inset 0 -3px 0 var(--c);}
 .pj-wi{padding:3px 6px;}
 .pj-wi b{font-size:11.5px;}
+
+/* ===== BUILD 158 : 단계 칸 날짜 ===== */
+.pj-c{flex-direction:column;gap:0;line-height:1.05;}
+.pj-c b{font-size:10px;}
+.pj-c.cu b{font-size:10.5px;}
+.pj-c.dn b{font-size:10px;}
+.pj-c s{text-decoration:none;font-size:9px;color:#475569;white-space:nowrap;letter-spacing:-.3px;font-variant-numeric:tabular-nums;}
+.pj-c s:empty{display:none;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3193,7 +3201,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='157';
+const BUILD_NO='158';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9431,6 +9439,19 @@ function pjWorkColHTML(){
   const st=pjStaffMap();
   return W.map(n=>'<div class="pj-wi'+(n===p.leader?' ld':'')+'"><b>'+esc(n)+'</b>'+(n===p.leader?'<i>팀장</i>':'')+(st[n]?'<span>'+esc(st[n])+'</span>':'')+'</div>').join('');
 }
+
+/* BUILD 158 : 단계 칸 시작일 · 완료일 (7/2 7/15) — 사업 카드 진행 막대와 같은 칸에서 읽어요
+   완료일 = 실시간측량 1차 측량일 · 후측량 2차 측량일 · 탱고 Tango업로드 · 정위치 성과심사 신청일 · 정산진행중 정산접수일 · 정산완료 정산일
+   시작일 = 바로 앞 단계의 완료일 (없으면 요청일) */
+function pjStageDates(d){
+  const md=t=>t?(t.getMonth()+1)+'/'+t.getDate():'';
+  const real=d.mKey!=='탐사',r1=parseDate(colv(d,'측량1')),r2=parseDate(colv(d,'측량2'));
+  const jrc=DISP.find(c=>c.label===JR_LABEL),jrD=jrc?parseDate(d.row[jrc.idx]):null;
+  let jD=null;try{jD=jeongDate(d);}catch(e){}
+  const E=[real?r1:null,null,real?r2:(r2||r1),parseDate(d.tup),parseDate(colv(d,'심사신청일')),jrD,jD];
+  let prev=parseDate(d.req);
+  return E.map((e,j)=>{if(!real&&j<2)return {s:'',e:''};const o={s:md(prev),e:md(e)};if(e)prev=e;return o;});
+}
 function pjRowsHTML(){
   const p=pjCur();
   if(!p)return '<div class="pj-hint"><span>프로젝트를 고르면 사업이 한 줄씩 나와요</span></div>';
@@ -9438,13 +9459,13 @@ function pjRowsHTML(){
   if(!U.length)return '<div class="pj-hint"><span>사업이 없어요 · 아래 「사업 선택」에서 오른쪽 리스트 카드를 끌어 넣어 주세요</span></div>';
   return U.map((u,i)=>{const d=pjBiz(u);
     if(!d)return '<div class="pj-r gone"><div class="pj-n"><em>'+(i+1)+'</em><span>(목록에서 지워진 사업)</span></div>'+'<div class="pj-c"></div>'.repeat(7)+'</div>';
-    const k=workStage(d),ci=PJ_COL[k]!=null?PJ_COL[k]:-1,tam=d.mKey==='탐사';
+    const k=workStage(d),ci=PJ_COL[k]!=null?PJ_COL[k]:-1,tam=d.mKey==='탐사',DT=pjStageDates(d);
     const pre=(k==='미착수'||k==='대기(불가)')?'<span class="pj-st" style="--c:'+wsColor(k)+'">'+esc(k==='대기(불가)'?'대기':k)+'</span>':'';
     let h='<div class="pj-r" data-pj-open="'+d._id+'" title="'+esc(d.work||'')+' · '+esc(k)+'"><div class="pj-n"><em>'+(i+1)+'</em>'+pre+'<span>'+esc(d.work||'(공사명 없음)')+'</span></div>';
     PD_ST.forEach((s,j)=>{
       if(tam&&j<2){h+='<div class="pj-c na" title="탐사 — 해당 없음"></div>';return;}
       const done=ci>j||(k==='완료'&&j===6),cur=ci===j&&k!=='완료';
-      h+='<div class="pj-c'+(done?' dn':'')+(cur?' cu':'')+'" style="--c:'+s.c+'">'+(cur?'<b>진행중</b>':(done?'<b>완료</b>':''))+'</div>';});
+      h+='<div class="pj-c'+(done?' dn':'')+(cur?' cu':'')+'" style="--c:'+s.c+'">'+(cur?'<b>진행중</b><s>'+(DT[j].s?DT[j].s+'~':'')+'</s>':(done?'<b>완료</b><s>'+(DT[j].s&&DT[j].e?DT[j].s+' '+DT[j].e:(DT[j].e||(DT[j].s?DT[j].s+'~':'')))+'</s>':''))+'</div>';});
     return h+'</div>';}).join('');
 }
 
