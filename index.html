@@ -1323,6 +1323,19 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
 .pm-mid{border:1.5px dashed #cbd5e1;border-radius:12px;background:#fafbfc;display:flex;align-items:center;justify-content:center;min-height:0;}
 .pm-mid span{font-size:13px;color:#94a3b8;}
 @media (max-width:1250px){.pm-left{grid-template-columns:minmax(0,1fr);}.pm-mid{display:none;}}
+
+/* ===== BUILD 144 : 요약(제목·건수·거리·진행/완료·색 막대)을 가운데 위로 ===== */
+.pm-midw{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0;}
+.pm-midw .pm-mid{flex:1 1 auto;}
+.pm-sum{flex:none;padding:12px 18px 12px;}
+.pm-sr{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:9px;}
+.pm-sum .pm-ht{display:flex;align-items:baseline;gap:12px;}
+.pm-sum .pm-ht>b{font-size:17px;color:#0f172a;}
+.pm-sum .n{font-size:24px;font-weight:800;color:#EA002C;}.pm-sum .n small{font-size:13px;font-weight:600;margin-left:1px;}
+.pm-sum .k{font-size:14px;font-weight:700;color:#334155;}
+.pm-sum .d{margin-left:auto;font-size:13px;color:#475569;}.pm-sum .d b{color:#0f172a;}
+.pm-sum .pm-bar{margin-bottom:0;}
+.pm-sum .pm-hint2{margin:8px 0 0;}
 @media (max-width:1250px){.pm-grid{grid-template-columns:minmax(0,1fr);}.pm-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}.pm-tile{min-height:56px;}}
 </style>
 </head>
@@ -2838,7 +2851,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='143';
+const BUILD_NO='144';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -8682,17 +8695,20 @@ function pmRender(){
   const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
   h+='<div class="pm-grid"><div class="pm-left">';
   /* ── 왼쪽 : 공정판 ── */
-  h+='<div class="card pm-board"><div class="pm-h">'+methH+'<span class="pm-hsep"></span><span class="pm-ht"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span></span>'+
-    '<span class="d">진행 중 <b>'+act.toLocaleString()+'</b>건 · 완료 <b>'+done.toLocaleString()+'</b>건'+(st.n?' ('+Math.round(done/st.n*100)+'%)':'')+'</span></div>'+(PM.mode==='per'&&sc.nodate?'<div class="pm-hint pm-hint2">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</div>':'');
+  /* BUILD 144 : 제목·건수·거리·진행/완료·색 막대 → 가운데 위 (pm-sum) */
+  const sumH='<div class="card pm-sum"><div class="pm-sr"><span class="pm-ht"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span></span>'+
+    '<span class="d">진행 중 <b>'+act.toLocaleString()+'</b>건 · 완료 <b>'+done.toLocaleString()+'</b>건'+(st.n?' ('+Math.round(done/st.n*100)+'%)':'')+'</span></div>'+
+    (st.n?'<div class="pm-bar">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return n?'<span style="flex:'+n+';background:'+s.c+'" title="'+esc(s.k)+' '+n+'건"></span>':'';}).join('')+'</div>':'')+
+    (PM.mode==='per'&&sc.nodate?'<div class="pm-hint pm-hint2">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</div>':'')+'</div>';
+  h+='<div class="card pm-board"><div class="pm-h">'+methH+'</div>';
   if(!st.n)h+='<div class="pm-empty">'+(DATA.length?'여기에 해당하는 사업이 없어요':'리스트를 먼저 불러와 주세요 (사업추가 → ② 엑셀로 올리기)')+'</div>';
   else{
-    h+='<div class="pm-bar">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return n?'<span style="flex:'+n+';background:'+s.c+'" title="'+esc(s.k)+' '+n+'건"></span>':'';}).join('')+'</div>';
     h+='<div class="pm-tiles">'+WSTAGES.map(s=>{const x=st.st[s.k];return '<button type="button" class="pm-tile'+(x.n?'':' z')+(PM.stage===s.k&&!PM.row?' on':'')+'" data-pm-st="'+esc(s.k)+'" style="--c:'+s.c+';--bg:'+s.bg+'"><span class="nm">'+esc(s.k)+'</span><span class="v"><b>'+x.n.toLocaleString()+'</b><small>건</small></span><span class="km">'+pmKm(x.km)+' km</span><span class="pc">'+(st.n?Math.round(x.n/st.n*100):0)+'%</span></button>';}).join('')+'</div>';
     /* BUILD 142 : 아래 공정 표(발주처별·지사별·시행시기별)는 뺐어요 */
   }
   h+='</div>';
   /* BUILD 143 : 가운데 = 세부공정 자리 (다음에 만들어요) */
-  h+='<div class="pm-mid" id="pmMid"><span>세부공정 (준비 중)</span></div></div>';
+  h+='<div class="pm-midw">'+sumH+'<div class="pm-mid" id="pmMid"><span>세부공정 (준비 중)</span></div></div></div>';
   /* ── 오른쪽 : 리스트 ── */
   let list=rows;
   if(PM.row)list=list.filter(d=>d._prow===PM.row);
