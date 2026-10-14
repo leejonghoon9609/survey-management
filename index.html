@@ -1040,6 +1040,17 @@ table.gw-t{border-collapse:collapse;width:100%;font-size:12.5px;}
 .dv-zm{display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.72);border-radius:10px;padding:5px 8px;}
 .dv-zm b{color:#fff;font-size:13px;min-width:46px;text-align:center;}
 .dv-zm button{padding:5px 11px;box-shadow:none;}
+/* ===== BUILD 137 : 공정관리 리스트 보기 (별도 창 #pmlist) ===== */
+.pm-lh .pm-lwin{margin-left:6px;padding:4px 11px;font-size:12px;align-self:center;}
+.pl-wrap{padding:0;}
+table.pl-t{border-collapse:collapse;width:100%;font-size:13px;}
+.pl-t th{position:sticky;top:0;background:#f1f5f9;border:1px solid #cbd5e1;padding:7px 8px;white-space:nowrap;color:#334155;z-index:2;}
+.pl-t td{border:1px solid #e2e8f0;padding:5px 8px;white-space:nowrap;text-align:center;}
+.pl-t td.l,.pl-t th.l{text-align:left;white-space:normal;font-weight:600;min-width:320px;}
+.pl-t td.r{text-align:right;}.pl-t td b.late{color:#EA002C;}
+.pl-t tbody tr{cursor:pointer;}.pl-t tbody tr:hover td{background:#f8fafc;}
+.pl-t .src{font-size:11px;font-weight:800;color:#fff;background:var(--c);border-radius:4px;padding:1px 6px;}
+.pl-t .turn{cursor:inherit;}
 /* ===== BUILD 136 : 사업 진행 현황 (별도 창 #progress) ===== */
 .pm-top .pm-win{margin-left:auto;font-size:14px;padding:8px 18px;}
 body.pgwin header,body.pgwin .nav,body.pgwin .page{display:none !important;}
@@ -1213,6 +1224,9 @@ table.pm-t{border-collapse:collapse;width:100%;font-size:13.5px;}
 #p-add .card{border:1.5px solid #94A3B8;}
 #p-add .card.ad-adm{border-color:#F08A8A !important;}
 #p-add .ad-tg{border-color:#94A3B8;}
+
+/* BUILD 137 : 측량시작일 칸 — 날짜가 아닌 글(예: 굴착완료·이월)은 연하게 */
+.pl-t .pl-mut{color:#94A3B8;font-size:11px}
 .ad-adm .btn:disabled{opacity:.45;cursor:default;}
 </style>
 </head>
@@ -2722,8 +2736,9 @@ table.pm-t{border-collapse:collapse;width:100%;font-size:13.5px;}
    BUILD 134: 사업 공정관리 탭 — 기존 화면(공정별 현황 · 세부리스트 · 안내 글)을 모두 비움 (새로 만들 자리)
    BUILD 135: 사업 공정관리 새 화면 — 전체물량·발주처(SKT·SKB·원인자)·기간별(일별·주간·월별 + 날짜 이동) · 측량방법(전체·실시간·탐사) · 왼쪽 공정판(단계별 건수·거리, 발주처/지사별 표) · 오른쪽 리스트
    BUILD 136: 사업 공정관리 오른쪽 위 「사업진행현황 ↗」 — 사업마다 진행 막대를 보여 주는 별도 창(다른 모니터로 이동 가능 · 메인과 자동 동기화)
+   BUILD 137: 사업 공정관리 오른쪽 리스트에 「리스트 보기 ↗」 — 지금 고른 범위의 사업들을 표로 보여 주는 별도 창
    ======================================================================== */
-const BUILD_NO='136';
+const BUILD_NO='137';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -7097,7 +7112,7 @@ const CLOUD_DEF={url:'https://shkpcnffcozqjobbghjf.supabase.co',key:'sb_publisha
 const LS_CLOUD='gj_cloud_v1';          /* {url,key,team,off} — 전체 초기화로 지우지 않는다 */
 const LS_ME='gj_me_v1';                /* 작업자 이름 */
 const LS_SYNC='gongjeong_sync_v1';     /* {url,since,base:[[uid,rev,hash]],lay:{r,h},files} */
-var IS_SUBWIN=/^#(list$|per=|skb=)/.test(location.hash||'');
+var IS_SUBWIN=/^#(list$|per=|skb=|progress$|pmlist=)/.test(location.hash||'');
 var SYNC={on:false,state:'off',msg:'',since:null,base:new Map(),lay:{r:0,h:''},files:{},busy:false,again:false,
   timer:null,pushT:null,last:null,fail:0,allowDel:false,holdDel:null,remoteN:0};
 
@@ -8584,7 +8599,7 @@ function pmRender(){
   list=list.slice().sort((a,b)=>(ord[a._pst]-ord[b._pst])||((b.elapsed==null?-1:b.elapsed)-(a.elapsed==null?-1:a.elapsed)));
   const lkm=list.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
   const ltitle=[PM.row,PM.stage].filter(Boolean).join(' · ')||'전체';
-  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage)?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+'</div><div class="pm-ls" id="pmLs">';
+  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage)?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+'<button type="button" class="winbtn pm-lwin" data-pm-lwin="1" title="지금 고른 사업들을 표로 — 별도 창 (다른 모니터로 옮길 수 있어요)">리스트 보기 ↗</button>'+'</div><div class="pm-ls" id="pmLs">';
   if(!list.length)h+='<div class="pm-empty">해당하는 사업이 없어요</div>';
   list.slice(0,PM.cap).forEach(d=>{
     if(d._id==null)d._id=++idSeq;
@@ -8609,6 +8624,7 @@ window.addEventListener('resize',pmFit);
   box.addEventListener('click',e=>{
     const q=s=>e.target.closest(s);let b;
     if(q('[data-pm-win]')){openPgWin();return;}
+    if(q('[data-pm-lwin]')){openPlWin();return;}
     if((b=q('[data-pm-mode]'))){PM.mode=b.dataset.pmMode;PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-baal]'))){PM.baal=b.dataset.pmBaal;PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-per]'))){PM.per=b.dataset.pmPer;PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
@@ -8691,8 +8707,61 @@ function pgRender(){
   window.addEventListener('load',()=>{if(PGWIN)setTimeout(pgRender,0);});
 })();
 
+
+/* ---------- BUILD 137 : 공정관리 리스트 보기 — 지금 고른 사업들을 표로 보여 주는 별도 창 #pmlist ---------- */
+let PLWIN=null;
+(function(){const m=location.hash.match(/^#pmlist=(.*)$/);if(!m)return;try{PLWIN=JSON.parse(decodeURIComponent(m[1]));}catch(e){PLWIN={};}
+  document.body.classList.add('pgwin');document.title='공정관리 리스트 · 공정관리 현황';})();
+const PL={q:''};
+function openPlWin(){
+  try{saveState(true);}catch(e){}
+  const st={mode:PM.mode,baal:PM.baal,per:PM.per,date:pmYmd(pmDate()),basis:PM.basis,meth:PM.meth,stage:PM.stage,row:PM.row};
+  const url=location.href.split('#')[0]+'#pmlist='+encodeURIComponent(JSON.stringify(st));
+  const win=window.open(url,'gongjeong_pmlist','width=1600,height=900');
+  if(!win){toast('창이 막혔어요 — 주소창 오른쪽에서 팝업을 허용해 주세요',true);return;}
+  try{win.focus();}catch(e){}
+}
+/* 지금 고른 범위(방식·발주처·기간·측량방법·단계·줄)의 사업들 */
+function pmListRows(){
+  const sc=pmScope(),bi=bizIdx();
+  sc.rows.forEach(d=>{d._pst=workStage(d);d._prow=pmRowKey(d,bi);});
+  let list=PM.meth?sc.rows.filter(d=>d.mKey===PM.meth):sc.rows;
+  if(PM.row)list=list.filter(d=>d._prow===PM.row);
+  if(PM.stage)list=list.filter(d=>d._pst===PM.stage);
+  const ord={};WSTAGES.forEach((s,i)=>ord[s.k]=i);
+  list=list.slice().sort((a,b)=>(ord[a._pst]-ord[b._pst])||((b.elapsed==null?-1:b.elapsed)-(a.elapsed==null?-1:a.elapsed)));
+  return {rows:list,title:[pmScopeTitle(),PM.row,PM.stage].filter(Boolean).join(' · ')};
+}
+function plRender(){
+  const box=document.getElementById('pgWin');if(!box||!PLWIN)return;
+  const S=PLWIN;PM.mode=S.mode||'all';PM.baal=S.baal||'SKT';PM.per=S.per||'d';PM.basis=S.basis||'req';PM.meth=S.meth||'';PM.stage=S.stage||'';PM.row=S.row||'';
+  if(S.date){const d=parseDate(S.date);if(d)PM.date=pmD0(d);}
+  const R=pmListRows();let rows=R.rows;
+  const q=PL.q.trim().toLowerCase();if(q)rows=rows.filter(d=>String(d.work||'').toLowerCase().includes(q)||String(d.eng||'').toLowerCase().includes(q)||String(d.seq||'').toLowerCase().includes(q));
+  const km=rows.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
+  const ci=DISP.find(c=>c.label==='굴착 작업일정'),hy=DISP.find(c=>c.label==='공사협력사');
+  let h='<div class="pg-top"><div class="pg-t"><b>공정관리 리스트</b><span>'+esc(R.title)+' · 줄을 누르면 사업 카드 · 메인 창에서 고른 범위 그대로예요</span></div>'+
+    '<div class="pg-f"><input type="search" id="plQ" placeholder="공사명 · 공사코드 · 관리번호 찾기" value="'+esc(PL.q)+'" style="margin-left:0">'+
+    '<span class="pg-n"><b>'+rows.length.toLocaleString()+'</b>건 · '+pmKm(km)+' km</span></div></div>';
+  h+='<div class="pg-list pl-wrap"><table class="pl-t"><thead><tr><th>단계</th><th>발주처</th><th class="l">공사명</th><th>지사 · 지역</th><th>측량방법</th><th>요청일</th><th>측량시작일</th><th>지난 날</th><th>거리 (km)</th><th>탱고 번호</th><th>협력사</th></tr></thead><tbody>';
+  if(!rows.length)h+='<tr><td colspan="11" class="pm-empty">'+(DATA.length?'해당하는 사업이 없어요':'목록이 아직 없어요 — 메인 창에서 리스트를 불러와 주세요')+'</td></tr>';
+  rows.forEach(d=>{
+    if(d._id==null)d._id=++idSeq;
+    const src=d._src||d.baal||'',rq=parseDate(d.req),x=distOf(d),v=pgDays(d),st=ci?String(d.row[ci.idx]==null?'':d.row[ci.idx]).trim():'';
+    h+='<tr data-pl-open="'+d._id+'"><td>'+wsBadge(d)+'</td><td><span class="src" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src)+'</span></td><td class="l">'+esc(d.work||'(공사명 없음)')+'</td><td>'+esc([d.jisa,d.region].filter(Boolean).join(' · '))+'</td><td>'+esc(d.mKey||d.method||'')+'</td><td>'+(rq?pmYmd(rq):'')+'</td><td>'+(st?(parseDate(st)?pmYmd(parseDate(st)):'<span class="pl-mut">'+esc(st)+'</span>'):'')+'</td><td class="r">'+(v!=null?'<b'+(v>20?' class="late"':'')+'>'+v+'</b>일':'')+'</td><td class="r">'+(x?x.v.toFixed(3):'')+'</td><td>'+esc(d.eng||'')+'</td><td>'+esc(hy?String(d.row[hy.idx]==null?'':d.row[hy.idx]):'')+'</td></tr>';});
+  h+='</tbody></table></div>';
+  box.innerHTML=h;box.classList.remove('hide');
+}
+(function(){
+  const box=document.getElementById('pgWin');if(!box)return;
+  box.addEventListener('click',e=>{if(!PLWIN)return;const b=e.target.closest('[data-pl-open]');if(b){openCard(b.dataset.plOpen);}});
+  box.addEventListener('input',e=>{if(e.target.id==='plQ'){PL.q=e.target.value;clearTimeout(box._t2);box._t2=setTimeout(()=>{const el=document.getElementById('plQ'),p=el?el.selectionStart:0;plRender();const n=document.getElementById('plQ');if(n){n.focus();try{n.setSelectionRange(p,p);}catch(x){}}},250);}});
+  window.addEventListener('storage',e=>{if(e.key!==LS_KEY||!PLWIN)return;setTimeout(plRender,60);});
+  window.addEventListener('load',()=>{if(PLWIN)setTimeout(plRender,0);});
+})();
+
 /* 목록을 다시 그릴 때마다 「오늘 추가한 사업」도 맞춘다 */
-{const r0=render;render=function(){const x=r0.apply(this,arguments);try{renderToday();if(document.getElementById('p-process').classList.contains('on'))pmRender();if(PGWIN)pgRender();}catch(e){}return x;};}
+{const r0=render;render=function(){const x=r0.apply(this,arguments);try{renderToday();if(document.getElementById('p-process').classList.contains('on'))pmRender();if(PGWIN)pgRender();if(PLWIN)plRender();}catch(e){}return x;};}
 
 /* ======================= 시작 ======================= */
 loadRates();renderRates();
