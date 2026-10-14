@@ -650,6 +650,27 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .pm-gh .bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:#e2e8f0;gap:1px;}
 .pm-gh .bar i{display:block;height:100%;}
 .pm-gb{padding:7px 7px 1px;}
+
+/* ===== BUILD 153 : 작업자·프로젝트 머리 가운데 · 크게 / 사업명 칸 + 단계 칸 좁게 ===== */
+.pd3{grid-template-columns:calc(var(--lw)*.42) calc(var(--lw)*.58) minmax(120px,1fr) repeat(7,minmax(44px,66px));grid-template-rows:26px 40px minmax(0,1fr);}
+.pd3 .pd2-lh{align-items:center;justify-content:center;padding:0 6px;font-size:15px;font-weight:800;color:#1e293b;letter-spacing:.5px;text-align:center;}
+.pd3 .pd3-n{grid-column:3;border-left:1px solid #CBD5E1;border-right:1.5px solid #94A3B8;background:#FFFBEB;color:#92400E;}
+.pd3 .pd2-grp.g1{grid-column:4/9;margin:9px 4px 0;}
+.pd3 .pd2-grp.g2{grid-column:9/11;margin:9px 4px 0;}
+.pd3 .pd2-grp span{font-size:10px;letter-spacing:1px;padding:0 5px;}
+.pd3 .pd2-sh{flex-direction:column;gap:3px;padding:3px 2px 6px;font-size:11.5px;line-height:1.15;white-space:normal;}
+.pd3 .pd2-sh em{font-style:normal;text-align:center;word-break:keep-all;}
+.pd3 .pd2-sh i{width:6px;height:6px;box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 16%,transparent);}
+.pd3 .pd2-sh::after{left:18%;right:18%;}
+.pd3 .pd2-col{border-left:1px solid #CBD5E1;}
+.pd3 .pd2-col.c1{border-left:0;}
+.pd3 .pd2-col.c2{border-right:1.5px solid #94A3B8;}
+.pd3 .pd2-col.n{background:#FFFDF6;border-right:1.5px solid #94A3B8;}
+.pd3 .pd2-col.c4{border-left:0;}
+.pd3 .pd2-col.e{border-right:0;}
+.pd3 .pd2-lh.pd2-p{border-right:1.5px solid #94A3B8;}
+.pd3 .pd2-body{grid-column:3/11;}
+@media (max-width:1500px){.pd3 .pd2-lh{font-size:13.5px;}.pd3 .pd2-sh{font-size:10.5px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -2992,7 +3013,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='152';
+const BUILD_NO='153';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9054,14 +9075,15 @@ function pmRender(){
    아래 : 왼쪽 칸 + 세부공정 칸 — 내용은 다음 빌드부터 하나씩 */
 const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#0D9488'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
 function pmMidHTML(){
-  /* BUILD 151 : 위 표를 한 장의 깔끔한 표로 — 칸 너비는 머리·본문이 같은 격자를 써요 */
+  /* BUILD 153 : [작업자 | 프로젝트 | 사업명 | 단계 7칸(좁게)] — 프로젝트를 고르면 사업이 한 줄씩 (사업명 + 단계 칸) */
+  const LB={'실시간측량':'실시간<wbr>측량','정산진행중':'정산<wbr>진행중','정산완료':'정산<wbr>완료'};
   let h='<div class="pm-mid pd" id="pmMid">';
-  h+='<div class="pd2">';
-  h+='<div class="pd2-lh pd2-w">작업자</div><div class="pd2-lh pd2-p">프로젝트</div>';
+  h+='<div class="pd2 pd3">';
+  h+='<div class="pd2-lh pd2-w">작업자</div><div class="pd2-lh pd2-p">프로젝트</div><div class="pd2-lh pd3-n">사업명</div>';
   h+='<div class="pd2-grp g1"><span>진행중</span></div><div class="pd2-grp g2"><span>정산</span></div>';
-  h+=PD_ST.map((x,i)=>'<div class="pd2-sh" style="--c:'+x.c+';grid-column:'+(i+3)+'"><i></i>'+esc(x.k)+'</div>').join('');
-  for(let i=1;i<=9;i++)h+='<div class="pd2-col'+(i<=2?' l':'')+(i===2?' e':'')+'" style="grid-column:'+i+'"></div>';
-  h+='<div class="pd2-body" id="pdBody"><span>사업 목록별 현황 · 준비 중</span></div>';
+  h+=PD_ST.map((x,i)=>'<div class="pd2-sh" style="--c:'+x.c+';grid-column:'+(i+4)+'" title="'+esc(x.k)+'"><i></i><em>'+(LB[x.k]||esc(x.k))+'</em></div>').join('');
+  for(let i=1;i<=10;i++)h+='<div class="pd2-col c'+i+(i<=2?' l':'')+(i===3?' n':'')+'" style="grid-column:'+i+'"></div>';
+  h+='<div class="pd2-body" id="pdBody"><span>프로젝트를 고르면 사업이 한 줄씩 나와요 · 준비 중</span></div>';
   h+='</div>';
   h+='<div class="pd-bot"><div class="pd-y" id="pdY"><span>준비 중</span></div><div class="pd-p" id="pdP"><span>세부공정 · 준비 중</span></div></div>';
   return h+'</div>';
