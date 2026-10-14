@@ -1354,6 +1354,14 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
 .pm-sum .d{margin-left:auto;font-size:13px;color:#475569;}.pm-sum .d b{color:#0f172a;}
 .pm-sum .pm-bar{margin-bottom:0;}
 .pm-sum .pm-hint2{margin:8px 0 0;}
+
+/* ===== BUILD 146 : 색 막대 밑 단계 이름 ===== */
+.pm-lgd{display:flex;justify-content:space-between;gap:6px;margin-top:7px;flex-wrap:wrap;}
+.pm-lgd button{border:0;background:none;padding:2px 4px;border-radius:5px;font-family:inherit;font-size:13px;font-weight:800;color:var(--c);cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.pm-lgd button i{width:9px;height:9px;border-radius:2px;background:var(--c);display:inline-block;}
+.pm-lgd button:hover{background:color-mix(in srgb,var(--c) 12%,#fff);}
+.pm-lgd button.z{opacity:.4;}
+.pm-lgd button.on{background:var(--c);color:#fff;}.pm-lgd button.on i{background:#fff;}
 @media (max-width:1250px){.pm-grid{grid-template-columns:minmax(0,1fr);}.pm-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}.pm-tile{min-height:56px;}}
 </style>
 </head>
@@ -2869,7 +2877,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='145';
+const BUILD_NO='146';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -8814,6 +8822,8 @@ function pmRender(){
   const sumH='<div class="card pm-sum"><div class="pm-sr"><span class="pm-ht"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span></span>'+
     '<span class="d">진행 중 <b>'+act.toLocaleString()+'</b>건 · 완료 <b>'+done.toLocaleString()+'</b>건'+(st.n?' ('+Math.round(done/st.n*100)+'%)':'')+'</span></div>'+
     (st.n?'<div class="pm-bar">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return n?'<span style="flex:'+n+';background:'+s.c+'" title="'+esc(s.k)+' '+n+'건"></span>':'';}).join('')+'</div>':'')+
+    /* BUILD 146 : 색 막대 밑에 단계 이름 (막대와 같은 색) · 누르면 그 단계만 */
+    (st.n?'<div class="pm-lgd">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return '<button type="button" class="'+(n?'':'z')+(PM.stage===s.k&&!PM.row?' on':'')+'" data-pm-st="'+esc(s.k)+'" style="--c:'+s.c+'" title="'+esc(s.k)+' '+n+'건"><i></i>'+esc(s.k)+'</button>';}).join('')+'</div>':'')+
     (PM.mode==='per'&&sc.nodate?'<div class="pm-hint pm-hint2">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</div>':'')+'</div>';
   h+='<div class="card pm-board"><div class="pm-h">'+methH+'</div>';
   if(!st.n)h+='<div class="pm-empty">'+(DATA.length?'여기에 해당하는 사업이 없어요':'리스트를 먼저 불러와 주세요 (사업추가 → ② 엑셀로 올리기)')+'</div>';
