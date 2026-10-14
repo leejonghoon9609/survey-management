@@ -566,6 +566,26 @@ body.listwin .lwbar{display:flex;align-items:center;gap:10px;padding:8px 4px 10p
 .pho-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:0;background:rgba(15,23,42,.7);color:#fff;font-size:13px;line-height:18px;padding:0;cursor:pointer;display:none;}
 .pho-th:hover .pho-x{display:block;}
 
+
+/* ===== BUILD 150 : 세부공정 자리 칸 나누기 ===== */
+.pm-midw .pm-mid.pd{display:grid;grid-template-rows:minmax(0,45fr) minmax(0,55fr);gap:10px;border:0;background:none;padding:0;align-items:stretch;justify-content:stretch;--lw:27%;}
+.pd-top{display:grid;grid-template-columns:var(--lw) repeat(7,minmax(0,1fr));grid-template-rows:auto auto minmax(0,1fr);border:1.5px solid #94A3B8;border-radius:12px;background:#fff;overflow:hidden;min-height:0;}
+.pd-lh{grid-row:1/3;display:grid;grid-template-columns:42% 58%;border-right:2px solid #2563EB;background:#F8FAFC;border-bottom:1.5px solid #cbd5e1;}
+.pd-lh b{display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#EA002C;}
+.pd-lh b+b{border-left:2px solid #EA002C;color:#0f172a;}
+.pd-sh{display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 2px 5px;font-size:13.5px;font-weight:800;color:var(--c);border-bottom:3px solid var(--c);background:color-mix(in srgb,var(--c) 6%,#fff);line-height:1.2;word-break:keep-all;}
+.pd-sh+.pd-sh{border-left:1px solid #e2e8f0;}
+.pd-lg{display:none;}
+.pd-g{grid-column:2/7;text-align:center;font-size:12px;font-weight:800;color:#475569;padding:3px 0;background:#f8fafc;border-bottom:1.5px solid #cbd5e1;letter-spacing:2px;}
+.pd-g2{grid-column:7/9;background:#f8fafc;border-bottom:1.5px solid #cbd5e1;}
+.pd-lb{display:grid;grid-template-columns:42% 58%;border-right:2px solid #2563EB;min-height:0;}
+.pd-lb div+div{border-left:2px solid #EA002C;}
+.pd-body{grid-column:2/9;display:flex;align-items:center;justify-content:center;min-height:0;overflow:auto;}
+.pd-body span,.pd-y span,.pd-p span{font-size:13px;color:#94a3b8;}
+.pd-bot{display:grid;grid-template-columns:var(--lw) minmax(0,1fr);gap:10px;min-height:0;}
+.pd-y{border:1.5px dashed #F2C94C;border-radius:12px;background:#FFFDF5;display:flex;align-items:center;justify-content:center;min-height:0;}
+.pd-p{border:1.5px dashed #F4A3C4;border-radius:12px;background:#FFF8FB;display:flex;align-items:center;justify-content:center;min-height:0;}
+@media (max-width:1500px){.pd-sh{font-size:12px;}.pd-lh b{font-size:12.5px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -2908,7 +2928,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='149';
+const BUILD_NO='150';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -8926,7 +8946,7 @@ function pmRender(){
   }
   h+='</div>';
   /* BUILD 143 : 가운데 = 세부공정 자리 (다음에 만들어요) */
-  h+='<div class="pm-midw">'+sumH+'<div class="pm-mid" id="pmMid"><span>세부공정 (준비 중)</span></div></div></div>';
+  h+='<div class="pm-midw">'+sumH+pmMidHTML()+'</div></div>';
   /* ── 오른쪽 : 리스트 ── */
   let list=rows;
   if(PM.row)list=list.filter(d=>d._prow===PM.row);
@@ -8947,6 +8967,23 @@ function pmRender(){
   h+='</div></div></div></div>';
   box.innerHTML=h;
   pmFit();
+}
+
+/* ===== BUILD 150 : 가운데 세부공정 자리 — 칸 나누기(뼈대) =====
+   위 : [작업자 | 프로젝트] + 단계 머리(실시간측량 · 결선 · 후측량 · 탱고 · 정위치 · 정산진행중 · 정산완료) + 사업 목록별 현황
+   아래 : 왼쪽 칸 + 세부공정 칸 — 내용은 다음 빌드부터 하나씩 */
+const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#0D9488'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
+function pmMidHTML(){
+  let h='<div class="pm-mid pd" id="pmMid">';
+  h+='<div class="pd-top">';
+  h+='<div class="pd-lh"><b>작업자</b><b>프로젝트</b></div>';
+  h+=PD_ST.map(x=>'<div class="pd-sh" style="--c:'+x.c+'">'+esc(x.k)+'</div>').join('');
+  h+='<div class="pd-lg"></div><div class="pd-g">진행중</div><div class="pd-g2"></div>';
+  h+='<div class="pd-lb"><div></div><div></div></div>';
+  h+='<div class="pd-body" id="pdBody"><span>사업 목록별 현황 (준비 중)</span></div>';
+  h+='</div>';
+  h+='<div class="pd-bot"><div class="pd-y" id="pdY"><span>준비 중</span></div><div class="pd-p" id="pdP"><span>세부공정 (준비 중)</span></div></div>';
+  return h+'</div>';
 }
 /* 공정판·리스트를 화면 아래 끝까지 */
 function pmFit(){
