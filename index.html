@@ -859,6 +859,34 @@ body.pj-dragging .pd-p{border-color:#EA002C;}
 .pj-c.dn b{font-size:10px;}
 .pj-c s{text-decoration:none;font-size:9px;color:#475569;white-space:nowrap;letter-spacing:-.3px;font-variant-numeric:tabular-nums;}
 .pj-c s:empty{display:none;}
+
+/* ===== BUILD 159 : 프로젝트 사업 줄 — 이어진 진행 막대 ===== */
+.pj-r>div{min-height:30px;border-bottom:1px solid #EEF2F6;}
+.pj-body .pj-r:nth-child(even)>div{background:#FBFCFD;}
+.pj-n{background:transparent;}
+.pj-r:hover>div{background:#FFF8E1 !important;}
+.pd3 .pd2-col.n{background:#fff;}
+.pj-c,.pj-c.dn,.pj-c.cu{position:relative;flex-direction:row;background:transparent;box-shadow:none;padding:0;}
+.pj-c.na{background:transparent;}
+.pj-c.na::after{content:"";position:absolute;left:30%;right:30%;top:50%;border-top:1px dashed #DDE3EA;}
+.pj-c .br{position:absolute;left:0;right:0;top:50%;height:18px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:4px;padding:0 5px;white-space:nowrap;overflow:hidden;font-size:9.5px;line-height:1;}
+.pj-c .br b{font-size:9.5px;font-weight:800;letter-spacing:-.1px;}
+.pj-c .br s{text-decoration:none;font-size:9.5px;font-weight:500;letter-spacing:-.3px;font-variant-numeric:tabular-nums;}
+.pj-c.dn .br{background:color-mix(in srgb,var(--c) 15%,#fff);color:color-mix(in srgb,var(--c) 78%,#0f172a);border-right:1px solid #fff;}
+.pj-c.dn .br b{color:color-mix(in srgb,var(--c) 85%,#0f172a);}
+.pj-c.dn .br s{color:#64748b;}
+.pj-c.cu .br{background:var(--c);color:#fff;right:5px;border-radius:0 9px 9px 0;box-shadow:0 2px 6px color-mix(in srgb,var(--c) 35%,transparent);}
+.pj-c.cu .br b,.pj-c.cu .br s{color:#fff;}
+.pj-c.cu .br s{opacity:.85;}
+.pj-c.cu .br i{width:5px;height:5px;border-radius:50%;background:#fff;flex:none;animation:pjPulse 1.6s ease-in-out infinite;}
+@keyframes pjPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pj-c.f .br{left:5px;border-top-left-radius:9px;border-bottom-left-radius:9px;}
+.pj-c.end .br{right:5px;border-top-right-radius:9px;border-bottom-right-radius:9px;border-right:0;}
+/* 작은 화면 : 고치는 칸이 넘치면 스크롤 · 아래 버튼은 늘 보이게 · 달력 칸 낮게 */
+.pj-ed{overflow:auto;}
+.pj-foot{position:sticky;bottom:-12px;background:#fff;padding:6px 0 0;z-index:2;}
+@media (max-height:900px){.pc-g button{height:22px;font-size:12px;}.pc-t{font-size:12.5px;margin-bottom:2px;}.pj-ed{padding:8px 12px;gap:6px;}.pj-eh{font-size:13.5px;padding-bottom:5px;}.pc-nav button{padding:2px 8px;font-size:11.5px;}}
+@media (max-width:1500px){.pj-side{padding:8px;gap:6px;}.pj-add,.pj-del{font-size:11px;padding:6px 3px;}.pj-f{grid-template-columns:56px minmax(0,1fr);gap:5px;}.pj-l{font-size:11px;white-space:nowrap;letter-spacing:-.4px;}.pj-v{padding:5px 6px;font-size:11.5px;}.pj-c .br b{display:none;}.pj-c.cu .br b{display:inline;}.pj-c.cu .br s{display:none;}.pj-c .br{padding:0 3px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3201,7 +3229,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='158';
+const BUILD_NO='159';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9462,10 +9490,15 @@ function pjRowsHTML(){
     const k=workStage(d),ci=PJ_COL[k]!=null?PJ_COL[k]:-1,tam=d.mKey==='탐사',DT=pjStageDates(d);
     const pre=(k==='미착수'||k==='대기(불가)')?'<span class="pj-st" style="--c:'+wsColor(k)+'">'+esc(k==='대기(불가)'?'대기':k)+'</span>':'';
     let h='<div class="pj-r" data-pj-open="'+d._id+'" title="'+esc(d.work||'')+' · '+esc(k)+'"><div class="pj-n"><em>'+(i+1)+'</em>'+pre+'<span>'+esc(d.work||'(공사명 없음)')+'</span></div>';
+    /* BUILD 159 : 단계를 이어진 막대로 — 지난 단계는 옅은 색 막대(완료 · 날짜), 지금 단계는 진한 색 머리(진행중 · 시작일) */
+    let first=true;const last=(k==='완료')?6:-1;
     PD_ST.forEach((s,j)=>{
       if(tam&&j<2){h+='<div class="pj-c na" title="탐사 — 해당 없음"></div>';return;}
-      const done=ci>j||(k==='완료'&&j===6),cur=ci===j&&k!=='완료';
-      h+='<div class="pj-c'+(done?' dn':'')+(cur?' cu':'')+'" style="--c:'+s.c+'">'+(cur?'<b>진행중</b><s>'+(DT[j].s?DT[j].s+'~':'')+'</s>':(done?'<b>완료</b><s>'+(DT[j].s&&DT[j].e?DT[j].s+' '+DT[j].e:(DT[j].e||(DT[j].s?DT[j].s+'~':'')))+'</s>':''))+'</div>';});
+      const done=ci>j||(k==='완료'&&j===6),cur=ci===j&&k!=='완료',dt=DT[j];
+      if(done){const r=dt.s&&dt.e?dt.s+'–'+dt.e:(dt.e||(dt.s?dt.s+'~':''));
+        h+='<div class="pj-c dn'+(first?' f':'')+(j===last?' end':'')+'" style="--c:'+s.c+'" title="'+esc(s.k)+' 완료'+(r?' · '+r:'')+'"><div class="br"><b>완료</b>'+(r?'<s>'+r+'</s>':'')+'</div></div>';first=false;return;}
+      if(cur){h+='<div class="pj-c cu'+(first?' f':'')+'" style="--c:'+s.c+'" title="'+esc(s.k)+' 진행중'+(dt.s?' · '+dt.s+'부터':'')+'"><div class="br"><i></i><b>진행중</b>'+(dt.s?'<s>'+dt.s+'~</s>':'')+'</div></div>';first=false;return;}
+      h+='<div class="pj-c td"></div>';});
     return h+'</div>';}).join('');
 }
 
