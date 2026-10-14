@@ -902,6 +902,10 @@ body.pj-dragging .pd-p{border-color:#EA002C;}
 .pj-c.tl em{position:absolute;z-index:2;top:2px;left:calc(50% + 9px);font-style:normal;font-size:9.5px;font-weight:800;color:var(--c);white-space:nowrap;background:color-mix(in srgb,#fff 85%,transparent);padding:0 2px;border-radius:3px;}
 .pj-r:hover .pj-c.tl em{background:#FFF8E1;}
 @media (max-width:1500px){.pj-c.tl em{font-size:8.5px;left:calc(50% + 7px);}.pj-c.tl s{font-size:8.5px;}}
+
+/* ===== BUILD 161 : 위 버튼 줄 — 왼쪽 빈 자리(새 버튼 자리) · 전체물량/발주처/기간별은 가운데로 ===== */
+.pm-slot{flex:none;width:clamp(180px,26vw,500px);min-height:40px;display:flex;align-items:center;gap:8px;}
+@media (max-width:1250px){.pm-slot{display:none;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3244,7 +3248,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='160';
+const BUILD_NO='161';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9242,7 +9246,7 @@ function pmRender(){
       '<input type="date" id="pmDate" value="'+pmYmd(pmDate())+'" title="날짜로 바로 가기"></span>'+
       '<span class="pm-lb">기준</span><select id="pmBasis">'+Object.keys(PM_BASIS).map(k=>'<option value="'+k+'"'+(PM.basis===k?' selected':'')+'>'+PM_BASIS[k]+'</option>').join('')+'</select>';}
   else sub='<span class="pm-hint">목록 전체의 공정을 봐요</span>';
-  let h='<div class="pm"><div class="pm-top"><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
+  let h='<div class="pm"><div class="pm-top"><div class="pm-slot" id="pmSlot"></div><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
   /* ── BUILD 140 : 측량방법을 공정판 카드 안, 제목 앞으로 ── */
   const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
   h+='<div class="pm-grid"><div class="pm-left">';
