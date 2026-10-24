@@ -1222,6 +1222,10 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .pm-mid .shi{position:absolute;left:3px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;line-height:1;border:1px solid;}
 .pm-mid .shi.d{background:#FEF3C7;border-color:#FCD34D;}
 .pm-mid .shi.n{background:#DBEAFE;border-color:#93C5FD;}
+
+/* ===== BUILD 179 : 합계 칸 둘째 줄 「2명 · 미배치 34」 한 줄 ===== */
+.rw-r.sum .dc .l2{display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.rw-r.sum .dc .l2 em.w{margin-top:0;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3564,7 +3568,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='178';
+const BUILD_NO='179';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10072,7 +10076,7 @@ function rtHTML(){
     h+='</div>';});
   /* 일별 합계 */
   h+='<div class="rw-r sum"><div class="nm"><b>일별 합계</b><small>사업 · 투입 / '+((PD.staff||[]).length||'—')+'명</small></div>'+days.map(D=>{let n=0,ng=0;const p=new Set();rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k==='on'||c.k==='need'){n++;if(c.k==='need')ng++;c.w.forEach(x=>p.add(x));}});
-    return '<div class="dc'+cls(D)+'"><span class="l1"><b>'+n+'</b><small>건</small></span><span class="pp">'+p.size+'명</span>'+(ng?'<em class="w">미배치 '+ng+'</em>':'')+'</div>';}).join('')+'</div>';
+    return '<div class="dc'+cls(D)+'"><span class="l1"><b>'+n+'</b><small>건</small></span><span class="l2"><span class="pp">'+p.size+'명</span>'+(ng?'<em class="w">미배치 '+ng+'</em>':'')+'</span>'+'</div>';}).join('')+'</div>';
   h+='</div></div>';
   /* 오른쪽 : 작업자 / 신규사업 */
   const F=days[RTW.focus],used={};rows.forEach(d=>{const c=rtKind(F.ymd,d);c.w.forEach(n=>{used[n]=(used[n]||0)+1;});});
