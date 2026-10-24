@@ -1182,6 +1182,38 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r.sum .dc .l1 b{color:#0f172a;}
 .rw-r.sum .pp{line-height:1.2;}
 .rw-r.hd .nm{justify-content:center;}
+
+/* ===== BUILD 177 : 현장 보고 · 주간/야간 · 확인 ===== */
+.rw-r .dc .rb{border:1px solid;border-radius:4px;font-family:inherit;font-size:9px;font-weight:800;line-height:15px;padding:0 5px;cursor:pointer;white-space:nowrap;}
+.rw-r .dc .rb.y{background:#EA002C;color:#fff;border-color:#EA002C;}
+.rw-r .dc .rb.n{background:#F1F5F9;color:#64748B;border-color:#CBD5E1;}
+.rw-r .dc .rb.w{background:#fff;color:#EA002C;border:1px dashed #FCA5A5;}
+.rw-r .dc .rb.q{background:#fff;color:#94a3b8;border:1px dashed #CBD5E1;}
+.rw-r .dc .rb .mm{font-style:normal;margin-left:2px;}
+.rw-r .dc .rb:hover{box-shadow:0 0 0 2px rgba(234,0,44,.18);}
+.pm-mid .shb{display:inline-flex;align-items:center;gap:2px;border:1px solid;border-radius:4px;font-size:9px;font-weight:800;line-height:15px;padding:0 4px;white-space:nowrap;}
+.shb.d{background:#FEF9C3;color:#A16207;border-color:#FDE68A;}.shb.n{background:#F1F5F9;color:#475569;border-color:#CBD5E1;}
+.shb b{font-weight:800;}
+.pm-mid .rk.ak{border-color:#16A34A;}
+.pm-mid .rk .ck{font-style:normal;font-weight:900;color:#16A34A;margin-right:2px;}
+.rp1 .ak{font-size:9px;font-weight:800;border-radius:4px;padding:0 5px;line-height:15px;white-space:nowrap;}
+.rp1 .ak.y{background:#16A34A;color:#fff;}.rp1 .ak.n{background:#fff;color:#94a3b8;border:1px solid #CBD5E1;}
+.pm-mid .rw-side.two .sh .akc{color:#15803D;font-size:inherit;}
+.rw-side.two .cols{grid-template-columns:136px minmax(0,1fr);}
+.rp1 b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}.rw-side.two .sh .akc b{color:#15803D;}
+#rtPop.rep{width:250px;padding:8px 10px;gap:5px;}
+#rtPop.rep .ph small{display:block;font-size:10.5px;font-weight:500;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#rtPop.rep .pq{font-size:11px;font-weight:800;color:#475569;margin-top:3px;}
+#rtPop.rep .two{display:flex;gap:5px;}
+#rtPop.rep .two button{flex:1;text-align:center;border:1.5px solid #CBD5E1;background:#fff;border-radius:7px;padding:6px 4px;font-size:12px;font-weight:700;color:#334155;}
+#rtPop.rep .two button.on.y{background:#EA002C;border-color:#EA002C;color:#fff;}
+#rtPop.rep .two button.on.n{background:#64748B;border-color:#64748B;color:#fff;}
+#rtPop.rep .two button.sd{border-color:#FDE68A;}#rtPop.rep .two button.sd.on{background:#FEF9C3;border-color:#EAB308;color:#854D0E;}
+#rtPop.rep .two button.sn.on{background:#E2E8F0;border-color:#64748B;color:#1e293b;}
+#rtPop.rep .pm{border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 8px;font-family:inherit;font-size:12px;margin-top:4px;}
+#rtPop.rep .ft{margin-top:4px;}
+#rtPop.rep .ft .sv{background:#fff;color:#EA002C;border-color:#EA002C;}#rtPop.rep .ft .sv:hover{background:#EA002C;color:#fff;}
+#rtPop.rep .ft .cl{flex:0 0 auto;color:#94a3b8;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3524,7 +3556,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='176';
+const BUILD_NO='177';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10010,8 +10042,8 @@ function rtKind(dt,d){const x=rtCell(dt,d._uid);
   if(!x){if(dt===rtToday()&&workStage(d)==='실시간측량')return {k:'need',w:[],auto:1};return {k:'none',w:[]};}
   if(x.st==='결선')return {k:'js',w:x.w||[]};if(x.st==='끝')return {k:'end',w:x.w||[]};
   return {k:(x.w||[]).length?'on':'need',w:x.w||[]};}
-function rtChip(n,dt,u){const t=(PD.staff||[]).find(z=>z.n===n),g=t&&t.g==='사업관리(현장)'?'f':'s';
-  return '<span class="rk '+g+'" title="'+esc(n)+'"><b class="f">'+esc(n)+'</b><b class="s">'+esc(n.slice(-2))+'</b><button type="button" data-rt-wx="'+esc(n)+'" data-rt-dt="'+dt+'" data-rt-u="'+esc(u)+'" title="빼기">×</button></span>';}
+function rtChip(n,dt,u){const t=(PD.staff||[]).find(z=>z.n===n),g=t&&t.g==='사업관리(현장)'?'f':'s',ak=rtAck(dt,n);
+  return '<span class="rk '+g+(ak?' ak':'')+'" title="'+esc(n)+(ak?' · 폰 확인 '+hhmm(ak):'')+'">'+(ak?'<i class="ck">✓</i>':'')+'<b class="f">'+esc(n)+'</b><b class="s">'+esc(n.slice(-2))+'</b><button type="button" data-rt-wx="'+esc(n)+'" data-rt-dt="'+dt+'" data-rt-u="'+esc(u)+'" title="빼기">×</button></span>';}
 function rtHTML(){
   if(!RT.loaded&&!RT.loading){RT.loading=true;rtLoad().finally(()=>{RT.loading=false;if(PM_VIEW()==='rt')pjR();});}
   if(!PD.staff&&!PD.staffBusy){PD.staffBusy=true;pjStaffLoad().catch(()=>{PD.staffErr=true;}).finally(()=>{PD.staffBusy=false;if(PM_VIEW()==='rt')pjR();});}
@@ -10026,9 +10058,9 @@ function rtHTML(){
     h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
     days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd='';const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
-      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'><span class="nd">＋ 배치</span>'+rtNxB(D.ymd,d._uid)+'</div>';
-      else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'><span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span></div>';
-      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'><div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtNxB(D.ymd,d._uid)+'</div>';});
+      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">＋ 배치</span>'+rtRepB(D.ymd,d._uid)+'</div>';
+      else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'>'+(c.k==='js'?rtShB(D.ymd,d._uid):'')+'<span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span></div>';
+      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtRepB(D.ymd,d._uid)+'</div>';});
     h+='</div>';});
   /* 일별 합계 */
   h+='<div class="rw-r sum"><div class="nm"><b>일별 합계</b><small>사업 · 투입 / '+((PD.staff||[]).length||'—')+'명</small></div>'+days.map(D=>{let n=0,ng=0;const p=new Set();rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k==='on'||c.k==='need'){n++;if(c.k==='need')ng++;c.w.forEach(x=>p.add(x));}});
@@ -10039,10 +10071,11 @@ function rtHTML(){
   const tmSet=new Set(rows.map(d=>d._uid)),N=DATA.filter(d=>d._uid&&d.mKey==='실시간'&&workStage(d)==='미착수'&&!tmSet.has(d._uid)).sort((a,b)=>((parseDate(b.req)||0)-(parseDate(a.req)||0)));
   /* BUILD 170 : 오른쪽 = 작업자(세로 한 줄에 한 명 · 부서 구분 없이) | 신규사업 — 둘 다 같이 보여요 */
   const all=(PD.staff||[]).slice().sort((a,b)=>(!!used[a.n]-!!used[b.n])||a.n.localeCompare(b.n)),free=all.filter(u=>!used[u.n]).length;
-  h+='<div class="rw-side two"><div class="sh"><b>'+F.md+' ('+F.w+')</b> 비는 사람 <b class="fr">'+free+'</b>명 · 들어간 사람 '+(all.length-free)+'명</div><div class="cols">';
+  const akN=all.filter(u=>used[u.n]&&rtAck(F.ymd,u.n)).length;
+  h+='<div class="rw-side two"><div class="sh"><b>'+F.md+' ('+F.w+')</b> 비는 <b class="fr">'+free+'</b> · 배치 '+(all.length-free)+' · <span class="akc">확인 <b>'+akN+'</b>/'+(all.length-free)+'</span></div><div class="cols">';
   h+='<div class="wcol"><div class="ch">작업자 <i>'+all.length+'</i></div><div class="pl">';
   if(!PD.staff)h+='<div class="rw-0"><span>'+(PD.staffErr?'명단을 못 불러왔어요':'불러오는 중…')+'</span></div>';
-  else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?'<em>'+used[u.n]+'</em>':'')+'</div>').join('');
+  else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?(rtAck(F.ymd,u.n)?'<span class="ak y" title="폰 확인 '+hhmm(rtAck(F.ymd,u.n))+'">✓ 확인</span>':'<span class="ak n">미확인</span>'):'')+'</div>').join('');
   h+='</div></div><div class="ncol"><div class="ch">신규사업 <i class="p">'+N.length+'</i></div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><span><span class="t1">'+rtSrcB(d)+'<small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><b>'+esc(d.work||'')+'</b></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div></div>';
   h+='</div>';
   return h+'</div></div>';
@@ -10056,7 +10089,7 @@ function rtSetNext(u,v,by){const td=rtToday(),tm=rtTomorrow(),cur=rtCell(td,u),n
   rtPut(td,u,{next:v,w:cur?cur.w||[]:[],st:cur?cur.st||'':'',src:cur?cur.src||'':'auto',nby:by||cMe()});
   if(v==='O'){if(!nx||nx.st==='끝')rtPut(tm,u,{w:(cur&&cur.w||[]).slice(),st:'',src:'carry',del:false});}
   else if(v==='X'){rtPut(tm,u,{w:[],st:'끝',src:'carry',del:false});}}
-/* 나중에 근태 시스템이 부를 자리 : gjRtSetNext('사업 uid','O'|'X','작업자 이름') → 내일 칸이 이어서/측량 끝으로 */
+/* (BUILD 168 판 — 177에서 현장 보고로 바뀜) gjRtSetNext0('사업 uid','O'|'X','작업자 이름') → 내일 칸이 이어서/측량 끝으로 */
 /* BUILD 168 : 칸 아래 「내일 이어서」 배지 — 근태 연동 전에는 눌러서 바꿔요 (? → 이어서 → 끝 → ?) */
 /* BUILD 172 : 작업자마다 아주 연한 바탕색 — 가나다 순서로 색상환을 고르게 나눔 (사람이 바뀌어도 같은 사람은 같은 색) */
 function rtHue(n){const L=(PD.staff||[]).map(u=>u.n).sort((a,b)=>a.localeCompare(b)),i=Math.max(0,L.indexOf(n));return Math.round((i*137.508)%360);}
@@ -10074,24 +10107,24 @@ function rtSetNextAt(dt,u,v,by){const nd=rtYmd(rtAdd(parseDate(dt),1)),cur=rtCel
   if(v==='O'){if(!nx)rtPut(nd,u,{w:(cur&&cur.w||[]).slice(),st:'',src:'carry',del:false});else if(nx.st==='끝')rtPut(nd,u,{st:'',w:(nx.w&&nx.w.length?nx.w:(cur&&cur.w||[]).slice()),del:false});}
   else if(v==='X'){if(nx)rtPut(nd,u,{st:'끝',del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',del:false});}
   else{if(nx&&nx.src==='carry')rtPut(nd,u,{del:true});else if(nx&&nx.st==='끝')rtPut(nd,u,{st:''});}}
-window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetNextAt(rtToday(),u,v,by||'근태');if(PM_VIEW()==='rt')pjR();return true;};
+window.gjRtSetNext0=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetNextAt(rtToday(),u,v,by||'근태');if(PM_VIEW()==='rt')pjR();return true;};
 function rtPopClose(){const p=document.getElementById('rtPop');if(p)p.remove();}
 function rtPopOpen(el){rtPopClose();const u=el.dataset.rtCell,dt=el.dataset.rtDt,x=rtCell(dt,u);
   const p=document.createElement('div');p.id='rtPop';
-  p.innerHTML='<div class="ph">'+rtLabel(dt)+'</div>'+[['need','배치 필요(빈칸)'],['js','결선'],['end','측량 끝'],['none','일정 없음']].map(o=>'<button type="button" data-rt-set="'+o[0]+'">'+o[1]+'</button>').join('')+(x&&(x.w||[]).length?'<div class="pn">작업자 '+x.w.length+'명은 그대로 둬요 (이름 옆 ×로 빼기)</div>':'');
+  p.innerHTML='<div class="ph">'+rtLabel(dt)+'</div>'+[['need','배치 필요(빈칸)'],['js','결선'],['end','측량 끝'],['none','일정 없음'],['shD','☀ 주간 작업'],['shN','🌙 야간 작업'],['sh0','시간 지우기']].map(o=>'<button type="button" data-rt-set="'+o[0]+'">'+o[1]+'</button>').join('')+(x&&(x.w||[]).length?'<div class="pn">작업자 '+x.w.length+'명은 그대로 둬요 (이름 옆 ×로 빼기)</div>':'');
   p.dataset.u=u;p.dataset.dt=dt;document.body.appendChild(p);
   const r=el.getBoundingClientRect();let top=r.bottom+4;if(top+p.offsetHeight>innerHeight-8)top=r.top-p.offsetHeight-4;
   p.style.top=top+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-p.offsetWidth-8))+'px';}
 document.addEventListener('click',e=>{const p=document.getElementById('rtPop');if(!p)return;const b=e.target.closest('[data-rt-set]');
   if(b&&p.contains(b)){const u=p.dataset.u,dt=p.dataset.dt,x=rtCell(dt,u),v=b.dataset.rtSet;
-    if(v==='none')rtPut(dt,u,{del:true});else rtPut(dt,u,{w:x?x.w||[]:[],st:v==='js'?'결선':(v==='end'?'끝':''),src:x&&x.src||'m',del:false});
+    if(/^sh/.test(v))rtPut(dt,u,{sh:v==='shD'?'D':(v==='shN'?'N':''),w:x?x.w||[]:[],st:x?x.st||'':'',src:x&&x.src||'m',del:false});else if(v==='none')rtPut(dt,u,{del:true});else rtPut(dt,u,{w:x?x.w||[]:[],st:v==='js'?'결선':(v==='end'?'끝':''),src:x&&x.src||'m',del:false});
     rtPopClose();pjR();return;}
   if(!p.contains(e.target)&&!e.target.closest('[data-rt-cell]'))rtPopClose();},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('rtPop')){rtPopClose();e.stopImmediatePropagation();}},true);
 document.getElementById('pNew')&&document.getElementById('pNew').addEventListener('click',e=>{
   if(PM_VIEW()!=='rt')return;const q=s=>e.target.closest(s);let b;
   if((b=q('[data-rt-wx]'))){e.stopPropagation();rtRmWorker(b.dataset.rtDt,b.dataset.rtU,b.dataset.rtWx);return;}
-  if((b=q('[data-rt-nx]'))){e.stopPropagation();const nv={'':'O','O':'X','X':''}[b.dataset.rtNx];rtSetNextAt(b.dataset.rtDt,b.dataset.rtU,nv);pjR();return;}
+  if((b=q('[data-rt-rep]'))){e.stopPropagation();rtRepPop(b);return;}
   if((b=q('[data-rt-wk]'))){const v=+b.dataset.rtWk;RTW.off=v?RTW.off+v:0;RTW.focus=Math.min(6,Math.max(0,1-RTW.off));pjR();return;}
   if((b=q('[data-rt-focus]'))){RTW.focus=+b.dataset.rtFocus;RTW.tab='w';pjR();return;}
   if((b=q('[data-rt-tab]'))){RTW.tab=b.dataset.rtTab;pjR();return;}
@@ -10124,6 +10157,68 @@ document.getElementById('pNew')&&document.getElementById('pNew').addEventListene
   if(t.startsWith('gjrtb:')){e.preventDefault();rtAddBiz(t.slice(6));return;}
   if(t.startsWith('gjuid:')){e.preventDefault();rtAddBiz(t.slice(6));return;}
 });
+
+/* ===== BUILD 177 : 현장 보고(내일 공사 있음 · 주간/야간 · 없음) · 작업자 확인 표시 =====
+   칸.rep = {v:'Y'|'N', t:'D'|'N'|'', memo, by, at, src:'관리자'|'폰'}  — 오늘 현장에서 「내일 공사」를 소장님께 듣고 보고
+   칸.sh  = 'D'(주간) | 'N'(야간)  — 그날 작업 시간
+   폰 앱(다음 단계) : 보고 = 공용 파일 'rtrep:날짜:사업uid:이름' (JSON) · 확인 = 'rtok:날짜:이름' — 사람마다 따로 저장 */
+function rtRepOf(dt,u){const x=rtCell(dt,u);if(!x)return null;if(x.rep&&x.rep.v)return x.rep;if(x.next==='O')return {v:'Y',t:''};if(x.next==='X')return {v:'N'};return null;}
+const RT_SH={D:['☀','주간'],N:['🌙','야간']};
+function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shb '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업">'+RT_SH[s][0]+'<b>'+RT_SH[s][1]+'</b></span>':'';}
+function rtRepB(dt,u){const r=rtRepOf(dt,u),td=rtToday(),t=r&&r.t&&RT_SH[r.t];
+  const tip=r?((r.by?r.by+' ':'')+(r.at?hhmm(new Date(r.at))+' ':'')+(r.src==='폰'?'· 폰 보고':'')+(r.memo?'\n'+r.memo:'')):'현장 작업자가 소장님께 내일 공사를 여쭤 보고 알려 줘요 · 눌러서 직접 넣을 수도 있어요';
+  let c,txt;
+  if(r&&r.v==='Y'){c='y';txt='내일 공사'+(t?' '+t[0]:'');}
+  else if(r&&r.v==='N'){c='n';txt='오늘로 끝';}
+  else if(dt<=td){c='w';txt='보고 대기';}
+  else return '';   /* 앞날 칸은 그날이 되면 보고 */
+  return '<button type="button" class="rb '+c+'" data-rt-rep="'+esc(u)+'" data-rt-dt="'+dt+'" title="'+esc(tip)+'">'+txt+(r&&r.memo?'<i class="mm">✎</i>':'')+'</button>';}
+function rtSetRep(dt,u,rep){
+  const nd=rtYmd(rtAdd(parseDate(dt),1)),cur=rtCell(dt,u),nx=rtCell(nd,u);
+  const R=rep?Object.assign({src:'관리자',by:cMe()},rep,{at:rep.at||Date.now()}):null;
+  rtPut(dt,u,{rep:R,next:'',w:cur?cur.w||[]:[],st:cur?cur.st||'':'',src:cur?cur.src||'':'auto',del:false});
+  if(R&&R.v==='Y'){if(!nx)rtPut(nd,u,{w:[],st:'',sh:R.t||'',src:'carry',del:false});else rtPut(nd,u,{st:nx.st==='끝'?'':(nx.st||''),sh:R.t||nx.sh||'',del:false});}
+  else if(R&&R.v==='N'){if(nx)rtPut(nd,u,{st:'끝',del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',del:false});}
+  else if(nx){if(nx.src==='carry'&&!(nx.w||[]).length)rtPut(nd,u,{del:true});else if(nx.st==='끝')rtPut(nd,u,{st:''});}
+}
+/* 근태 · 폰에서 부를 자리 (O = 내일 공사 있음 · X = 오늘로 끝) */
+window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetRep(rtToday(),u,{v:v==='O'?'Y':'N',by:by||'근태',src:'폰'});if(PM_VIEW()==='rt')pjR();return true;};
+/* 작업자 확인 (폰 「확인했어요」) */
+function rtAck(dt,n){const f=SYNC.files&&SYNC.files['rtok:'+dt+':'+n];return f?new Date(f.t):null;}
+/* 폰 보고 받아서 반영 (새로 올라온 것만) */
+RT.repSeen=RT.repSeen||{};
+async function rtPullReports(){
+  if(!cCloudReady()||!SYNC.files)return 0;const td=rtToday(),yd=rtYmd(rtAdd(parseDate(td),-1));let n=0;
+  for(const k of Object.keys(SYNC.files)){
+    const m=k.match(/^rtrep:(\d{4}-\d{2}-\d{2}):([^:]+):(.+)$/);if(!m||(m[1]!==td&&m[1]!==yd))continue;
+    const t=new Date(SYNC.files[k].t).getTime();if(RT.repSeen[k]>=t)continue;RT.repSeen[k]=t;
+    try{const f=await cRpc('gj_file_get',{p_key:k});if(!f||!f.d)continue;const o=pjDec(cB64Buf(f.d));if(!o||!/^[YN]$/.test(o.v))continue;
+      const cur=rtRepOf(m[1],m[2]),at=o.at||t;if(cur&&cur.at&&cur.at>=at)continue;
+      rtSetRep(m[1],m[2],{v:o.v,t:o.t||'',memo:o.memo||'',by:o.by||m[3],src:'폰',at});n++;}catch(e){}
+  }
+  if(n&&PM_VIEW()==='rt')pjR();return n;
+}
+setInterval(()=>{if(RT.loaded&&PM_VIEW()==='rt')rtPullReports();},15000);
+/* 보고 · 시간 고르기 창 */
+function rtRepPop(el){rtPopClose();const u=el.dataset.rtRep,dt=el.dataset.rtDt,r=rtRepOf(dt,u),d=pjBiz(u);
+  const p=document.createElement('div');p.id='rtPop';p.className='rep';
+  p.innerHTML='<div class="ph">'+rtLabel(dt)+' 현장 보고<small>'+esc((d&&d.work)||'')+'</small></div>'+
+    '<div class="pq">내일 공사</div><div class="two"><button type="button" class="'+(r&&r.v==='Y'?'on y':'')+'" data-rt-rs="Y">있음</button><button type="button" class="'+(r&&r.v==='N'?'on n':'')+'" data-rt-rs="N">없음 (오늘로 끝)</button></div>'+
+    '<div class="pq">시간</div><div class="two"><button type="button" class="sd'+(r&&r.t==='D'?' on':'')+'" data-rt-rt="D">☀ 주간</button><button type="button" class="sn'+(r&&r.t==='N'?' on':'')+'" data-rt-rt="N">🌙 야간</button></div>'+
+    '<input class="pm" id="rtRepMemo" placeholder="메모 (집결 시간 · 소장 연락처 …)" value="'+esc(r&&r.memo||'')+'">'+
+    (r&&r.by?'<div class="pn">'+esc(r.by)+(r.at?' · '+hhmm(new Date(r.at)):'')+(r.src==='폰'?' · 폰 보고':'')+'</div>':'')+
+    '<div class="two ft"><button type="button" class="sv" data-rt-rsave="1">보고 저장</button>'+(r?'<button type="button" class="cl" data-rt-rclr="1">보고 지우기</button>':'')+'</div>';
+  p.dataset.u=u;p.dataset.dt=dt;p.dataset.v=r&&r.v||'';p.dataset.t=r&&r.t||'';document.body.appendChild(p);
+  const rc=el.getBoundingClientRect();let top=rc.bottom+4;if(top+p.offsetHeight>innerHeight-8)top=rc.top-p.offsetHeight-4;
+  p.style.top=top+'px';p.style.left=Math.max(8,Math.min(rc.left,innerWidth-p.offsetWidth-8))+'px';}
+document.addEventListener('click',e=>{const p=document.getElementById('rtPop');if(!p||!p.classList.contains('rep')||!p.contains(e.target))return;
+  let b;
+  if((b=e.target.closest('[data-rt-rs]'))){p.dataset.v=p.dataset.v===b.dataset.rtRs?'':b.dataset.rtRs;p.querySelectorAll('[data-rt-rs]').forEach(x=>{x.className=x.dataset.rtRs===p.dataset.v?'on '+(p.dataset.v==='Y'?'y':'n'):'';});return;}
+  if((b=e.target.closest('[data-rt-rt]'))){p.dataset.t=p.dataset.t===b.dataset.rtRt?'':b.dataset.rtRt;p.querySelectorAll('[data-rt-rt]').forEach(x=>{x.classList.toggle('on',x.dataset.rtRt===p.dataset.t);});return;}
+  if(e.target.closest('[data-rt-rsave]')){const v=p.dataset.v;if(!v){toast('「있음 / 없음」을 골라 주세요',true);return;}
+    rtSetRep(p.dataset.dt,p.dataset.u,{v,t:v==='Y'?p.dataset.t:'',memo:(document.getElementById('rtRepMemo')||{}).value||''});rtPopClose();pjR();return;}
+  if(e.target.closest('[data-rt-rclr]')){rtSetRep(p.dataset.dt,p.dataset.u,null);rtPopClose();pjR();return;}
+},true);
 
 /* 가운데만 다시 그리기 (오른쪽 리스트 스크롤은 그대로) */
 function pjR(){const m=document.getElementById('pmMid');if(!m){pmRender();return;}
