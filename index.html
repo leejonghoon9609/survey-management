@@ -1064,6 +1064,31 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r .dc .nx.x{background:#F1F5F9;color:#94a3b8;border-color:#E2E8F0;}
 .rw-r .dc .nx:hover{filter:none;box-shadow:0 0 0 2px rgba(234,0,44,.18);}
 @media (max-width:1500px){.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 250px;}.rp{font-size:11.5px;padding:2px 8px;}}
+
+/* ===== BUILD 170 : 오른쪽 칸 = 작업자(세로) | 신규사업 ===== */
+.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 420px;}
+.rw-side.two .cols{flex:1;min-height:0;display:grid;grid-template-columns:118px minmax(0,1fr);}
+.rw-side.two .wcol,.rw-side.two .ncol{display:flex;flex-direction:column;min-height:0;}
+.rw-side.two .wcol{border-right:1px solid #E2E8F0;background:#FAFBFC;}
+.rw-side.two .ch{font-size:12.5px;font-weight:800;color:#0f172a;padding:7px 9px 5px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;flex:none;border-bottom:1px solid #EEF2F6;}
+.rw-side.two .ch i{font-style:normal;font-size:10px;color:#fff;background:#65A30D;border-radius:999px;padding:0 5px;}
+.rw-side.two .ch i.p{background:#DB2777;}
+.rw-side.two .ch small{font-size:10px;font-weight:400;color:#94a3b8;width:100%;}
+.rw-side.two .pl{padding:5px 6px 8px;display:flex;flex-direction:column;gap:3px;}
+.rp1{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #DCE2EA;border-radius:7px;padding:4px 7px;cursor:grab;user-select:none;}
+.rp1 i{width:7px;height:7px;border-radius:50%;flex:none;}.rp1 i.s{background:#3B82F6;}.rp1 i.f{background:#16A34A;}
+.rp1 b{font-size:12.5px;font-weight:700;color:#0f172a;flex:1;}
+.rp1 em{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:#94a3b8;border-radius:999px;padding:0 5px;}
+.rp1:hover{border-color:#15803D;background:#F0FDF4;}
+.rp1.us{opacity:.5;background:#F1F5F9;}
+.rp1.pk{opacity:1;background:#84CC16;border-color:#65A30D;}.rp1.pk b{color:#fff;}
+.rw-side.two .nl{padding:5px 7px 8px;}
+.rw-side.two .nc{align-items:flex-start;padding:5px 6px;}
+.rw-side.two .nc>span{gap:1px;}
+.rw-side.two .nc .t1{display:flex;align-items:center;gap:4px;flex-direction:row;}
+.rw-side.two .nc .t1 small{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rw-side.two .nc b{color:#0f172a;font-size:11.5px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;}
+@media (max-width:1500px){.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 300px;}.rw-side.two .cols{grid-template-columns:92px minmax(0,1fr);}.rp1 b{font-size:11.5px;}.rp1{padding:3px 5px;gap:4px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3406,7 +3431,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='169';
+const BUILD_NO='170';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9739,10 +9764,11 @@ function pjBizEdHTML(dr){
     '<div class="pj-foot"><button type="button" class="pj-ok" data-pj-ok="biz"'+(ch?'':' disabled')+'>등록</button><button type="button" class="pj-cc" data-pj-cc="1">'+(ch?'취소':'닫기')+'</button>'+(U.length?'<button type="button" class="pj-clr" data-pj-bclr="1">모두 빼기</button>':'')+'</div></div>';
 }
 function pjStaffMap(){const o={};(PD.staff||[]).forEach(u=>{o[u.n]=u.g;});return o;}
+const PJ_HIDE=['김성한','채청민'];   /* BUILD 170 : 배치 작업자 명단에서 뺌 */
 async function pjStaffLoad(){
   if(PD.staff)return;
   try{const L=await cRpc('gj_users_public',{});
-    PD.staff=(L||[]).map(u=>({n:u.n,t:u.t||'',d:u.d||'',g:/현장/.test(u.d||'')?'사업관리(현장)':(/측량/.test(u.d||'')?'측량':'')})).filter(u=>u.g);
+    PD.staff=(L||[]).map(u=>({n:u.n,t:u.t||'',d:u.d||'',g:/현장/.test(u.d||'')?'사업관리(현장)':(/측량/.test(u.d||'')?'측량':'')})).filter(u=>u.g&&!PJ_HIDE.includes(u.n));
   }catch(e){PD.staff=null;throw e;}
 }
 function pjWorkEdHTML(dr){
@@ -9918,17 +9944,14 @@ function rtHTML(){
   /* 오른쪽 : 작업자 / 신규사업 */
   const F=days[RTW.focus],used={};rows.forEach(d=>{const c=rtKind(F.ymd,d);c.w.forEach(n=>{used[n]=(used[n]||0)+1;});});
   const tmSet=new Set(rows.map(d=>d._uid)),N=DATA.filter(d=>d._uid&&d.mKey==='실시간'&&workStage(d)==='미착수'&&!tmSet.has(d._uid)).sort((a,b)=>((parseDate(b.req)||0)-(parseDate(a.req)||0)));
-  h+='<div class="rw-side"><div class="tabs"><button type="button" class="'+(RTW.tab==='w'?'on':'')+'" data-rt-tab="w">작업자</button><button type="button" class="'+(RTW.tab==='n'?'on':'')+'" data-rt-tab="n">신규사업 <i>'+N.length+'</i></button></div>';
-  if(RTW.tab==='w'){
-    const all=PD.staff||[],free=all.filter(u=>!used[u.n]).length;
-    h+='<div class="sh"><b>'+F.md+' ('+F.w+')</b> 비는 사람 <b class="fr">'+free+'</b>명 · 들어간 사람 '+(all.length-free)+'명</div><div class="pl">';
-    if(!PD.staff)h+='<div class="rw-0"><span>'+(PD.staffErr?'직원 명단을 불러오지 못했어요':'직원 명단을 불러오는 중…')+'</span></div>';
-    else [['측량','측량팀'],['사업관리(현장)','사업관리(현장)팀']].forEach(g=>{const L=all.filter(u=>u.g===g[0]).slice().sort((a,b)=>(!!used[a.n]-!!used[b.n])||a.n.localeCompare(b.n));
-      h+='<div class="gh">'+g[1]+' <span>'+L.length+'명</span></div><div class="gl">'+L.map(u=>'<span class="rp '+(g[0]==='측량'?'s':'f')+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><b>'+esc(u.n)+'</b>'+(used[u.n]?'<i>'+used[u.n]+'</i>':'')+'</span>').join('')+'</div>';});
-    h+='</div>';
-  }else{
-    h+='<div class="sh">실시간 · 미착수 · 표로 끌어 놓으면 <b>'+(days[Math.min(6,Math.max(0,1-RTW.off))]||F).md+'</b> 「배치 필요」로 들어가요</div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><span><b>'+esc(d.work||'')+'</b><small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div>';
-  }
+  /* BUILD 170 : 오른쪽 = 작업자(세로 한 줄에 한 명 · 부서 구분 없이) | 신규사업 — 둘 다 같이 보여요 */
+  const all=(PD.staff||[]).slice().sort((a,b)=>(!!used[a.n]-!!used[b.n])||a.n.localeCompare(b.n)),free=all.filter(u=>!used[u.n]).length;
+  h+='<div class="rw-side two"><div class="sh"><b>'+F.md+' ('+F.w+')</b> 비는 사람 <b class="fr">'+free+'</b>명 · 들어간 사람 '+(all.length-free)+'명</div><div class="cols">';
+  h+='<div class="wcol"><div class="ch">작업자 <i>'+all.length+'</i></div><div class="pl">';
+  if(!PD.staff)h+='<div class="rw-0"><span>'+(PD.staffErr?'명단을 못 불러왔어요':'불러오는 중…')+'</span></div>';
+  else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?'<em>'+used[u.n]+'</em>':'')+'</div>').join('');
+  h+='</div></div><div class="ncol"><div class="ch">신규사업 <i class="p">'+N.length+'</i><small>끌어 놓으면 '+(days[Math.min(6,Math.max(0,1-RTW.off))]||F).md+' 배치 필요</small></div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><span><span class="t1"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><b>'+esc(d.work||'')+'</b></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div></div>';
+  h+='</div>';
   return h+'</div></div>';
 }
 /* ---------- 고치기 ---------- */
