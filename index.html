@@ -1116,6 +1116,16 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rp1{background:hsl(var(--h,210) 75% 96%);border-color:hsl(var(--h,210) 55% 84%);}
 .rp1:hover{background:hsl(var(--h,210) 75% 91%);border-color:hsl(var(--h,210) 55% 62%);}
 .rp1.us{background:hsl(var(--h,210) 30% 96%);}
+
+/* ===== BUILD 173 : 작업자 칸 — 안 들어간 사람 연한 초록 / 배치된 사람 연한 빨강 ===== */
+.rw-side.two .wcol .rp1{background:#F0FDF4;border-color:#BBF7D0;opacity:1;}
+.rw-side.two .wcol .rp1 b{color:#14532D;}
+.rw-side.two .wcol .rp1:hover{background:#DCFCE7;border-color:#4ADE80;}
+.rw-side.two .wcol .rp1.us{background:#FEE2E2;border-color:#FCA5A5;opacity:1;}
+.rw-side.two .wcol .rp1.us b{color:#B91C1C;}
+.rw-side.two .wcol .rp1.us em{background:#EA002C;}
+.rw-side.two .wcol .rp1.us:hover{background:#FECACA;border-color:#F87171;}
+.rw-side.two .wcol .rp1.pk{background:#84CC16;border-color:#65A30D;}.rw-side.two .wcol .rp1.pk b{color:#fff;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3458,7 +3468,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='172';
+const BUILD_NO='173';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9976,7 +9986,7 @@ function rtHTML(){
   h+='<div class="rw-side two"><div class="sh"><b>'+F.md+' ('+F.w+')</b> 비는 사람 <b class="fr">'+free+'</b>명 · 들어간 사람 '+(all.length-free)+'명</div><div class="cols">';
   h+='<div class="wcol"><div class="ch">작업자 <i>'+all.length+'</i></div><div class="pl">';
   if(!PD.staff)h+='<div class="rw-0"><span>'+(PD.staffErr?'명단을 못 불러왔어요':'불러오는 중…')+'</span></div>';
-  else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" style="--h:'+rtHue(u.n)+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?'<em>'+used[u.n]+'</em>':'')+'</div>').join('');
+  else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?'<em>'+used[u.n]+'</em>':'')+'</div>').join('');
   h+='</div></div><div class="ncol"><div class="ch">신규사업 <i class="p">'+N.length+'</i></div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><span><span class="t1"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><b>'+esc(d.work||'')+'</b></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div></div>';
   h+='</div>';
   return h+'</div></div>';
