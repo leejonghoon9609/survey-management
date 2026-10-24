@@ -1285,6 +1285,21 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 #kkPop .kf{display:flex;gap:8px;justify-content:flex-end;padding:10px 16px;border-top:1px solid #E2E8F0;}
 #kkPop .kf button{border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:8px 18px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;}
 #kkPop .kf .ok{background:#FEE500;border-color:#FEE500;color:#3C1E1E;font-weight:800;padding:8px 26px;}
+
+/* ===== BUILD 183 : 도넛 50% 크게(위) · 범례 아래 2줄 · 조각 안 건수/% · 더 밝은 색 ===== */
+.rtd{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px 10px;}
+.rtd-s{width:225px;height:225px;max-width:none;margin:0 auto;flex:none;}
+.rtd-s .sl{font-size:8.2px;font-weight:900;pointer-events:none;paint-order:stroke;stroke:rgba(0,0,0,.18);stroke-width:.6px;}
+.rtd-s .sl .u{font-size:5.5px;font-weight:700;}
+.rtd-s .sp{font-size:6px;font-weight:800;opacity:.9;pointer-events:none;}
+.rtd-s .d1{font-size:11.5px;}.rtd-s .d2{font-size:7.5px;}
+.rtd-l{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.rtd-l button{padding:4px 7px;}
+.rtd-l button span{font-size:10.5px;}
+.rtd-l button b{filter:none;color:#1e293b;font-size:12.5px;white-space:nowrap;}
+.rtd-l button b em{font-style:normal;font-size:9.5px;color:#64748b;font-weight:700;margin-left:3px;}
+.rtd-l button.on b em{color:#334155;}
+@media (max-width:1500px){.rtd-s{width:180px;height:180px;}.rtd-l button span{font-size:9.5px;}.rtd-l button b em{display:none;}.rtd-l button{padding:3px 5px;gap:4px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3627,7 +3642,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='182';
+const BUILD_NO='183';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9760,10 +9775,10 @@ function pmSubs(a){const o=[];a.forEach(d=>{const w=String(d.region||'').trim().
 
 /* ===== BUILD 180 : 실시간 공정관리 — 오른쪽 리스트 위 실시간 현황 도넛 (누르면 아래 리스트가 그 사업들로) ===== */
 const RT_CAT=[
-  {k:'ing', t:'실시간 중',            c:'#FF5C7A'},
-  {k:'wait',t:'착수 전 / 대기',       c:'#A5B4CB'},
-  {k:'js',  t:'실시간 완료 → 결선',   c:'#3DDC84'},
-  {k:'stop',t:'실시간 중지',          c:'#FFC23D'}];
+  {k:'ing', t:'실시간 중',            c:'#FF4F79',tc:'#fff'},
+  {k:'wait',t:'착수 전 / 대기',       c:'#5CB8FF',tc:'#fff'},
+  {k:'js',  t:'실시간 완료 → 결선',   c:'#22E39A',tc:'#064E3B'},
+  {k:'stop',t:'실시간 중지',          c:'#FFD60A',tc:'#713F12'}];
 function rtCatOf(d){
   if(d.mKey!=='실시간')return '';
   const k=d._pst||workStage(d),jin=String(d.jin==null?'':d.jin).replace(/\s/g,'');
@@ -9777,14 +9792,16 @@ function rtDonutHTML(rows){
   const cnt={};RT_CAT.forEach(c=>cnt[c.k]=0);rows.forEach(d=>{const k=rtCatOf(d);if(k)cnt[k]++;});
   const tot=RT_CAT.reduce((s,c)=>s+cnt[c.k],0),R=54,r=33,cx=56,cy=56;
   const t=new Date(),ds=String(t.getFullYear()).slice(2)+'.'+String(t.getMonth()+1).padStart(2,'0')+'.'+String(t.getDate()).padStart(2,'0');
-  let a0=-Math.PI/2,svg='';
+  let a0=-Math.PI/2,svg='',lb='';
   const arc=(a1,a2)=>{const L=a2-a1>Math.PI?1:0,p=(rr,a)=>[cx+rr*Math.cos(a),cy+rr*Math.sin(a)];const [x1,y1]=p(R,a1),[x2,y2]=p(R,a2),[x3,y3]=p(r,a2),[x4,y4]=p(r,a1);
     return 'M'+x1.toFixed(2)+' '+y1.toFixed(2)+'A'+R+' '+R+' 0 '+L+' 1 '+x2.toFixed(2)+' '+y2.toFixed(2)+'L'+x3.toFixed(2)+' '+y3.toFixed(2)+'A'+r+' '+r+' 0 '+L+' 0 '+x4.toFixed(2)+' '+y4.toFixed(2)+'Z';};
   if(!tot)svg='<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="#E2E8F0" stroke-width="'+(R-r)+'"/>';
   else RT_CAT.forEach(c=>{const n=cnt[c.k];if(!n)return;let a1=a0+n/tot*Math.PI*2;if(n===tot)a1-=0.0001;
-    svg+='<path d="'+arc(a0,a1)+'" fill="'+c.c+'" class="'+(PM.rtCat&&PM.rtCat!==c.k?'dim':'')+'" data-rt-cat="'+c.k+'"><title>'+c.t+' '+n+'건</title></path>';a0=a1;});
-  let h='<div class="rtd"><svg viewBox="0 0 112 112" class="rtd-s">'+svg+'<text x="56" y="54" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="67" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
-  h+=RT_CAT.map(c=>'<button type="button" class="'+(PM.rtCat===c.k?'on':'')+(cnt[c.k]?'':' z')+'" data-rt-cat="'+c.k+'" style="--c:'+c.c+'"><i></i><span>'+c.t+'</span><b>'+cnt[c.k]+'<small>건</small></b></button>').join('');
+    const pc=Math.round(n/tot*100);svg+='<path d="'+arc(a0,a1)+'" fill="'+c.c+'" class="'+(PM.rtCat&&PM.rtCat!==c.k?'dim':'')+'" data-rt-cat="'+c.k+'"><title>'+c.t+' '+n+'건 · '+pc+'%</title></path>';
+    if(a1-a0>=0.5){const am=(a0+a1)/2,rm=(R+r)/2,x=cx+rm*Math.cos(am),y=cy+rm*Math.sin(am);lb+='<text x="'+x.toFixed(1)+'" y="'+(y-1).toFixed(1)+'" text-anchor="middle" class="sl" fill="'+c.tc+'" data-rt-cat="'+c.k+'">'+n+'<tspan class="u">건</tspan></text><text x="'+x.toFixed(1)+'" y="'+(y+7.2).toFixed(1)+'" text-anchor="middle" class="sp" fill="'+c.tc+'" data-rt-cat="'+c.k+'">'+pc+'%</text>';}
+    a0=a1;});
+  let h='<div class="rtd"><svg viewBox="0 0 112 112" class="rtd-s">'+svg+lb+'<text x="56" y="54" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="67" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
+  h+=RT_CAT.map(c=>'<button type="button" class="'+(PM.rtCat===c.k?'on':'')+(cnt[c.k]?'':' z')+'" data-rt-cat="'+c.k+'" style="--c:'+c.c+'"><i></i><span>'+c.t+'</span><b>'+cnt[c.k]+'<small>건</small><em>'+(tot?Math.round(cnt[c.k]/tot*100):0)+'%</em></b></button>').join('');
   return h+'</div></div>';
 }
 /* 공정판·리스트를 화면 아래 끝까지 */
