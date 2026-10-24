@@ -1318,6 +1318,14 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rtd-l button.on[data-rt-cat="stop"] span,.rtd-l button.on[data-rt-cat="stop"] b,.rtd-l button.on[data-rt-cat="stop"] b small,.rtd-l button.on[data-rt-cat="stop"] b em{color:#1e293b !important;}
 .rtd-l button.on i{background:#fff;}.rtd-l button.on[data-rt-cat="stop"] i{background:#1e293b;}
 @media (max-width:1500px){.rtd-s{width:255px;height:214px;}}
+/* ===== BUILD 186 : 도넛 가운데 날짜 누르면 전체 보기 ===== */
+.rtd-s .ctr{cursor:pointer;}
+.rtd-s .ctr .cc{fill:#fff;stroke:none;transition:fill .15s;}
+.rtd-s .ctr:hover .cc{fill:#F1F5F9;}
+.rtd-s .ctr.f .cc{fill:#fff;stroke:#2F7DF6;stroke-width:.9;stroke-dasharray:2 1.4;}
+.rtd-s .ctr.f:hover .cc{fill:#EFF6FF;}
+.rtd-s .ctr text{pointer-events:none;}
+.rtd-s .ctr .d3{font-size:4.2px;font-weight:800;fill:#2F7DF6;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3660,7 +3668,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='185';
+const BUILD_NO='186';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9821,7 +9829,7 @@ function rtDonutHTML(rows){
       lb+='<polyline points="'+x1.toFixed(1)+','+y1.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1)+' '+x3.toFixed(1)+','+y2.toFixed(1)+'" class="ld" stroke="'+c.c+'"/><circle cx="'+x1.toFixed(1)+'" cy="'+y1.toFixed(1)+'" r="1.1" fill="'+c.c+'"/>'+
         '<text x="'+(x3+side*1.5).toFixed(1)+'" y="'+(y2+1.6).toFixed(1)+'" text-anchor="'+(side>0?'start':'end')+'" class="so" data-rt-cat="'+c.k+'">'+c.s+' <tspan class="b">'+n+'건</tspan> '+pc+'%</text>';}
     a0=a1;});
-  let h='<div class="rtd"><svg viewBox="-24 -14 160 134" class="rtd-s">'+svg+lb+'<text x="56" y="56" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="63" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
+  let h='<div class="rtd"><svg viewBox="-24 -14 160 134" class="rtd-s">'+svg+lb+'<g class="ctr'+(PM.rtCat?' f':'')+'" data-rt-all="1"><title>전체 보기</title><circle cx="56" cy="56" r="'+(r-1.2)+'" class="cc"/><text x="56" y="'+(PM.rtCat?54:56)+'" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="'+(PM.rtCat?60.5:63)+'" text-anchor="middle" class="d2">실시간 '+tot+'건</text>'+(PM.rtCat?'<text x="56" y="67.5" text-anchor="middle" class="d3">전체 보기</text>':'')+'</g></svg><div class="rtd-l">';
   h+=RT_CAT.map(c=>'<button type="button" class="'+(PM.rtCat===c.k?'on':'')+(cnt[c.k]?'':' z')+'" data-rt-cat="'+c.k+'" style="--c:'+c.c+'"><i></i><span>'+c.t+'</span><b>'+cnt[c.k]+'<small>건</small><em>'+(tot?Math.round(cnt[c.k]/tot*100):0)+'%</em></b></button>').join('');
   return h+'</div></div>';
 }
@@ -9844,6 +9852,7 @@ window.addEventListener('resize',pmFit);
     if((b=q('[data-pm-nav]'))){pmShift(+b.dataset.pmNav);PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-meth]'))){PM.meth=b.dataset.pmMeth;PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-clear]'))){PM.stage='';PM.row='';PM.rtCat='';PM.cap=300;pmRender();return;}
+    if(q('[data-rt-all]')){PM.rtCat='';PM.cap=300;pmRender();return;}
     if((b=q('[data-rt-cat]'))){PM.rtCat=PM.rtCat===b.dataset.rtCat?'':b.dataset.rtCat;PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-grp]'))){const m=b.dataset.pmGrp;PM.grp=PM.grp===m?'':m;PM.gOpen.clear();try{localStorage.setItem('gongjeong_pmgrp_v1',PM.grp||'0');}catch(x){}pmRender();return;}
     if((b=q('[data-pm-gall]'))){if(b.dataset.pmGall==='1')document.querySelectorAll('#pmLs [data-pm-g]').forEach(x=>PM.gOpen.add(x.dataset.pmG));else PM.gOpen.clear();const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
