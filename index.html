@@ -1214,6 +1214,14 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 #rtPop.rep .ft{margin-top:4px;}
 #rtPop.rep .ft .sv{background:#fff;color:#EA002C;border-color:#EA002C;}#rtPop.rep .ft .sv:hover{background:#EA002C;color:#fff;}
 #rtPop.rep .ft .cl{flex:0 0 auto;color:#94a3b8;}
+
+/* ===== BUILD 178 : 주간/야간 — 칸 맨 앞 아이콘 배지 + 칸 바탕 (주간 연한 노랑 · 야간 연한 파랑) ===== */
+.rw-r .dc.shD{background:#FFFBEB !important;}
+.rw-r .dc.shN{background:#EFF6FF !important;}
+.rw-r .dc.shD,.rw-r .dc.shN{padding-left:22px;}
+.pm-mid .shi{position:absolute;left:3px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;line-height:1;border:1px solid;}
+.pm-mid .shi.d{background:#FEF3C7;border-color:#FCD34D;}
+.pm-mid .shi.n{background:#DBEAFE;border-color:#93C5FD;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3556,7 +3564,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='177';
+const BUILD_NO='178';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10056,7 +10064,7 @@ function rtHTML(){
   const T0=new Date();T0.setHours(0,0,0,0);
   rows.forEach(d=>{const dl=rtDeadline(d),over=dl&&dl<T0,rq=parseDate(d.req);
     h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
-    days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd='';const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
+    days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd=rtShCls(D.ymd,d._uid);const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
       else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">＋ 배치</span>'+rtRepB(D.ymd,d._uid)+'</div>';
       else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'>'+(c.k==='js'?rtShB(D.ymd,d._uid):'')+'<span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span></div>';
@@ -10164,7 +10172,8 @@ document.getElementById('pNew')&&document.getElementById('pNew').addEventListene
    폰 앱(다음 단계) : 보고 = 공용 파일 'rtrep:날짜:사업uid:이름' (JSON) · 확인 = 'rtok:날짜:이름' — 사람마다 따로 저장 */
 function rtRepOf(dt,u){const x=rtCell(dt,u);if(!x)return null;if(x.rep&&x.rep.v)return x.rep;if(x.next==='O')return {v:'Y',t:''};if(x.next==='X')return {v:'N'};return null;}
 const RT_SH={D:['☀','주간'],N:['🌙','야간']};
-function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shb '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업">'+RT_SH[s][0]+'<b>'+RT_SH[s][1]+'</b></span>':'';}
+function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shi '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업">'+RT_SH[s][0]+'</span>':'';}
+function rtShCls(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s==='D'?' shD':(s==='N'?' shN':'');}
 function rtRepB(dt,u){const r=rtRepOf(dt,u),td=rtToday(),t=r&&r.t&&RT_SH[r.t];
   const tip=r?((r.by?r.by+' ':'')+(r.at?hhmm(new Date(r.at))+' ':'')+(r.src==='폰'?'· 폰 보고':'')+(r.memo?'\n'+r.memo:'')):'현장 작업자가 소장님께 내일 공사를 여쭤 보고 알려 줘요 · 눌러서 직접 넣을 수도 있어요';
   let c,txt;
