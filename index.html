@@ -1126,6 +1126,9 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-side.two .wcol .rp1.us em{background:#EA002C;}
 .rw-side.two .wcol .rp1.us:hover{background:#FECACA;border-color:#F87171;}
 .rw-side.two .wcol .rp1.pk{background:#84CC16;border-color:#65A30D;}.rw-side.two .wcol .rp1.pk b{color:#fff;}
+
+/* ===== BUILD 174 : 발주처 배지 한 글자 ===== */
+.srcb{font-style:normal;flex:none;min-width:20px;height:20px;padding:0 4px;border-radius:5px;background:var(--c);color:var(--t);font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3468,7 +3471,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='173';
+const BUILD_NO='174';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9967,7 +9970,7 @@ function rtHTML(){
   if(!rows.length)h+='<div class="rw-0">이번 주 실시간 일정이 없어요<br><span>오른쪽 「신규사업」이나 오른쪽 리스트 카드를 여기로 끌어 오세요 · 실시간측량 단계 사업은 오늘 칸에 자동으로 나와요</span></div>';
   const T0=new Date();T0.setHours(0,0,0,0);
   rows.forEach(d=>{const dl=rtDeadline(d),over=dl&&dl<T0,rq=parseDate(d.req);
-    h+='<div class="rw-r"><div class="nm"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
+    h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
     days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd='';const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
       else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'><span class="nd">＋ 배치</span>'+rtNxB(D.ymd,d._uid)+'</div>';
@@ -9987,7 +9990,7 @@ function rtHTML(){
   h+='<div class="wcol"><div class="ch">작업자 <i>'+all.length+'</i></div><div class="pl">';
   if(!PD.staff)h+='<div class="rw-0"><span>'+(PD.staffErr?'명단을 못 불러왔어요':'불러오는 중…')+'</span></div>';
   else h+=all.map(u=>'<div class="rp1'+(used[u.n]?' us':'')+(RTW.pick===u.n?' pk':'')+'" draggable="true" data-rt-man="'+esc(u.n)+'" title="'+esc(u.n+' '+u.t+' · '+u.g)+(used[u.n]?' · '+F.md+' '+used[u.n]+'곳':'')+'"><i class="'+(u.g==='측량'?'s':'f')+'"></i><b>'+esc(u.n)+'</b>'+(used[u.n]?'<em>'+used[u.n]+'</em>':'')+'</div>').join('');
-  h+='</div></div><div class="ncol"><div class="ch">신규사업 <i class="p">'+N.length+'</i></div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><span><span class="t1"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><b>'+esc(d.work||'')+'</b></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div></div>';
+  h+='</div></div><div class="ncol"><div class="ch">신규사업 <i class="p">'+N.length+'</i></div><div class="nl">'+(N.length?N.map(d=>'<div class="nc" draggable="true" data-rt-biz="'+esc(d._uid)+'" title="'+esc(d.work||'')+'"><span><span class="t1">'+rtSrcB(d)+'<small>📍 '+esc(d.region||'—')+(parseDate(d.req)?' · 요청 '+rtMd(parseDate(d.req)):'')+'</small></span><b>'+esc(d.work||'')+'</b></span><button type="button" data-rt-add="'+esc(d._uid)+'" title="내일 「배치 필요」로">＋</button></div>').join(''):'<div class="rw-0"><span>실시간 미착수 사업이 없어요</span></div>')+'</div></div>';
   h+='</div>';
   return h+'</div></div>';
 }
@@ -10004,6 +10007,10 @@ function rtSetNext(u,v,by){const td=rtToday(),tm=rtTomorrow(),cur=rtCell(td,u),n
 /* BUILD 168 : 칸 아래 「내일 이어서」 배지 — 근태 연동 전에는 눌러서 바꿔요 (? → 이어서 → 끝 → ?) */
 /* BUILD 172 : 작업자마다 아주 연한 바탕색 — 가나다 순서로 색상환을 고르게 나눔 (사람이 바뀌어도 같은 사람은 같은 색) */
 function rtHue(n){const L=(PD.staff||[]).map(u=>u.n).sort((a,b)=>a.localeCompare(b)),i=Math.max(0,L.indexOf(n));return Math.round((i*137.508)%360);}
+/* BUILD 174 : 발주처 배지 — T(SKT) 빨강 · B(SKB) 노랑 · 원(원인자) 초록 · LG 파랑 */
+function rtSrcB(d){const s=String(pmSrc(d)||''),b=String(d.baal||'');
+  const k=/LG/i.test(s+' '+b)?['LG','#2563EB','#fff']:s==='SKT'?['T','#EA002C','#fff']:s==='SKB'?['B','#FFB400','#1e293b']:/원인자/.test(s)?['원','#16A34A','#fff']:[s.slice(0,1)||'?','#94A3B8','#fff'];
+  return '<i class="srcb" style="--c:'+k[1]+';--t:'+k[2]+'" title="'+esc(s||b)+'">'+esc(k[0])+'</i>';}
 function rtNextOf(dt,u){const x=rtCell(dt,u);if(x&&(x.next==='O'||x.next==='X'))return x.next;
   const n=rtCell(rtYmd(rtAdd(parseDate(dt),1)),u);if(n)return n.st==='끝'?'X':'O';return '';}
 function rtNxB(dt,u){const v=rtNextOf(dt,u);
