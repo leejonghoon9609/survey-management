@@ -1262,6 +1262,29 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rtd-l button.on b,.rtd-l button.on span{filter:none;color:#1e293b;}
 .rtd-l button.on b small{color:#334155;}
 @media (max-width:1500px){.rtd-s{width:120px;height:120px;}.rtd-l{flex-basis:116px;}.rtd-l button span{font-size:10px;}}
+
+/* ===== BUILD 182 : 카톡으로 보내기 ===== */
+.rw-top .kkb{flex:none;border:0;background:#FEE500;color:#3C1E1E;font-family:inherit;font-weight:800;font-size:12px;border-radius:7px;padding:4px 12px;cursor:pointer;margin-left:8px;}
+.rw-top .kkb:hover{background:#F5D800;}
+.rw-top .hn,.rw-top .pk{margin-left:auto;}
+#kkPop{position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;}
+#kkPop .kk{background:#fff;border-radius:14px;width:min(860px,100%);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(15,23,42,.3);overflow:hidden;}
+#kkPop .kh{display:flex;align-items:baseline;gap:10px;padding:12px 16px;border-bottom:3px solid #FEE500;}
+#kkPop .kh b{font-size:16px;}#kkPop .kh span{font-size:12px;color:#475569;}#kkPop .kh em{font-style:normal;color:#EA580C;font-weight:800;}
+#kkPop .kh button{margin-left:auto;border:0;background:none;font-size:16px;color:#94a3b8;cursor:pointer;}
+#kkPop .kb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px;padding:12px 16px;min-height:0;overflow:auto;}
+#kkPop .kq{font-size:12px;font-weight:800;color:#334155;margin:8px 0 5px;}#kkPop .kq:first-child{margin-top:0;}#kkPop .kq small{font-weight:400;color:#64748b;margin-left:4px;}
+#kkPop textarea{width:100%;min-height:110px;border:1.5px solid #CBD5E1;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box;}
+#kkPop textarea:focus,#kkPop input:focus{outline:none;border-color:#EAB308;box-shadow:0 0 0 3px rgba(254,229,0,.35);}
+#kkPop .kd{display:flex;gap:4px;flex-wrap:wrap;}
+#kkPop .kd button{border:1px solid #CBD5E1;background:#fff;border-radius:6px;padding:3px 8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+#kkPop .kd button small{font-weight:400;color:#94a3b8;margin-left:2px;}#kkPop .kd button.on{background:#0f172a;color:#fff;border-color:#0f172a;}#kkPop .kd button.on small{color:#cbd5e1;}
+#kkPop .kk2{display:flex;gap:5px;}#kkPop .kk2 input{flex:1;border:1.5px solid #CBD5E1;border-radius:7px;padding:5px 8px;font-family:inherit;font-size:12px;}
+#kkPop .kk2 button{border:1px solid #CBD5E1;background:#fff;border-radius:7px;padding:0 10px;font-family:inherit;font-size:12px;cursor:pointer;}
+#kkPop pre{margin:0;background:#B2C7DA;border-radius:10px;padding:10px;white-space:pre-wrap;word-break:break-all;font-family:inherit;font-size:12px;line-height:1.55;color:#0f172a;max-height:52vh;overflow:auto;}
+#kkPop .kf{display:flex;gap:8px;justify-content:flex-end;padding:10px 16px;border-top:1px solid #E2E8F0;}
+#kkPop .kf button{border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:8px 18px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;}
+#kkPop .kf .ok{background:#FEE500;border-color:#FEE500;color:#3C1E1E;font-weight:800;padding:8px 26px;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3604,7 +3627,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='181';
+const BUILD_NO='182';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10130,7 +10153,7 @@ function rtHTML(){
   const days=rtDays(),rows=rtRows(days),td=rtToday();
   if(RTW.focus<0||RTW.focus>6)RTW.focus=Math.min(6,Math.max(0,1-RTW.off));
   const cls=D=>(D.k===0?' td':'')+(D.k===1?' tm':'')+(D.w==='토'||D.w==='일'?' we':'');
-  let h='<div class="pm-mid rtw" id="pmMid"><div class="rw-main"><div class="rw-top"><b>주간 실시간 배치표</b><span class="nv"><button type="button" data-rt-wk="-7">◀ 이전 주</button><button type="button" data-rt-wk="0">오늘</button><button type="button" data-rt-wk="7">다음 주 ▶</button></span>'+(RTW.pick?'<span class="pk">「'+esc(RTW.pick)+'」 고름 · 칸을 누르면 들어가요 <button type="button" data-rt-pickx="1">취소</button></span>':'<span class="hn">작업자를 끌어 칸에 놓거나, 이름을 누른 뒤 칸을 눌러요</span>')+'</div>';
+  let h='<div class="pm-mid rtw" id="pmMid"><div class="rw-main"><div class="rw-top"><b>주간 실시간 배치표</b><span class="nv"><button type="button" data-rt-wk="-7">◀ 이전 주</button><button type="button" data-rt-wk="0">오늘</button><button type="button" data-rt-wk="7">다음 주 ▶</button></span>'+(RTW.pick?'<span class="pk">「'+esc(RTW.pick)+'」 고름 · 칸을 누르면 들어가요 <button type="button" data-rt-pickx="1">취소</button></span>':'<span class="hn">작업자를 끌어 칸에 놓거나, 이름을 누른 뒤 칸을 눌러요</span>')+'<button type="button" class="kkb" data-rt-kk="1" title="그날 배치를 카톡 단톡방으로">💬 카톡으로 보내기</button>'+('')+'</div>';
   h+='<div class="rw-tb" id="rtTb" data-rt-zone="tb"><div class="rw-r hd"><div class="nm">사업명 <small>지역 · 요청일</small></div>'+days.map((D,i)=>'<div class="dc hd'+cls(D)+(RTW.focus===i?' fo':'')+'" data-rt-focus="'+i+'" title="누르면 오른쪽에 이날 비는 사람">'+D.md+'<small>'+D.w+'</small>'+(D.k===0?'<em class="t">오늘</em>':(D.k===1?'<em class="m">내일</em>':''))+'</div>').join('')+'</div>';
   if(!rows.length)h+='<div class="rw-0">이번 주 실시간 일정이 없어요<br><span>오른쪽 「신규사업」이나 오른쪽 리스트 카드를 여기로 끌어 오세요 · 실시간측량 단계 사업은 오늘 칸에 자동으로 나와요</span></div>';
   const T0=new Date();T0.setHours(0,0,0,0);
@@ -10300,6 +10323,54 @@ document.addEventListener('click',e=>{const p=document.getElementById('rtPop');i
     rtSetRep(p.dataset.dt,p.dataset.u,{v,t:v==='Y'?p.dataset.t:'',memo:(document.getElementById('rtRepMemo')||{}).value||''});rtPopClose();pjR();return;}
   if(e.target.closest('[data-rt-rclr]')){rtSetRep(p.dataset.dt,p.dataset.u,null);rtPopClose();pjR();return;}
 },true);
+
+/* ===== BUILD 182 : 「💬 카톡으로 보내기」 — 멘트 창 → 완료 → (카카오 키 있으면) 카톡 공유 / (없으면) 글 복사해서 단톡방에 붙여 넣기 =====
+   보낼 때 그날 배치 요약을 공용 파일 'rtpub:날짜' 로 저장 → 다음 단계 폰 앱이 이것만 불러와요 */
+const KK_LS='gongjeong_kakao_js_v1',KK_APP='https://leejonghoon9609.github.io/survey-mobile/';
+function kkKey(){try{return localStorage.getItem(KK_LS)||'';}catch(e){return '';}}
+function kkDay(){const D=rtDays();return D[Math.min(6,Math.max(0,RTW.focus))]||D[1];}
+function kkData(D){const rows=rtRows(rtDays()),L=[];let need=0;
+  rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k!=='on'&&c.k!=='need'&&c.k!=='js')return;const x=rtCell(D.ymd,d._uid)||{};
+    if(c.k==='need')need++;L.push({u:d._uid,src:pmSrc(d),work:d.work||'',region:d.region||'',w:c.w.slice(),sh:x.sh||'',st:c.k==='js'?'결선':''});});
+  const o={D:L.filter(x=>x.sh==='D'),N:L.filter(x=>x.sh==='N'),E:L.filter(x=>x.sh!=='D'&&x.sh!=='N')};
+  const ppl=new Set();L.forEach(x=>x.w.forEach(n=>ppl.add(n)));return {L,o,need,ppl:ppl.size};}
+const kkSrc=s=>/LG/i.test(s)?'LG':s==='SKT'?'T':s==='SKB'?'B':/원인자/.test(s)?'원':(s||'').slice(0,1);
+function kkText(D,memo,full){const K=kkData(D),head='📋 '+D.md+'('+D.w+') 실시간 배치 · '+K.L.length+'곳 · '+K.ppl+'명';
+  if(!full)return head+(memo?'\n'+memo:'');
+  const sec=(t,A)=>A.length?'\n'+t+'\n'+A.map((x,i)=>(i+1)+') ['+kkSrc(x.src)+'] '+x.work+(x.region?' ('+x.region+')':'')+'\n    → '+(x.w.length?x.w.join(', '):'미배치')+(x.st?' · '+x.st:'')).join('\n'):'';
+  return head+sec('☀ 주간',K.o.D)+sec('🌙 야간',K.o.N)+sec('· 시간 미정',K.o.E)+(K.need?'\n\n⚠ 미배치 '+K.need+'곳':'')+(memo?'\n\n'+memo:'')+'\n\n👉 확인 : '+KK_APP+'?d='+D.ymd;}
+function kkOpen(){kkClose();const D=kkDay(),K=kkData(D);
+  const p=document.createElement('div');p.id='kkPop';
+  p.innerHTML='<div class="kk"><div class="kh"><b>💬 카톡으로 보내기</b><span>'+D.md+' ('+D.w+') 실시간 배치 · '+K.L.length+'곳 · '+K.ppl+'명'+(K.need?' · <em>미배치 '+K.need+'</em>':'')+'</span><button type="button" data-kk-x="1">✕</button></div>'+
+    '<div class="kb"><div class="kl"><div class="kq">멘트</div><textarea id="kkMemo" placeholder="예) 내일 비 예보 있어요. 우의 챙겨 주세요.">'+esc(RT.kkMemo||'')+'</textarea>'+
+    '<div class="kq">보낼 날짜</div><div class="kd">'+rtDays().map((x,i)=>'<button type="button" class="'+(x.ymd===D.ymd?'on':'')+'" data-kk-d="'+i+'">'+x.md+'<small>'+x.w+'</small></button>').join('')+'</div>'+
+    '<div class="kq">카카오 앱 키 <small>'+(kkKey()?'설정됨 — 완료를 누르면 카톡이 열려요':'없음 — 완료를 누르면 글을 복사해요(단톡방에 붙여 넣기)')+'</small></div><div class="kk2"><input id="kkKey" placeholder="카카오 JavaScript 키 (공개용)" value="'+esc(kkKey())+'"><button type="button" data-kk-key="1">저장</button></div></div>'+
+    '<div class="kr"><div class="kq">미리보기 (단톡방에 갈 글)</div><pre id="kkPrev">'+esc(kkText(D,RT.kkMemo||'',true))+'</pre></div></div>'+
+    '<div class="kf"><button type="button" class="ok" data-kk-go="1">완료</button><button type="button" data-kk-x="1">취소</button></div></div>';
+  p.dataset.d=D.ymd;document.body.appendChild(p);setTimeout(()=>{const t=document.getElementById('kkMemo');if(t)t.focus();},0);}
+function kkClose(){const p=document.getElementById('kkPop');if(p)p.remove();}
+function kkLoadSdk(){return new Promise((res,rej)=>{if(window.Kakao)return res();const s=document.createElement('script');s.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';s.onload=()=>res();s.onerror=()=>rej(new Error('카카오 SDK를 불러오지 못했어요'));document.head.appendChild(s);});}
+async function kkCopy(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy');}catch(x){}a.remove();return ok;}}
+async function kkGo(){const p=document.getElementById('kkPop');if(!p)return;const D=rtDays().find(x=>x.ymd===p.dataset.d)||kkDay(),memo=(document.getElementById('kkMemo')||{}).value||'';RT.kkMemo=memo;
+  const K=kkData(D),full=kkText(D,memo,true);
+  /* 폰 앱용 요약 저장 */
+  try{const buf=pjEnc({v:1,d:D.ymd,at:Date.now(),by:cMe(),memo,list:K.L}),k='rtpub:'+D.ymd,v={name:'배치_'+D.ymd+'.json',at:Date.now(),size:buf.byteLength,buf,by:cMe()};await tplPut(k,v);cFilePut(k,v.name,buf.byteLength,buf);}catch(e){}
+  const copied=await kkCopy(full);const key=kkKey();
+  if(key){try{await kkLoadSdk();if(!Kakao.isInitialized())Kakao.init(key);
+      Kakao.Share.sendDefault({objectType:'text',text:kkText(D,memo,false).slice(0,195),link:{webUrl:KK_APP+'?d='+D.ymd,mobileWebUrl:KK_APP+'?d='+D.ymd},buttonTitle:'내일 배치 확인'});
+      kkClose();toast('카톡이 열렸어요 · 단톡방을 골라 보내 주세요'+(copied?' (전체 글도 복사해 뒀어요)':''));return;}
+    catch(e){toast('카톡 공유를 못 열었어요 · '+(e&&e.message||e)+' — 글을 복사해 뒀어요',true);kkClose();return;}}
+  kkClose();toast(copied?'글을 복사했어요 · 카톡 단톡방에 붙여 넣기(Ctrl+V) 해 주세요':'복사하지 못했어요 · 미리보기 글을 직접 선택해 복사해 주세요',!copied);}
+document.addEventListener('click',e=>{const p=document.getElementById('kkPop');
+  if(e.target.closest&&e.target.closest('[data-rt-kk]')){kkOpen();return;}
+  if(!p||!p.contains(e.target))return;let b;
+  if(e.target===p||e.target.closest('[data-kk-x]')){kkClose();return;}
+  if((b=e.target.closest('[data-kk-d]'))){RT.kkMemo=(document.getElementById('kkMemo')||{}).value||'';RTW.focus=+b.dataset.kkD;kkOpen();return;}
+  if(e.target.closest('[data-kk-key]')){const v=((document.getElementById('kkKey')||{}).value||'').trim();try{v?localStorage.setItem(KK_LS,v):localStorage.removeItem(KK_LS);}catch(x){}RT.kkMemo=(document.getElementById('kkMemo')||{}).value||'';kkOpen();toast(v?'카카오 키를 저장했어요(이 PC)':'카카오 키를 지웠어요');return;}
+  if(e.target.closest('[data-kk-go]')){kkGo();return;}
+});
+document.addEventListener('input',e=>{if(e.target.id!=='kkMemo')return;const p=document.getElementById('kkPop');const D=rtDays().find(x=>x.ymd===p.dataset.d)||kkDay();const pr=document.getElementById('kkPrev');if(pr)pr.textContent=kkText(D,e.target.value,true);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('kkPop')){kkClose();e.stopImmediatePropagation();}},true);
 
 /* 가운데만 다시 그리기 (오른쪽 리스트 스크롤은 그대로) */
 function pjR(){const m=document.getElementById('pmMid');if(!m){pmRender();return;}
