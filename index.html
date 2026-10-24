@@ -1053,6 +1053,17 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r .dc .nx:hover{filter:brightness(.95);box-shadow:0 0 0 1px currentColor;}
 .rw-r{min-height:44px;}
 @media (max-width:1500px){.pm-grid.rtv{grid-template-columns:minmax(0,1fr) 280px;}.pm-grid.rtv .pm-r .mt{display:none;}.rw-r .dc .nx b.f{display:none;}.rw-r .dc .nx b.s{display:inline;}}
+
+/* ===== BUILD 169 : 배치표 좁게 · 오른쪽 작업자 칸 넓게 · 칸 작업자 초록 · 「내일 이어서」 빨강 ===== */
+.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 340px;}
+.rw-side .gl{gap:5px;}
+.rp{font-size:13px;padding:3px 11px;}
+.pm-mid .rk.s,.pm-mid .rk.f{background:#F0FDF4;color:#15803D;border:1px solid #86EFAC;}
+.rw-r .dc .nx.q{background:#fff;color:#EA002C;border:1px solid #FCA5A5;}
+.rw-r .dc .nx.o{background:#EA002C;color:#fff;border-color:#EA002C;}
+.rw-r .dc .nx.x{background:#F1F5F9;color:#94a3b8;border-color:#E2E8F0;}
+.rw-r .dc .nx:hover{filter:none;box-shadow:0 0 0 2px rgba(234,0,44,.18);}
+@media (max-width:1500px){.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 250px;}.rp{font-size:11.5px;padding:2px 8px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3395,7 +3406,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='168';
+const BUILD_NO='169';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
