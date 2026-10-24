@@ -1031,6 +1031,28 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r:not(.hd):not(.sum):hover>div{background-color:#FFFBEB;}
 .rw-r:not(.hd):not(.sum):hover>.dc.tm{background-color:#E6F0FF;}
 .rw-r.sum{border-top:2px solid #64748B;}
+
+/* ===== BUILD 168 : 실시간 공정관리 — 왼쪽 칸 빼기 · 오른쪽 리스트 좁게 · 칸 작게 + 내일 배지 ===== */
+.pm-grid.rtv{grid-template-columns:minmax(0,1fr) minmax(300px,330px);}
+.pm-grid.rtv .pm-left{grid-template-columns:minmax(0,1fr);}
+.pm-grid.rtv .pm-left>.pm-board{display:none;}
+.pm-grid.rtv .pm-lh{flex-wrap:wrap;row-gap:4px;padding:9px 10px;}
+.pm-grid.rtv .pm-lh button{padding:2px 7px;font-size:11px;}
+.pm-grid.rtv .pm-gh .sub{display:none;}
+.pm-grid.rtv .pm-gh{grid-template-columns:12px auto auto auto minmax(30px,1fr);gap:6px;padding:7px 8px;}
+.rw-r .dc.on,.rw-r .dc.need{flex-direction:column;flex-wrap:nowrap;gap:2px;justify-content:center;}
+.rw-r .dc .ws{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;}
+.pm-mid .rk{font-size:9.5px;line-height:15px;padding:0 1px 0 5px;}
+.rk button{font-size:10px;padding:0 2px;}
+.rw-r .dc .nd{font-size:9.5px;padding:0 6px;line-height:15px;border-width:1px;}
+.rw-r .dc .nx{border:1px solid transparent;border-radius:4px;font-family:inherit;font-size:9px;font-weight:800;line-height:14px;padding:0 5px;cursor:pointer;white-space:nowrap;}
+.rw-r .dc .nx b{font-weight:800;}.rw-r .dc .nx b.s{display:none;}
+.rw-r .dc .nx.o{background:#DBEAFE;color:#1D4ED8;border-color:#93C5FD;}
+.rw-r .dc .nx.x{background:#F1F5F9;color:#64748B;border-color:#CBD5E1;}
+.rw-r .dc .nx.q{background:#fff;color:#D97706;border:1px dashed #FCD34D;}
+.rw-r .dc .nx:hover{filter:brightness(.95);box-shadow:0 0 0 1px currentColor;}
+.rw-r{min-height:44px;}
+@media (max-width:1500px){.pm-grid.rtv{grid-template-columns:minmax(0,1fr) 280px;}.pm-grid.rtv .pm-r .mt{display:none;}.rw-r .dc .nx b.f{display:none;}.rw-r .dc .nx b.s{display:inline;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3373,7 +3395,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='167';
+const BUILD_NO='168';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9376,7 +9398,7 @@ function pmRender(){
   const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
   /* BUILD 166 : 왼쪽 단계 카드 칸 접기 / 펴기 (그 PC 브라우저에 기억) */
   const FOLD=(()=>{try{return localStorage.getItem('gongjeong_pmfold_v1')==='1';}catch(e){return false;}})();
-  h+='<div class="pm-grid"><div class="pm-left'+(FOLD?' fold':'')+'">';
+  h+='<div class="pm-grid'+(PM_VIEW()==='rt'?' rtv':'')+'"><div class="pm-left'+(FOLD?' fold':'')+'">';
   /* ── 왼쪽 : 공정판 ── */
   /* BUILD 144 : 제목·건수·거리·진행/완료·색 막대 → 가운데 위 (pm-sum) */
   const sumH='<div class="card pm-sum"><div class="pm-sr"><span class="pm-ht"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span></span>'+
@@ -9802,7 +9824,7 @@ document.getElementById('pNew')&&document.getElementById('pNew').addEventListene
   PMV=v;try{localStorage.setItem('gongjeong_pmview_v1',v);}catch(x){}
   document.querySelectorAll('#pmSlot [data-pm-view]').forEach(x=>x.classList.toggle('on',x.dataset.pmView===v));
   {const mw=document.querySelector('#pNew .pm-midw');if(mw)mw.classList.toggle('nosum',v==='rt');}
-  pjR();
+  pmRender();
 });
 /* ===== BUILD 165 : 실시간 공정관리 — 주간 실시간 배치표(F-1) · 작업자 · 신규사업 =====
    공용 저장소 파일 'rt:plan' 에 JSON (날짜 → 사업(_uid) → {w:작업자, next:'O'|'X'|'', src, at, by, del})
@@ -9874,9 +9896,9 @@ function rtHTML(){
     h+='<div class="rw-r"><div class="nm"><i class="src" style="--c:'+(SRC_C[pmSrc(d)]||'#64748b')+'">'+esc(pmSrc(d))+'</i><span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
     days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd='';const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
-      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'><span class="nd">＋ 배치</span></div>';
+      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'><span class="nd">＋ 배치</span>'+rtNxB(D.ymd,d._uid)+'</div>';
       else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'><span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span></div>';
-      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'>'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>';});
+      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'><div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtNxB(D.ymd,d._uid)+'</div>';});
     h+='</div>';});
   /* 일별 합계 */
   h+='<div class="rw-r sum"><div class="nm"><b>일별 합계</b><small>사업 · 투입 / '+((PD.staff||[]).length||'—')+'명</small></div>'+days.map(D=>{let n=0,ng=0;const p=new Set();rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k==='on'||c.k==='need'){n++;if(c.k==='need')ng++;c.w.forEach(x=>p.add(x));}});
@@ -9908,7 +9930,18 @@ function rtSetNext(u,v,by){const td=rtToday(),tm=rtTomorrow(),cur=rtCell(td,u),n
   if(v==='O'){if(!nx||nx.st==='끝')rtPut(tm,u,{w:(cur&&cur.w||[]).slice(),st:'',src:'carry',del:false});}
   else if(v==='X'){rtPut(tm,u,{w:[],st:'끝',src:'carry',del:false});}}
 /* 나중에 근태 시스템이 부를 자리 : gjRtSetNext('사업 uid','O'|'X','작업자 이름') → 내일 칸이 이어서/측량 끝으로 */
-window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetNext(u,v,by||'근태');if(PM_VIEW()==='rt')pjR();return true;};
+/* BUILD 168 : 칸 아래 「내일 이어서」 배지 — 근태 연동 전에는 눌러서 바꿔요 (? → 이어서 → 끝 → ?) */
+function rtNextOf(dt,u){const x=rtCell(dt,u);if(x&&(x.next==='O'||x.next==='X'))return x.next;
+  const n=rtCell(rtYmd(rtAdd(parseDate(dt),1)),u);if(n)return n.st==='끝'?'X':'O';return '';}
+function rtNxB(dt,u){const v=rtNextOf(dt,u);
+  return '<button type="button" class="nx '+(v==='O'?'o':v==='X'?'x':'q')+'" data-rt-nx="'+v+'" data-rt-u="'+esc(u)+'" data-rt-dt="'+dt+'" title="다음 날 이어서 하는지 · 누르면 바뀌어요 (근태 연동 후 자동)"><b class="f">'+(v==='O'?'내일 이어서':v==='X'?'내일 끝':'내일 ?')+'</b><b class="s">'+(v==='O'?'→O':v==='X'?'→X':'→?')+'</b></button>';}
+function rtSetNextAt(dt,u,v,by){const nd=rtYmd(rtAdd(parseDate(dt),1)),cur=rtCell(dt,u),nx=rtCell(nd,u);
+  rtPut(dt,u,{next:v,w:cur?cur.w||[]:[],st:cur?cur.st||'':'',src:cur?cur.src||'':'auto',nby:by||cMe(),del:false});
+  /* 다음 날 칸에 이미 넣은 작업자는 지우지 않아요 (끝 → 다시 이어서 하면 그대로 돌아와요) */
+  if(v==='O'){if(!nx)rtPut(nd,u,{w:(cur&&cur.w||[]).slice(),st:'',src:'carry',del:false});else if(nx.st==='끝')rtPut(nd,u,{st:'',w:(nx.w&&nx.w.length?nx.w:(cur&&cur.w||[]).slice()),del:false});}
+  else if(v==='X'){if(nx)rtPut(nd,u,{st:'끝',del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',del:false});}
+  else{if(nx&&nx.src==='carry')rtPut(nd,u,{del:true});else if(nx&&nx.st==='끝')rtPut(nd,u,{st:''});}}
+window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetNextAt(rtToday(),u,v,by||'근태');if(PM_VIEW()==='rt')pjR();return true;};
 function rtPopClose(){const p=document.getElementById('rtPop');if(p)p.remove();}
 function rtPopOpen(el){rtPopClose();const u=el.dataset.rtCell,dt=el.dataset.rtDt,x=rtCell(dt,u);
   const p=document.createElement('div');p.id='rtPop';
@@ -9925,6 +9958,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 document.getElementById('pNew')&&document.getElementById('pNew').addEventListener('click',e=>{
   if(PM_VIEW()!=='rt')return;const q=s=>e.target.closest(s);let b;
   if((b=q('[data-rt-wx]'))){e.stopPropagation();rtRmWorker(b.dataset.rtDt,b.dataset.rtU,b.dataset.rtWx);return;}
+  if((b=q('[data-rt-nx]'))){e.stopPropagation();const nv={'':'O','O':'X','X':''}[b.dataset.rtNx];rtSetNextAt(b.dataset.rtDt,b.dataset.rtU,nv);pjR();return;}
   if((b=q('[data-rt-wk]'))){const v=+b.dataset.rtWk;RTW.off=v?RTW.off+v:0;RTW.focus=Math.min(6,Math.max(0,1-RTW.off));pjR();return;}
   if((b=q('[data-rt-focus]'))){RTW.focus=+b.dataset.rtFocus;RTW.tab='w';pjR();return;}
   if((b=q('[data-rt-tab]'))){RTW.tab=b.dataset.rtTab;pjR();return;}
