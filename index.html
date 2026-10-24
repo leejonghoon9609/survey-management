@@ -1249,6 +1249,19 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r.sum .dc .l1 small{color:#475569 !important;font-weight:600;}
 .rw-r.sum .pp{color:#1D4ED8 !important;font-weight:800;}
 @media (max-width:1500px){.rtd-s{width:92px;height:92px;}.rtd-l button span{font-size:10.5px;}}
+
+/* ===== BUILD 181 : 도넛 크게 · 오른쪽 이름 칸 좁게 · 밝은 색 ===== */
+.rtd{gap:6px;padding:8px 8px;}
+.rtd-s{width:150px;height:150px;flex:1 1 auto;max-width:160px;}
+.rtd-s path{stroke-width:2;}
+.rtd-s path.dim{opacity:.35;}
+.rtd-l{flex:0 0 132px;gap:4px;}
+.rtd-l button{padding:4px 6px;gap:5px;}
+.rtd-l button span{font-size:10.5px;white-space:normal;line-height:1.2;word-break:keep-all;}
+.rtd-l button b{font-size:12.5px;filter:brightness(.82);}
+.rtd-l button.on b,.rtd-l button.on span{filter:none;color:#1e293b;}
+.rtd-l button.on b small{color:#334155;}
+@media (max-width:1500px){.rtd-s{width:120px;height:120px;}.rtd-l{flex-basis:116px;}.rtd-l button span{font-size:10px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3591,7 +3604,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='180';
+const BUILD_NO='181';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9724,10 +9737,10 @@ function pmSubs(a){const o=[];a.forEach(d=>{const w=String(d.region||'').trim().
 
 /* ===== BUILD 180 : 실시간 공정관리 — 오른쪽 리스트 위 실시간 현황 도넛 (누르면 아래 리스트가 그 사업들로) ===== */
 const RT_CAT=[
-  {k:'ing', t:'실시간 중',            c:'#E11D48'},
-  {k:'wait',t:'착수 전 / 대기',       c:'#64748B'},
-  {k:'js',  t:'실시간 완료 → 결선',   c:'#22C55E'},
-  {k:'stop',t:'실시간 중지',          c:'#D97706'}];
+  {k:'ing', t:'실시간 중',            c:'#FF5C7A'},
+  {k:'wait',t:'착수 전 / 대기',       c:'#A5B4CB'},
+  {k:'js',  t:'실시간 완료 → 결선',   c:'#3DDC84'},
+  {k:'stop',t:'실시간 중지',          c:'#FFC23D'}];
 function rtCatOf(d){
   if(d.mKey!=='실시간')return '';
   const k=d._pst||workStage(d),jin=String(d.jin==null?'':d.jin).replace(/\s/g,'');
@@ -9739,7 +9752,7 @@ function rtCatOf(d){
 }
 function rtDonutHTML(rows){
   const cnt={};RT_CAT.forEach(c=>cnt[c.k]=0);rows.forEach(d=>{const k=rtCatOf(d);if(k)cnt[k]++;});
-  const tot=RT_CAT.reduce((s,c)=>s+cnt[c.k],0),R=46,r=29,cx=56,cy=56;
+  const tot=RT_CAT.reduce((s,c)=>s+cnt[c.k],0),R=54,r=33,cx=56,cy=56;
   const t=new Date(),ds=String(t.getFullYear()).slice(2)+'.'+String(t.getMonth()+1).padStart(2,'0')+'.'+String(t.getDate()).padStart(2,'0');
   let a0=-Math.PI/2,svg='';
   const arc=(a1,a2)=>{const L=a2-a1>Math.PI?1:0,p=(rr,a)=>[cx+rr*Math.cos(a),cy+rr*Math.sin(a)];const [x1,y1]=p(R,a1),[x2,y2]=p(R,a2),[x3,y3]=p(r,a2),[x4,y4]=p(r,a1);
@@ -9747,7 +9760,7 @@ function rtDonutHTML(rows){
   if(!tot)svg='<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="#E2E8F0" stroke-width="'+(R-r)+'"/>';
   else RT_CAT.forEach(c=>{const n=cnt[c.k];if(!n)return;let a1=a0+n/tot*Math.PI*2;if(n===tot)a1-=0.0001;
     svg+='<path d="'+arc(a0,a1)+'" fill="'+c.c+'" class="'+(PM.rtCat&&PM.rtCat!==c.k?'dim':'')+'" data-rt-cat="'+c.k+'"><title>'+c.t+' '+n+'건</title></path>';a0=a1;});
-  let h='<div class="rtd"><svg viewBox="0 0 112 112" class="rtd-s">'+svg+'<text x="56" y="53" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="68" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
+  let h='<div class="rtd"><svg viewBox="0 0 112 112" class="rtd-s">'+svg+'<text x="56" y="54" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="67" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
   h+=RT_CAT.map(c=>'<button type="button" class="'+(PM.rtCat===c.k?'on':'')+(cnt[c.k]?'':' z')+'" data-rt-cat="'+c.k+'" style="--c:'+c.c+'"><i></i><span>'+c.t+'</span><b>'+cnt[c.k]+'<small>건</small></b></button>').join('');
   return h+'</div></div>';
 }
