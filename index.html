@@ -1308,6 +1308,16 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rtd-s .sl{font-size:8px;stroke:none;}
 .rtd-s .sp{font-size:5px;}
 .rtd-s path.dim{opacity:.45;}
+
+/* ===== BUILD 185 : 작은 조각은 바깥으로 선 · 고른 이름 칸 흰 글자(노랑은 검정) ===== */
+.rtd-s{width:310px;height:260px;max-width:100%;}
+.rtd-s .ld{fill:none;stroke-width:.8;pointer-events:none;}
+.rtd-s .so{font-size:5px;font-weight:700;fill:#334155;cursor:pointer;}
+.rtd-s .so .b{font-weight:900;fill:#0f172a;}
+.rtd-l button.on span,.rtd-l button.on b,.rtd-l button.on b small,.rtd-l button.on b em{color:#fff !important;}
+.rtd-l button.on[data-rt-cat="stop"] span,.rtd-l button.on[data-rt-cat="stop"] b,.rtd-l button.on[data-rt-cat="stop"] b small,.rtd-l button.on[data-rt-cat="stop"] b em{color:#1e293b !important;}
+.rtd-l button.on i{background:#fff;}.rtd-l button.on[data-rt-cat="stop"] i{background:#1e293b;}
+@media (max-width:1500px){.rtd-s{width:255px;height:214px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3650,7 +3660,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='184';
+const BUILD_NO='185';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9800,15 +9810,18 @@ function rtDonutHTML(rows){
   const cnt={};RT_CAT.forEach(c=>cnt[c.k]=0);rows.forEach(d=>{const k=rtCatOf(d);if(k)cnt[k]++;});
   const tot=RT_CAT.reduce((s,c)=>s+cnt[c.k],0),R=55,r=21,cx=56,cy=56;
   const t=new Date(),ds=String(t.getFullYear()).slice(2)+'.'+String(t.getMonth()+1).padStart(2,'0')+'.'+String(t.getDate()).padStart(2,'0');
-  let a0=-Math.PI/2,svg='',lb='';
+  let a0=-Math.PI/2,svg='',lb='',OUT=0;
   const arc=(a1,a2)=>{const L=a2-a1>Math.PI?1:0,p=(rr,a)=>[cx+rr*Math.cos(a),cy+rr*Math.sin(a)];const [x1,y1]=p(R,a1),[x2,y2]=p(R,a2),[x3,y3]=p(r,a2),[x4,y4]=p(r,a1);
     return 'M'+x1.toFixed(2)+' '+y1.toFixed(2)+'A'+R+' '+R+' 0 '+L+' 1 '+x2.toFixed(2)+' '+y2.toFixed(2)+'L'+x3.toFixed(2)+' '+y3.toFixed(2)+'A'+r+' '+r+' 0 '+L+' 0 '+x4.toFixed(2)+' '+y4.toFixed(2)+'Z';};
   if(!tot)svg='<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="#E2E8F0" stroke-width="'+(R-r)+'"/>';
   else RT_CAT.forEach(c=>{const n=cnt[c.k];if(!n)return;let a1=a0+n/tot*Math.PI*2;if(n===tot)a1-=0.0001;
     const pc=Math.round(n/tot*100);svg+='<path d="'+arc(a0,a1)+'" fill="'+c.c+'" class="'+(PM.rtCat&&PM.rtCat!==c.k?'dim':'')+'" data-rt-cat="'+c.k+'"><title>'+c.t+' '+n+'건 · '+pc+'%</title></path>';
     if(a1-a0>=0.62){const am=(a0+a1)/2,rm=(R+r)/2+1,x=cx+rm*Math.cos(am),y=cy+rm*Math.sin(am);lb+='<text x="'+x.toFixed(1)+'" y="'+(y-6).toFixed(1)+'" text-anchor="middle" class="sn" fill="'+c.tc+'">'+c.s+'</text><text x="'+x.toFixed(1)+'" y="'+(y+2.6).toFixed(1)+'" text-anchor="middle" class="sl" fill="'+c.tc+'">'+n+'<tspan class="u">건</tspan></text><text x="'+x.toFixed(1)+'" y="'+(y+9).toFixed(1)+'" text-anchor="middle" class="sp" fill="'+c.tc+'">'+pc+'%</text>';}
+    else{const am=(a0+a1)/2,ca=Math.cos(am),sa=Math.sin(am),side=ca>=0?1:-1,x1=cx+(R-1)*ca,y1=cy+(R-1)*sa,x2=cx+(R+7)*ca,y2=cy+(R+5)*sa+OUT*7,x3=x2+side*(Math.abs(sa)>0.85?16:9);OUT++;
+      lb+='<polyline points="'+x1.toFixed(1)+','+y1.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1)+' '+x3.toFixed(1)+','+y2.toFixed(1)+'" class="ld" stroke="'+c.c+'"/><circle cx="'+x1.toFixed(1)+'" cy="'+y1.toFixed(1)+'" r="1.1" fill="'+c.c+'"/>'+
+        '<text x="'+(x3+side*1.5).toFixed(1)+'" y="'+(y2+1.6).toFixed(1)+'" text-anchor="'+(side>0?'start':'end')+'" class="so" data-rt-cat="'+c.k+'">'+c.s+' <tspan class="b">'+n+'건</tspan> '+pc+'%</text>';}
     a0=a1;});
-  let h='<div class="rtd"><svg viewBox="0 0 112 112" class="rtd-s">'+svg+lb+'<text x="56" y="56" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="63" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
+  let h='<div class="rtd"><svg viewBox="-24 -14 160 134" class="rtd-s">'+svg+lb+'<text x="56" y="56" text-anchor="middle" class="d1">'+ds+'</text><text x="56" y="63" text-anchor="middle" class="d2">실시간 '+tot+'건</text></svg><div class="rtd-l">';
   h+=RT_CAT.map(c=>'<button type="button" class="'+(PM.rtCat===c.k?'on':'')+(cnt[c.k]?'':' z')+'" data-rt-cat="'+c.k+'" style="--c:'+c.c+'"><i></i><span>'+c.t+'</span><b>'+cnt[c.k]+'<small>건</small><em>'+(tot?Math.round(cnt[c.k]/tot*100):0)+'%</em></b></button>').join('');
   return h+'</div></div>';
 }
