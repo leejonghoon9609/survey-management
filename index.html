@@ -1007,6 +1007,20 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 #rtPop button[data-rt-set="need"]{color:#EA580C;}#rtPop button[data-rt-set="js"]{color:#15803D;}#rtPop button[data-rt-set="end"]{color:#64748B;}#rtPop button[data-rt-set="none"]{color:#94a3b8;}
 #rtPop .pn{font-size:10.5px;color:#94a3b8;padding:4px 6px 2px;}
 @media (max-width:1500px){.pm-mid.rtw{grid-template-columns:minmax(0,1fr) 180px;}.rk b.f{display:none;}.rk b.s{display:inline;}.rk{padding:0 1px 0 5px;font-size:10px;}.rw-top .hn{display:none;}.rw-r{grid-template-columns:minmax(130px,2fr) repeat(7,minmax(40px,1fr));}.rw-r .nm .src{display:none;}.rw-r.sum .dc b{font-size:13px;}.rw-r.sum .nm small{display:none;}.rw-r .dc .nd{padding:1px 4px;font-size:9.5px;}.rp{font-size:11px;padding:1px 7px;}}
+
+/* ===== BUILD 166 : 왼쪽 단계 카드 칸 접기 ===== */
+.pm-board{position:relative;}
+.pm-fold{display:block;width:100%;border:1px solid #CBD5E1;background:#F8FAFC;color:#475569;border-radius:7px;font-family:inherit;font-size:11.5px;font-weight:700;padding:3px 0;margin-bottom:6px;cursor:pointer;}
+.pm-fold:hover{background:#EEF2F6;color:#0f172a;}
+.pm-left{transition:grid-template-columns .2s ease;}
+.pm-left.fold{grid-template-columns:34px minmax(0,1fr);}
+.pm-left.fold .pm-board{padding:0;overflow:hidden;}
+.pm-left.fold .pm-board>*:not(.pm-fold){display:none !important;}
+.pm-fold.open{height:100%;margin:0;border:0;border-radius:0;background:linear-gradient(180deg,#fff,#F4F6F9);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;padding:12px 0;}
+.pm-fold.open b{font-size:13px;color:#EA002C;}
+.pm-fold.open span{writing-mode:vertical-rl;font-size:12px;font-weight:800;color:#475569;letter-spacing:2px;}
+.pm-fold.open:hover{background:#FFF1F2;}
+@media (max-width:1250px){.pm-left.fold{grid-template-columns:minmax(0,1fr);}.pm-left.fold .pm-board{height:36px;}.pm-fold.open{flex-direction:row;justify-content:center;padding:6px;}.pm-fold.open span{writing-mode:horizontal-tb;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3349,7 +3363,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='165';
+const BUILD_NO='166';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9350,7 +9364,9 @@ function pmRender(){
   let h='<div class="pm"><div class="pm-top"><div class="pm-slot" id="pmSlot">'+[['biz','사업현황','#0F766E'],['rt','실시간 공정관리','#E11D48'],['proj','프로젝트','#7C3AED']].map(v=>'<button type="button" class="pm-mode pm-vw'+(PM_VIEW()===v[0]?' on':'')+'" data-pm-view="'+v[0]+'" style="--c:'+v[2]+'">'+v[1]+'</button>').join('')+'</div><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
   /* ── BUILD 140 : 측량방법을 공정판 카드 안, 제목 앞으로 ── */
   const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
-  h+='<div class="pm-grid"><div class="pm-left">';
+  /* BUILD 166 : 왼쪽 단계 카드 칸 접기 / 펴기 (그 PC 브라우저에 기억) */
+  const FOLD=(()=>{try{return localStorage.getItem('gongjeong_pmfold_v1')==='1';}catch(e){return false;}})();
+  h+='<div class="pm-grid"><div class="pm-left'+(FOLD?' fold':'')+'">';
   /* ── 왼쪽 : 공정판 ── */
   /* BUILD 144 : 제목·건수·거리·진행/완료·색 막대 → 가운데 위 (pm-sum) */
   const sumH='<div class="card pm-sum"><div class="pm-sr"><span class="pm-ht"><b>'+esc(pmScopeTitle())+'</b><span class="n">'+st.n.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(st.km)+' km</span></span>'+
@@ -9359,7 +9375,7 @@ function pmRender(){
     /* BUILD 146 : 색 막대 밑에 단계 이름 (막대와 같은 색) · 누르면 그 단계만 */
     (st.n?'<div class="pm-lgd">'+WSTAGES.map(s=>{const n=st.st[s.k].n;return '<button type="button" class="'+(n?'':'z')+(PM.stage===s.k&&!PM.row?' on':'')+'" data-pm-st="'+esc(s.k)+'" style="--c:'+s.c+'" title="'+esc(s.k)+' '+n+'건"><i></i>'+esc(s.k)+'<b>'+n.toLocaleString()+'<small>건</small></b></button>';}).join('')+'</div>':'')+
     (PM.mode==='per'&&sc.nodate?'<div class="pm-hint pm-hint2">'+PM_BASIS[PM.basis]+'이 날짜가 아닌 '+sc.nodate.toLocaleString()+'건은 기간별에서 빠져요</div>':'')+'</div>';
-  h+='<div class="card pm-board"><div class="pm-h">'+methH+'</div>';
+  h+='<div class="card pm-board">'+(FOLD?'<button type="button" class="pm-fold open" data-pm-fold="0" title="단계 카드 펴기"><b>▶</b><span>측량방법 · 단계</span></button>':'<button type="button" class="pm-fold" data-pm-fold="1" title="단계 카드 접기 — 가운데 칸이 넓어져요">◀ 접기</button>')+'<div class="pm-h">'+methH+'</div>';
   if(!st.n)h+='<div class="pm-empty">'+(DATA.length?'여기에 해당하는 사업이 없어요':'리스트를 먼저 불러와 주세요 (사업추가 → ② 엑셀로 올리기)')+'</div>';
   else{
     h+='<div class="pm-tiles">'+WSTAGES.map(s=>{const x=st.st[s.k];return '<button type="button" class="pm-tile'+(x.n?'':' z')+(PM.stage===s.k&&!PM.row?' on':'')+'" data-pm-st="'+esc(s.k)+'" style="--c:'+s.c+';--bg:'+s.bg+'"><span class="nm">'+esc(s.k)+'</span><span class="v"><b>'+x.n.toLocaleString()+'</b><small>건</small></span><span class="km">'+pmKm(x.km)+' km</span><span class="pc">'+(st.n?Math.round(x.n/st.n*100):0)+'%</span></button>';}).join('')+'</div>';
@@ -9498,6 +9514,7 @@ window.addEventListener('resize',pmFit);
     if((b=q('[data-pm-grp]'))){const m=b.dataset.pmGrp;PM.grp=PM.grp===m?'':m;PM.gOpen.clear();try{localStorage.setItem('gongjeong_pmgrp_v1',PM.grp||'0');}catch(x){}pmRender();return;}
     if((b=q('[data-pm-gall]'))){if(b.dataset.pmGall==='1')document.querySelectorAll('#pmLs [data-pm-g]').forEach(x=>PM.gOpen.add(x.dataset.pmG));else PM.gOpen.clear();const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
     if((b=q('[data-pm-g]'))){const k=b.dataset.pmG;if(PM.gOpen.has(k))PM.gOpen.delete(k);else PM.gOpen.add(k);const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
+    if((b=q('[data-pm-fold]'))){try{localStorage.setItem('gongjeong_pmfold_v1',b.dataset.pmFold);}catch(x){}pmRender();return;}
     if((b=q('[data-pm-more]'))){const ls=document.getElementById('pmLs'),t=ls?ls.scrollTop:0;PM.cap+=300;pmRender();const l2=document.getElementById('pmLs');if(l2)l2.scrollTop=t;return;}
     if((b=q('[data-pm-row]'))){const r=b.dataset.pmRow,s=b.dataset.pmSt||'';
       if(PM.row===r&&PM.stage===s){PM.row='';PM.stage='';}else{PM.row=r;PM.stage=s;}PM.cap=300;pmRender();return;}
