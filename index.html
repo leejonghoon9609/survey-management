@@ -915,6 +915,12 @@ body.pj-dragging .pd-p{border-color:#EA002C;}
 .pdv-in b{font-size:18px;color:#0F766E;font-weight:800;}
 .pdv-in span{font-size:12.5px;color:#A8B3C2;}
 @media (max-width:1500px){.pm-vw{padding:5px 12px;font-size:15px;}}
+
+/* ===== BUILD 163 : 「실시간 공정관리」 버튼 ===== */
+.pm-slot{width:auto;min-width:clamp(180px,26vw,500px);}
+.pm-slot .pm-vw{white-space:nowrap;padding:6px 16px;}
+.pm-mid.pdv.rt .pdv-in b{color:#E11D48;}
+@media (max-width:1500px){.pm-slot{gap:6px;}.pm-slot .pm-vw{padding:4px 10px;font-size:14px;border-width:2px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3257,7 +3263,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='162';
+const BUILD_NO='163';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9255,7 +9261,7 @@ function pmRender(){
       '<input type="date" id="pmDate" value="'+pmYmd(pmDate())+'" title="날짜로 바로 가기"></span>'+
       '<span class="pm-lb">기준</span><select id="pmBasis">'+Object.keys(PM_BASIS).map(k=>'<option value="'+k+'"'+(PM.basis===k?' selected':'')+'>'+PM_BASIS[k]+'</option>').join('')+'</select>';}
   else sub='<span class="pm-hint">목록 전체의 공정을 봐요</span>';
-  let h='<div class="pm"><div class="pm-top"><div class="pm-slot" id="pmSlot">'+[['biz','사업현황','#0F766E'],['proj','프로젝트','#7C3AED']].map(v=>'<button type="button" class="pm-mode pm-vw'+(PM_VIEW()===v[0]?' on':'')+'" data-pm-view="'+v[0]+'" style="--c:'+v[2]+'">'+v[1]+'</button>').join('')+'</div><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
+  let h='<div class="pm"><div class="pm-top"><div class="pm-slot" id="pmSlot">'+[['biz','사업현황','#0F766E'],['rt','실시간 공정관리','#E11D48'],['proj','프로젝트','#7C3AED']].map(v=>'<button type="button" class="pm-mode pm-vw'+(PM_VIEW()===v[0]?' on':'')+'" data-pm-view="'+v[0]+'" style="--c:'+v[2]+'">'+v[1]+'</button>').join('')+'</div><div class="pm-modes">'+PM_MODES.map(m=>'<button type="button" class="pm-mode'+(PM.mode===m.k?' on':'')+'" data-pm-mode="'+m.k+'" style="--c:'+m.c+'">'+m.t+'</button>').join('')+'</div><div class="pm-sub">'+sub+'</div><button type="button" class="winbtn pm-win" data-pm-win="1" title="별도 창 — 다른 모니터로 옮길 수 있어요">사업진행현황 ↗</button></div>';
   /* ── BUILD 140 : 측량방법을 공정판 카드 안, 제목 앞으로 ── */
   const methH='<span class="pm-meth"><span class="pm-lb">측량방법</span><span class="pm-seg big">'+[['','전체'],['실시간','실시간'],['탐사','탐사']].map(x=>'<button type="button" class="'+(PM.meth===x[0]?'on':'')+'" data-pm-meth="'+x[0]+'">'+x[1]+' <i>'+mc[x[0]]+'</i></button>').join('')+'</span></span>';
   h+='<div class="pm-grid"><div class="pm-left">';
@@ -9336,9 +9342,10 @@ function pdPeriodHTML(P){
 const PD_ST=[{k:'실시간측량',c:'#E11D48'},{k:'결선',c:'#22C55E'},{k:'후측량',c:'#EA580C'},{k:'탱고',c:'#2563EB'},{k:'정위치',c:'#7C3AED'},{k:'정산진행중',c:'#DB2777'},{k:'정산완료',c:'#15803D'}];
 /* BUILD 162 : 가운데 아래 큰 칸 — 「사업현황」(빈 자리 · 준비 중) / 「프로젝트」(지금 화면) */
 let PMV=(()=>{try{return localStorage.getItem('gongjeong_pmview_v1')||'proj';}catch(e){return 'proj';}})();
-function PM_VIEW(){return PMV==='biz'?'biz':'proj';}
+function PM_VIEW(){return PMV==='biz'||PMV==='rt'?PMV:'proj';}
 function pmMidHTML(){
   if(PM_VIEW()==='biz')return '<div class="pm-mid pdv" id="pmMid"><div class="pdv-in"><b>사업현황</b><span>준비 중 · 여기에 사업현황을 만들어요</span></div></div>';
+  if(PM_VIEW()==='rt')return '<div class="pm-mid pdv rt" id="pmMid"><div class="pdv-in"><b>실시간 공정관리</b><span>준비 중 · 여기에 실시간 공정관리를 만들어요</span></div></div>';
   /* BUILD 156 : 프로젝트 — 위 표(작업자 · 프로젝트 · 사업 줄) + 아래(프로젝트 칸 · 고치는 칸) */
   if(!PJ.loaded&&!PJ.loading){PJ.loading=true;pjLoad().finally(()=>{PJ.loading=false;pjR();});}
   PD.proj=pjCur();
