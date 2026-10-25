@@ -1338,6 +1338,23 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r .dc .rb.c{background:#FFFBEB;color:#B45309;border:1px dashed #F59E0B;}
 .rw-r .dc .cxb{border:1px dashed #F59E0B;background:#FFFBEB;color:#B45309;border-radius:4px;font-family:inherit;font-size:9px;font-weight:800;line-height:15px;padding:0 5px;cursor:pointer;white-space:nowrap;}
 .rw-r .dc .cxb:hover{background:#FEF3C7;}
+/* ===== BUILD 189 : 배치표 5일 · 칸 넓게 · 작업자·배치 크게 가로로 ===== */
+.rw-r{grid-template-columns:minmax(180px,1.75fr) repeat(5,minmax(80px,1fr));min-height:42px;}
+.rw-r .dc{flex-wrap:wrap;gap:4px;padding:4px 6px;align-content:center;}
+.pm-mid .rk{font-size:12px;line-height:21px;padding:0 9px;}
+.pm-mid .rk .ck{font-size:11px;}
+.rw-r .dc .nd{font-size:11.5px;line-height:20px;padding:0 9px;}
+.rw-r .dc .rb,.rw-r .dc .cxb{font-size:10.5px;line-height:19px;padding:0 7px;border-radius:5px;}
+.rw-r .dc .tag{font-size:11px;line-height:19px;padding:0 8px;}
+.rw-r.hd .dc{font-size:12px;}.rw-r.hd .dc small{font-size:10.5px;}
+@media (max-width:1500px){
+ .rw-r{grid-template-columns:minmax(135px,1.3fr) repeat(5,minmax(64px,1fr));}
+ .rk b.f{display:inline;}.rk b.s{display:none;}
+ .pm-mid .rk{font-size:11px;line-height:19px;padding:0 6px;}
+ .rw-r .dc .nd{font-size:10px;line-height:18px;padding:0 5px;}
+ .rw-r .dc .rb,.rw-r .dc .cxb{font-size:9px;line-height:17px;padding:0 4px;}
+ .rw-r .dc{padding:3px 3px;gap:3px;}
+}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3680,7 +3697,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='188';
+const BUILD_NO='189';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10202,7 +10219,8 @@ function rtPut(dt,u,patch){RT.days[dt]=RT.days[dt]||{};const o=RT.days[dt][u]||{
 const rtMd=t=>t?(t.getMonth()+1)+'/'+t.getDate():'';
 const RTW={off:0,focus:1,pick:'',tab:'w'};
 function rtAdd(t,n){const x=new Date(t);x.setDate(x.getDate()+n);return x;}
-function rtDays(){const b=new Date();b.setHours(0,0,0,0);const s=rtAdd(b,RTW.off);return Array.from({length:7},(_,i)=>{const t=rtAdd(s,i),k=Math.round((t-b)/86400000);return {t,k,ymd:rtYmd(t),md:(t.getMonth()+1)+'/'+t.getDate(),w:'일월화수목금토'[t.getDay()]};});}
+const RT_ND=5;   /* BUILD 189 : 배치표 날 수 (7 → 5) */
+function rtDays(){const b=new Date();b.setHours(0,0,0,0);const s=rtAdd(b,RTW.off);return Array.from({length:RT_ND},(_,i)=>{const t=rtAdd(s,i),k=Math.round((t-b)/86400000);return {t,k,ymd:rtYmd(t),md:(t.getMonth()+1)+'/'+t.getDate(),w:'일월화수목금토'[t.getDay()]};});}
 function rtDeadline(d){const r=parseDate(d.req);return r?rtAdd(new Date(r.getFullYear(),r.getMonth(),r.getDate()),20):null;}
 function rtCell(dt,u){const D=RT.days[dt];const x=D&&D[u];return x&&!x.del?x:null;}
 function rtRows(days){
@@ -10222,11 +10240,11 @@ function rtHTML(){
   if(!RT.loaded&&!RT.loading){RT.loading=true;rtLoad().finally(()=>{RT.loading=false;if(PM_VIEW()==='rt')pjR();});}
   if(!PD.staff&&!PD.staffBusy&&!(PD.staffErr&&Date.now()-(PD.staffErrAt||0)<30000)){PD.staffBusy=true;PD.staffErrAt=Date.now();pjStaffLoad().catch(()=>{PD.staffErr=true;}).finally(()=>{PD.staffBusy=false;if(PM_VIEW()==='rt')pjR();});}
   const days=rtDays(),rows=rtRows(days),td=rtToday();
-  if(RTW.focus<0||RTW.focus>6)RTW.focus=Math.min(6,Math.max(0,1-RTW.off));
+  if(RTW.focus<0||RTW.focus>RT_ND-1)RTW.focus=Math.min(RT_ND-1,Math.max(0,1-RTW.off));
   const cls=D=>(D.k===0?' td':'')+(D.k===1?' tm':'')+(D.w==='토'||D.w==='일'?' we':'');
-  let h='<div class="pm-mid rtw" id="pmMid"><div class="rw-main"><div class="rw-top"><b>주간 실시간 배치표</b><span class="nv"><button type="button" data-rt-wk="-7">◀ 이전 주</button><button type="button" data-rt-wk="0">오늘</button><button type="button" data-rt-wk="7">다음 주 ▶</button></span>'+(RTW.pick?'<span class="pk">「'+esc(RTW.pick)+'」 고름 · 칸을 누르면 들어가요 <button type="button" data-rt-pickx="1">취소</button></span>':'<span class="hn">작업자를 끌어 칸에 놓거나, 이름을 누른 뒤 칸을 눌러요</span>')+'<button type="button" class="kkb" data-rt-kk="1" title="그날 배치를 카톡 단톡방으로">💬 카톡으로 보내기</button>'+('')+'</div>';
+  let h='<div class="pm-mid rtw" id="pmMid"><div class="rw-main"><div class="rw-top"><b>실시간 배치표</b><span class="nv"><button type="button" data-rt-wk="-5">◀ 이전 5일</button><button type="button" data-rt-wk="0">오늘</button><button type="button" data-rt-wk="5">다음 5일 ▶</button></span>'+(RTW.pick?'<span class="pk">「'+esc(RTW.pick)+'」 고름 · 칸을 누르면 들어가요 <button type="button" data-rt-pickx="1">취소</button></span>':'<span class="hn">작업자를 끌어 칸에 놓거나, 이름을 누른 뒤 칸을 눌러요</span>')+'<button type="button" class="kkb" data-rt-kk="1" title="그날 배치를 카톡 단톡방으로">💬 카톡으로 보내기</button>'+('')+'</div>';
   h+='<div class="rw-tb" id="rtTb" data-rt-zone="tb"><div class="rw-r hd"><div class="nm">사업명 <small>지역 · 요청일</small></div>'+days.map((D,i)=>'<div class="dc hd'+cls(D)+(RTW.focus===i?' fo':'')+'" data-rt-focus="'+i+'" title="누르면 오른쪽에 이날 비는 사람">'+D.md+'<small>'+D.w+'</small>'+(D.k===0?'<em class="t">오늘</em>':(D.k===1?'<em class="m">내일</em>':''))+'</div>').join('')+'</div>';
-  if(!rows.length)h+='<div class="rw-0">이번 주 실시간 일정이 없어요<br><span>오른쪽 「신규사업」이나 오른쪽 리스트 카드를 여기로 끌어 오세요 · 실시간측량 단계 사업은 오늘 칸에 자동으로 나와요</span></div>';
+  if(!rows.length)h+='<div class="rw-0">이 기간 실시간 일정이 없어요<br><span>오른쪽 「신규사업」이나 오른쪽 리스트 카드를 여기로 끌어 오세요 · 실시간측량 단계 사업은 오늘 칸에 자동으로 나와요</span></div>';
   const T0=new Date();T0.setHours(0,0,0,0);
   rows.forEach(d=>{const dl=rtDeadline(d),over=dl&&dl<T0,rq=parseDate(d.req);
     h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
@@ -10255,7 +10273,7 @@ function rtHTML(){
   return h+'</div></div>';
 }
 /* ---------- 고치기 ---------- */
-function rtTarget(){const D=rtDays();return (D.find(x=>x.k===1)||D[Math.min(6,Math.max(0,RTW.focus))]).ymd;}
+function rtTarget(){const D=rtDays();return (D.find(x=>x.k===1)||D[Math.min(RT_ND-1,Math.max(0,RTW.focus))]).ymd;}
 function rtAddBiz(u){const d=pjBiz(u);if(!d)return;const dt=rtTarget();if(rtCell(dt,u))return toast('이미 그날 일정이 있어요');rtPut(dt,u,{w:[],st:'',src:'new',del:false});toast('「'+(d.work||'')+'」 '+rtLabel(dt)+' 「배치 필요」로 넣었어요');pjR();}
 function rtAddWorker(dt,u,n){const d=pjBiz(u);if(!d)return;const x=rtCell(dt,u),w=(x&&x.w||[]).slice();if(w.includes(n))return toast(n+'님은 이미 들어 있어요');w.push(n);rtPut(dt,u,{w,st:x&&x.st==='끝'?'':(x&&x.st||''),src:x&&x.src||'w',del:false});pjR();}
 function rtRmWorker(dt,u,n){const x=rtCell(dt,u);if(!x)return;rtPut(dt,u,{w:(x.w||[]).filter(y=>y!==n)});pjR();}
@@ -10299,7 +10317,7 @@ document.getElementById('pNew')&&document.getElementById('pNew').addEventListene
   if(PM_VIEW()!=='rt')return;const q=s=>e.target.closest(s);let b;
   if((b=q('[data-rt-wx]'))){e.stopPropagation();rtRmWorker(b.dataset.rtDt,b.dataset.rtU,b.dataset.rtWx);return;}
   if((b=q('[data-rt-rep]'))){e.stopPropagation();rtRepPop(b);return;}
-  if((b=q('[data-rt-wk]'))){const v=+b.dataset.rtWk;RTW.off=v?RTW.off+v:0;RTW.focus=Math.min(6,Math.max(0,1-RTW.off));pjR();return;}
+  if((b=q('[data-rt-wk]'))){const v=+b.dataset.rtWk;RTW.off=v?RTW.off+v:0;RTW.focus=Math.min(RT_ND-1,Math.max(0,1-RTW.off));pjR();return;}
   if((b=q('[data-rt-focus]'))){RTW.focus=+b.dataset.rtFocus;RTW.tab='w';pjR();return;}
   if((b=q('[data-rt-tab]'))){RTW.tab=b.dataset.rtTab;pjR();return;}
   if((b=q('[data-rt-add]'))){rtAddBiz(b.dataset.rtAdd);return;}
@@ -10439,7 +10457,7 @@ document.addEventListener('click',e=>{const p=document.getElementById('rtPop');i
    보낼 때 그날 배치 요약을 공용 파일 'rtpub:날짜' 로 저장 → 다음 단계 폰 앱이 이것만 불러와요 */
 const KK_LS='gongjeong_kakao_js_v1',KK_APP='https://leejonghoon9609.github.io/survey-review/realtime.html';
 function kkKey(){try{return localStorage.getItem(KK_LS)||'';}catch(e){return '';}}
-function kkDay(){const D=rtDays();return D[Math.min(6,Math.max(0,RTW.focus))]||D[1];}
+function kkDay(){const D=rtDays();return D[Math.min(RT_ND-1,Math.max(0,RTW.focus))]||D[1];}
 function kkData(D,rows){rows=rows||rtRows(rtDays());const L=[];let need=0;
   rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k!=='on'&&c.k!=='need'&&c.k!=='js')return;const x=rtCell(D.ymd,d._uid)||{};
     if(c.k==='need')need++;L.push({u:d._uid,src:pmSrc(d),work:d.work||'',region:d.region||'',w:c.w.slice(),sh:x.sh||'',st:c.k==='js'?'결선':'',mk:workStage(d)==='후측량'?'후측량':'실시간'});});
