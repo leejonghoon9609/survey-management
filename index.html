@@ -1422,6 +1422,19 @@ body.rt-nmdrag *{cursor:col-resize !important;}
 .rw-r .dc .ws+.rb,.rw-r .dc .ws+.cxb{margin-left:4px;}
 @media (max-width:1500px){.pm-mid .shi{left:2px;width:19px;}.rw-r .dc .ws+.rb,.rw-r .dc .ws+.cxb{margin-left:2px;}}
 #kkPop #kkKey{letter-spacing:2px;}
+/* ===== BUILD 198 : 칸 메뉴 — 닫기 버튼 · 주간/야간 표시를 배치표와 같게 ===== */
+#rtPop .ph{position:relative;padding-right:30px !important;}
+#rtPop .ph .px{position:absolute;top:-2px;right:0;width:24px;height:24px;padding:0;border-radius:6px;border:1px solid #E2E8F0;background:#fff;color:#64748b;font-size:12px;line-height:22px;text-align:center;cursor:pointer;}
+#rtPop .ph .px:hover{background:#FEE2E2;border-color:#FCA5A5;color:#DC2626;}
+#rtPop button[data-rt-set="shD"],#rtPop button[data-rt-set="shN"]{display:flex;align-items:center;gap:8px;}
+#rtPop .mi{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:22px;height:28px;border-radius:5px;gap:1px;flex:none;}
+#rtPop .mi.d{background:#F0F9FF;box-shadow:inset 0 0 0 1px #BAE6FD;}
+#rtPop .mi.n{background:#6B7280;}
+#rtPop .mi i{font-style:normal;font-size:12px;line-height:1;}
+#rtPop .mi .sun{width:13px;height:13px;display:block;}
+#rtPop .mi b{font-size:8px;font-weight:800;line-height:1;}
+#rtPop .mi.d b{color:#0369A1;}#rtPop .mi.n b{color:#fff;}
+#rtPop button em{font-style:normal;margin-left:auto;color:#16A34A;font-weight:900;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3764,7 +3777,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='197';
+const BUILD_NO='198';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10368,10 +10381,12 @@ function rtSetNextAt(dt,u,v,by){const nd=rtYmd(rtAdd(parseDate(dt),1)),cur=rtCel
   else if(v==='X'){if(nx)rtPut(nd,u,{st:'끝',del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',del:false});}
   else{if(nx&&nx.src==='carry')rtPut(nd,u,{del:true});else if(nx&&nx.st==='끝')rtPut(nd,u,{st:''});}}
 window.gjRtSetNext0=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetNextAt(rtToday(),u,v,by||'근태');if(PM_VIEW()==='rt')pjR();return true;};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rt-px]');if(!b)return;e.preventDefault();e.stopPropagation();rtPopClose();},true);
 function rtPopClose(){const p=document.getElementById('rtPop');if(p)p.remove();}
 function rtPopOpen(el){rtPopClose();const u=el.dataset.rtCell,dt=el.dataset.rtDt,x=rtCell(dt,u);
   const p=document.createElement('div');p.id='rtPop';
-  p.innerHTML='<div class="ph">'+rtLabel(dt)+'</div>'+[['need','배치 필요(빈칸)'],['js','결선'],['end','측량 끝'],['none','일정 없음'],['shD','☀ 주간 작업'],['shN','🌙 야간 작업'],['sh0','시간 지우기']].map(o=>'<button type="button" data-rt-set="'+o[0]+'">'+o[1]+'</button>').join('')+(x&&(x.w||[]).length?'<div class="pn">작업자 '+x.w.length+'명은 그대로 둬요 (이름 옆 ×로 빼기)</div>':'');
+  const sh=x&&x.sh||'',MI=(k)=>k==='D'?'<span class="mi d"><i>'+rtSun()+'</i><b>주간</b></span>':'<span class="mi n"><i>🌙</i><b>야간</b></span>';
+  p.innerHTML='<div class="ph">'+rtLabel(dt)+'<button type="button" class="px" data-rt-px="1" title="닫기">✕</button></div>'+[['need','배치 필요(빈칸)'],['js','결선'],['end','측량 끝'],['none','일정 없음'],['shD',MI('D')+'주간 작업'+(sh==='D'?'<em>✓</em>':'')],['shN',MI('N')+'야간 작업'+(sh==='N'?'<em>✓</em>':'')],['sh0','시간 지우기']].map(o=>'<button type="button" data-rt-set="'+o[0]+'">'+o[1]+'</button>').join('')+(x&&(x.w||[]).length?'<div class="pn">작업자 '+x.w.length+'명은 그대로 둬요 (이름 옆 ×로 빼기)</div>':'');
   p.dataset.u=u;p.dataset.dt=dt;document.body.appendChild(p);
   const r=el.getBoundingClientRect();let top=r.bottom+4;if(top+p.offsetHeight>innerHeight-8)top=r.top-p.offsetHeight-4;
   p.style.top=top+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-p.offsetWidth-8))+'px';}
@@ -10508,7 +10523,7 @@ setInterval(()=>{if(IS_SUBWIN||!cCloudReady()||!(cAuth()||{}).token)return;
 /* 보고 · 시간 고르기 창 */
 function rtRepPop(el){rtPopClose();const u=el.dataset.rtRep,dt=el.dataset.rtDt,r=rtRepOf(dt,u),d=pjBiz(u);
   const p=document.createElement('div');p.id='rtPop';p.className='rep';
-  p.innerHTML='<div class="ph">'+rtLabel(dt)+' 현장 보고<small>'+esc((d&&d.work)||'')+'</small></div>'+
+  p.innerHTML='<div class="ph">'+rtLabel(dt)+' 현장 보고<button type="button" class="px" data-rt-px="1" title="닫기">✕</button><small>'+esc((d&&d.work)||'')+'</small></div>'+
     '<div class="pq">내일 공사</div><div class="two"><button type="button" class="'+(r&&r.v==='Y'?'on y':'')+'" data-rt-rs="Y">있음</button><button type="button" class="'+(r&&r.v==='N'?'on n':'')+'" data-rt-rs="N">없음 (오늘로 끝)</button></div>'+
     '<div class="pq">시간</div><div class="two"><button type="button" class="sd'+(r&&r.t==='D'?' on':'')+'" data-rt-rt="D">☀ 주간</button><button type="button" class="sn'+(r&&r.t==='N'?' on':'')+'" data-rt-rt="N">🌙 야간</button></div>'+
     '<input class="pm" id="rtRepMemo" placeholder="메모 (집결 시간 · 소장 연락처 …)" value="'+esc(r&&r.memo||'')+'">'+
