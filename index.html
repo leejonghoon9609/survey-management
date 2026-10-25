@@ -1326,6 +1326,14 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rtd-s .ctr.f:hover .cc{fill:#EFF6FF;}
 .rtd-s .ctr text{pointer-events:none;}
 .rtd-s .ctr .d3{font-size:4.2px;font-weight:800;fill:#2F7DF6;}
+/* ===== BUILD 187 : 실시간 리스트 — 날짜별 · 지역별 · 발주사별 버튼 ===== */
+.rt-gbar{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid #E2E8F0;flex:none;}
+.rt-gbar button{flex:1;height:28px;border-radius:7px;border:1.5px solid var(--c);background:#fff;color:var(--c);font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;transition:background .12s;}
+.rt-gbar button:hover{background:color-mix(in srgb,var(--c) 9%,#fff);}
+.rt-gbar button.on{background:var(--c);color:#fff;}
+.rt-gbar .date{--c:#7C3AED;}.rt-gbar .region{--c:#0D9488;}.rt-gbar .jisa{--c:#2563EB;}
+.pm-gh b small.dd{font-size:10.5px;font-weight:700;margin-left:5px;opacity:.85;}
+@media (max-width:1500px){.rt-gbar{padding:6px 8px;gap:4px;}.rt-gbar button{height:25px;font-size:11.5px;}}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3668,7 +3676,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='186';
+const BUILD_NO='187';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -9691,14 +9699,14 @@ function pmRender(){
   h+='<div class="pm-midw'+(PM_VIEW()==='rt'?' nosum':'')+'">'+sumH+pmMidHTML()+'</div></div>';
   /* ── 오른쪽 : 리스트 ── */
   let list=rows;
-  const RTV=PM_VIEW()==='rt';if(RTV&&PM.rtCat)list=list.filter(d=>rtCatOf(d)===PM.rtCat);
+  const RTV=PM_VIEW()==='rt';if(RTV)list=list.filter(d=>PM.rtCat?rtCatOf(d)===PM.rtCat:!!rtCatOf(d));
   if(PM.row)list=list.filter(d=>d._prow===PM.row);
   if(PM.stage)list=list.filter(d=>d._pst===PM.stage);
   const ord={};WSTAGES.forEach((s,i)=>ord[s.k]=i);
   list=list.slice().sort((a,b)=>(ord[a._pst]-ord[b._pst])||((b.elapsed==null?-1:b.elapsed)-(a.elapsed==null?-1:a.elapsed)));
   const lkm=list.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0);
-  const ltitle=[RTV&&PM.rtCat?(RT_CAT.find(c=>c.k===PM.rtCat)||{}).t:'',PM.row,PM.stage].filter(Boolean).join(' · ')||'전체';
-  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage||(RTV&&PM.rtCat))?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+'<button type="button" class="pm-gbtn rg'+(PM.grp==='region'?' on':'')+'" data-pm-grp="region" title="리스트를 행정구역(시·군)별로 묶어요 — 가까운 현장끼리 · 다시 누르면 풀려요">지역별</button>'+'<button type="button" class="pm-gbtn'+(PM.grp==='jisa'?' on':'')+'" data-pm-grp="jisa" title="리스트를 발주사(지사)별로 묶어요 · 다시 누르면 풀려요">발주사별</button>'+'<button type="button" class="winbtn pm-lwin" data-pm-lwin="1" title="지금 고른 사업들을 표로 — 별도 창 (다른 모니터로 옮길 수 있어요)">리스트 보기 ↗</button>'+'</div>'+(RTV?rtDonutHTML(rows):'')+'<div class="pm-ls" id="pmLs">';
+  const ltitle=[RTV&&PM.rtCat?(RT_CAT.find(c=>c.k===PM.rtCat)||{}).t:'',PM.row,PM.stage].filter(Boolean).join(' · ')||(RTV?'실시간 전체':'전체');
+  h+='<div class="card pm-list"><div class="pm-lh"><b>'+esc(ltitle)+'</b><span class="n">'+list.length.toLocaleString()+'건</span><span class="k">'+pmKm(lkm)+' km</span>'+((PM.row||PM.stage||(RTV&&PM.rtCat))?'<button type="button" data-pm-clear="1">전체 보기</button>':'')+(RTV?'':'<button type="button" class="pm-gbtn rg'+(PM.grp==='region'?' on':'')+'" data-pm-grp="region" title="리스트를 행정구역(시·군)별로 묶어요 — 가까운 현장끼리 · 다시 누르면 풀려요">지역별</button>'+'<button type="button" class="pm-gbtn'+(PM.grp==='jisa'?' on':'')+'" data-pm-grp="jisa" title="리스트를 발주사(지사)별로 묶어요 · 다시 누르면 풀려요">발주사별</button>')+'<button type="button" class="winbtn pm-lwin" data-pm-lwin="1" title="지금 고른 사업들을 표로 — 별도 창 (다른 모니터로 옮길 수 있어요)">리스트 보기 ↗</button>'+'</div>'+(RTV?rtDonutHTML(rows)+'<div class="rt-gbar">'+RT_GRP.map(g=>'<button type="button" class="'+g.k+(PM.rtGrp===g.k?' on':'')+'" data-rt-grp="'+g.k+'" title="'+g.t+' · 다시 누르면 풀려요">'+g.n+'</button>').join('')+'</div>':'')+'<div class="pm-ls" id="pmLs">';
   if(!list.length)h+='<div class="pm-empty">해당하는 사업이 없어요</div>';
   const pmCardH=d=>{let h='';
     if(d._id==null)d._id=++idSeq;
@@ -9706,20 +9714,22 @@ function pmRender(){
     const el=d.elapsed!=null?d.elapsed+'일째':(d.days!=null?'소요 '+d.days+'일':'');
     h+='<div class="pm-r" draggable="true" data-uid="'+esc(d._uid||'')+'" data-pm-open="'+d._id+'" style="--c:'+wsColor(d._pst)+'"><div class="a">'+wsBadge(d)+'<span class="src" style="--c:'+(SRC_C[src]||'#64748b')+'">'+esc(src)+'</span>'+(d.mKey?'<span class="mt">'+esc(d.mKey)+'</span>':'')+'<span class="el">'+(rq?'요청 '+pmYmd(rq):'')+(el?(rq?' · ':'')+el:'')+'</span></div>'+
       '<div class="nm">'+esc(d.work||'(공사명 없음)')+'</div><div class="b"><span>'+esc([d.jisa,d.region].filter(Boolean).join(' · '))+'</span><span class="km'+(x?'':' z')+'">'+(x?x.v.toFixed(3)+' km':'— km')+'</span></div></div>';    return h;};
-  if(PM.grp&&list.length){
-    /* BUILD 152 : 지역(지사)별로 묶기 — 머리를 누르면 펼치고 접어요 */
-    const RG=PM.grp==='region',NONE=RG?'(행정구역 없음)':'(지사 없음)',rk=RG?pmRegionKeyer(list):null;
-    const gk=d=>RG?rk(d):(String(d.jisa||'').trim()||NONE),G={};
+  const GRP=RTV?PM.rtGrp:(PM.grp==='date'?'':PM.grp);
+  if(GRP&&list.length){
+    /* BUILD 152 : 지역(지사)별로 묶기 — 머리를 누르면 펼치고 접어요 · BUILD 187 : 실시간 화면은 날짜(요청일)별도 */
+    const RG=GRP==='region',DT=GRP==='date',NONE=DT?'(요청일 없음)':RG?'(행정구역 없음)':'(지사 없음)',rk=RG?pmRegionKeyer(list):null;
+    const gk=d=>DT?rtReqKey(d,NONE):RG?rk(d):(String(d.jisa||'').trim()||NONE),G={};
     list.forEach(d=>{(G[gk(d)]=G[gk(d)]||[]).push(d);});
+    if(DT)Object.keys(G).forEach(k=>G[k].sort((a,b)=>String(a.work||'').localeCompare(String(b.work||''))));
     if(RG)Object.keys(G).forEach(k=>G[k].sort((a,b)=>String(a.region||'').localeCompare(String(b.region||''))||String(a.work||'').localeCompare(String(b.work||''))));
-    const keys=Object.keys(G).sort((a,b)=>{if(a===NONE)return 1;if(b===NONE)return -1;if(!RG){const x=JISA_ORDER.indexOf(a),y=JISA_ORDER.indexOf(b);if(x>=0||y>=0)return (x<0?99:x)-(y<0?99:y);}return G[b].length-G[a].length||a.localeCompare(b);});
+    const keys=Object.keys(G).sort((a,b)=>{if(a===NONE)return 1;if(b===NONE)return -1;if(DT)return a<b?1:a>b?-1:0;if(!RG){const x=JISA_ORDER.indexOf(a),y=JISA_ORDER.indexOf(b);if(x>=0||y>=0)return (x<0?99:x)-(y<0?99:y);}return G[b].length-G[a].length||a.localeCompare(b);});
     const allOpen=keys.every(k=>PM.gOpen.has(k));
-    h+='<div class="pm-gtool"><span>'+(RG?'행정구역 ':'발주사 ')+keys.length+'곳</span><button type="button" data-pm-gall="'+(allOpen?'0':'1')+'">'+(allOpen?'모두 접기':'모두 펼치기')+'</button></div>';
+    if(!RTV)h+='<div class="pm-gtool"><span>'+(RG?'행정구역 ':'발주사 ')+keys.length+'곳</span><button type="button" data-pm-gall="'+(allOpen?'0':'1')+'">'+(allOpen?'모두 접기':'모두 펼치기')+'</button></div>';
     PM._gmap={};keys.forEach(k=>{PM._gmap[k]=G[k].map(d=>d._uid);});
-    keys.forEach(k=>{const a=G[k],op=PM.gOpen.has(k),km=a.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0),c=RG?pmMajC(a):(JISA_TC[k]||'#475569');
-      const st={};a.forEach(d=>{st[d._pst]=(st[d._pst]||0)+1;});
-      h+='<div class="pm-g'+(op?' op':'')+'" style="--c:'+c+'"><button type="button" class="pm-gh" draggable="true" title="누르면 펼치고 접어요 · 가운데 「사업 선택」 칸으로 끌어 놓으면 이 지역 사업이 한 번에 들어가요" data-pm-g="'+esc(k)+'"><span class="ar">'+(op?'▾':'▸')+'</span><b>'+esc(k)+'</b><span class="n">'+a.length.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(km)+' km</span>'+
-        (RG?'<span class="sub" title="'+esc(pmSubs(a).join(', '))+'">'+esc(pmSubs(a).slice(0,3).join(' · ')+(pmSubs(a).length>3?' 외':''))+'</span>':'<span class="sub"></span>')+'<span class="bar">'+WSTAGES.map(s=>st[s.k]?'<i style="flex:'+st[s.k]+';background:'+s.c+'" title="'+esc(s.k)+' '+st[s.k]+'건"></i>':'').join('')+'</span></button>';
+    keys.forEach(k=>{const a=G[k],op=PM.gOpen.has(k),km=a.reduce((s,d)=>{const x=distOf(d);return s+(x?x.v:0);},0),c=DT?rtReqC(k,NONE):RG?pmMajC(a):(JISA_TC[k]||'#475569');
+      const st={};a.forEach(d=>{const z=RTV?rtCatOf(d):d._pst;st[z]=(st[z]||0)+1;});
+      h+='<div class="pm-g'+(op?' op':'')+'" style="--c:'+c+'"><button type="button" class="pm-gh" draggable="true" title="누르면 펼치고 접어요 · 가운데 「사업 선택」 칸으로 끌어 놓으면 이 지역 사업이 한 번에 들어가요" data-pm-g="'+esc(k)+'"><span class="ar">'+(op?'▾':'▸')+'</span><b>'+esc(DT?rtReqLbl(k,NONE):k)+(DT&&k!==NONE?'<small class="dd">'+rtReqSub(k,NONE)+'</small>':'')+'</b><span class="n">'+a.length.toLocaleString()+'<small>건</small></span><span class="k">'+pmKm(km)+' km</span>'+
+        (DT?'<span class="sub"></span>':RG?'<span class="sub" title="'+esc(pmSubs(a).join(', '))+'">'+esc(pmSubs(a).slice(0,3).join(' · ')+(pmSubs(a).length>3?' 외':''))+'</span>':'<span class="sub"></span>')+'<span class="bar">'+(RTV?RT_CAT.map(s=>({k:s.k,c:s.c,t:s.t})):WSTAGES).map(s=>st[s.k]?'<i style="flex:'+st[s.k]+';background:'+s.c+'" title="'+esc(s.k)+' '+st[s.k]+'건"></i>':'').join('')+'</span></button>';
       if(op)h+='<div class="pm-gb">'+a.map(pmCardH).join('')+'</div>';
       h+='</div>';});
   }else{
@@ -9805,6 +9815,14 @@ const RT_CAT=[
   {k:'wait',t:'착수 전 / 대기',       c:'#2F7DF6',tc:'#fff',s:'착수 전·대기'},
   {k:'js',  t:'실시간 완료 → 결선',   c:'#16B957',tc:'#fff',s:'실시간 완료'},
   {k:'stop',t:'실시간 중지',          c:'#FACC15',tc:'#422006',s:'실시간 중지'}];
+/* ===== BUILD 187 : 실시간 리스트 묶기 — 날짜별(요청일) · 지역별 · 발주사별 ===== */
+const RT_GRP=[{k:'date',n:'날짜별',t:'요청일별로 묶어요 (최근 날짜가 위)'},{k:'region',n:'지역별',t:'행정구역(시·군)별로 묶어요'},{k:'jisa',n:'발주사별',t:'발주사(지사)별로 묶어요'}];
+PM.rtGrp=(()=>{try{const v=localStorage.getItem('gongjeong_rtgrp_v1');return v==='0'?'':(['date','region','jisa'].includes(v)?v:'date');}catch(e){return 'date';}})();
+function rtReqKey(d,NONE){const r=parseDate(d.req);if(!r)return NONE;return r.getFullYear()+'-'+String(r.getMonth()+1).padStart(2,'0')+'-'+String(r.getDate()).padStart(2,'0');}
+function rtReqDays(k){const p=k.split('-').map(Number),t=new Date();t.setHours(0,0,0,0);return Math.round((t-new Date(p[0],p[1]-1,p[2]))/86400000);}
+function rtReqLbl(k,NONE){if(k===NONE)return k;const p=k.split('-').map(Number),w='일월화수목금토'[new Date(p[0],p[1]-1,p[2]).getDay()];return String(p[0]).slice(2)+'.'+String(p[1]).padStart(2,'0')+'.'+String(p[2]).padStart(2,'0')+' ('+w+')';}
+function rtReqSub(k,NONE){if(k===NONE)return '';const n=rtReqDays(k);return n<=0?'오늘 요청':n+'일째';}
+function rtReqC(k,NONE){if(k===NONE)return '#64748b';const n=rtReqDays(k);return n>=20?'#DC2626':n>=15?'#D97706':'#2563EB';}
 function rtCatOf(d){
   if(d.mKey!=='실시간')return '';
   const k=d._pst||workStage(d),jin=String(d.jin==null?'':d.jin).replace(/\s/g,'');
@@ -9852,6 +9870,7 @@ window.addEventListener('resize',pmFit);
     if((b=q('[data-pm-nav]'))){pmShift(+b.dataset.pmNav);PM.stage='';PM.row='';PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-meth]'))){PM.meth=b.dataset.pmMeth;PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-clear]'))){PM.stage='';PM.row='';PM.rtCat='';PM.cap=300;pmRender();return;}
+    if((b=q('[data-rt-grp]'))){const m=b.dataset.rtGrp;PM.rtGrp=PM.rtGrp===m?'':m;PM.gOpen.clear();try{localStorage.setItem('gongjeong_rtgrp_v1',PM.rtGrp||'0');}catch(x){}pmRender();return;}
     if(q('[data-rt-all]')){PM.rtCat='';PM.cap=300;pmRender();return;}
     if((b=q('[data-rt-cat]'))){PM.rtCat=PM.rtCat===b.dataset.rtCat?'':b.dataset.rtCat;PM.cap=300;pmRender();return;}
     if((b=q('[data-pm-grp]'))){const m=b.dataset.pmGrp;PM.grp=PM.grp===m?'':m;PM.gOpen.clear();try{localStorage.setItem('gongjeong_pmgrp_v1',PM.grp||'0');}catch(x){}pmRender();return;}
