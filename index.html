@@ -3784,7 +3784,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='201';
+const BUILD_NO='202';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10493,7 +10493,16 @@ function rtSetRep(dt,u,rep){
 /* 근태 · 폰에서 부를 자리 (O = 내일 공사 있음 · X = 오늘로 끝) */
 window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetRep(rtToday(),u,{v:v==='O'?'Y':'N',by:by||'근태',src:'폰'});if(PM_VIEW()==='rt')pjR();return true;};
 /* 작업자 확인 (폰 「확인했어요」) */
-function rtAck(dt,n){const f=SYNC.files&&SYNC.files['rtok:'+dt+':'+n];return f?new Date(f.t):null;}
+/* BUILD 202 : 폰(탱고)에서 「확인했어요」 취소 = 'rtok:날짜:이름' 내용 {cancel:true} → ✓ 확인 없앰 */
+RT.okObj=RT.okObj||{};RT.okSeen=RT.okSeen||{};
+function rtAck(dt,n){const k='rtok:'+dt+':'+n,f=SYNC.files&&SYNC.files[k];if(!f)return null;const o=RT.okObj[k];if(o&&o.cancel)return null;return new Date(f.t);}
+async function rtPullAcks(){
+  if(IS_SUBWIN||!cCloudReady()||!SYNC.files)return 0;const yd=rtYmd(rtAdd(parseDate(rtToday()),-1));let n=0;
+  for(const k of Object.keys(SYNC.files)){const m=k.match(/^rtok:(\d{4}-\d{2}-\d{2}):(.+)$/);if(!m||m[1]<yd)continue;
+    const t=new Date(SYNC.files[k].t).getTime();if(RT.okSeen[k]>=t)continue;RT.okSeen[k]=t;
+    try{const f=await cRpc('gj_file_get',{p_key:k});const o=f&&f.d?pjDec(cB64Buf(f.d)):null,c=!!(o&&o.cancel);
+      if(!!(RT.okObj[k]&&RT.okObj[k].cancel)!==c)n++;RT.okObj[k]={cancel:c,at:(o&&o.at)||t};}catch(e){}}
+  if(n&&PM_VIEW()==='rt')pjR();return n;}
 /* 폰 보고 받아서 반영 (새로 올라온 것만) */
 RT.repSeen=RT.repSeen||{};
 /* BUILD 188 : 폰(탱고) 보고 취소 {cancel:true} — 지금 걸린 보고가 「취소한 본인 것」일 때만 내림
@@ -10525,7 +10534,7 @@ async function rtPullReports(){
 /* BUILD 188 : 어느 탭에 있든 15초마다 — 배치표 불러오기 · 폰 보고 받기 · 자정 넘으면 요약 다시 저장 */
 setInterval(()=>{if(IS_SUBWIN||!cCloudReady()||!(cAuth()||{}).token)return;
   if(!RT.loaded){if(!RT.loading){RT.loading=true;rtLoad().catch(()=>{}).finally(()=>{RT.loading=false;});}return;}
-  rtPullReports();
+  rtPullReports();rtPullAcks();
   if(RT_PUB.day!==rtToday()){RT_PUB.day=rtToday();RT_PUB.last={};rtPubAuto();}},15000);
 /* 보고 · 시간 고르기 창 */
 function rtRepPop(el){rtPopClose();const u=el.dataset.rtRep,dt=el.dataset.rtDt,r=rtRepOf(dt,u),d=pjBiz(u);
