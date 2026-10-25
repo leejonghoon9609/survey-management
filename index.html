@@ -1366,6 +1366,24 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r .dc .nd:hover{background:#FFF1F2;}
 .rw-top .nv button.d1{color:#2563EB;}
 @media (max-width:1500px){.rw-r .dc .rb .si{font-size:12px;margin-right:2px;}.rw-top .nv button{padding:0 6px;}}
+/* ===== BUILD 191 : 칸 안 왼쪽 정렬(아이콘 자리 고정) · 한 줄 · 주간/야간 표시 · 「작업자 배치해야함」 ===== */
+.rw-r{grid-template-columns:minmax(170px,1.08fr) repeat(5,minmax(80px,1fr));}
+.rw-r:not(.hd):not(.sum) .dc.on,.rw-r:not(.hd):not(.sum) .dc.need,.rw-r:not(.hd):not(.sum) .dc.st{justify-content:flex-start;align-content:center;padding:3px 3px 3px 29px !important;gap:4px;}
+.pm-mid .shi{left:3px;width:23px;height:32px;border-radius:5px;border:0;flex-direction:column;gap:2px;}
+.pm-mid .shi i{font-style:normal;font-size:13px;line-height:1;}
+.pm-mid .shi b{font-size:8.5px;font-weight:800;line-height:1;color:#fff;letter-spacing:-.3px;}
+.pm-mid .shi.n{background:#6B7280;}
+.pm-mid .shi.d{background:#EA002C;}
+.pm-mid .rk{padding:0 7px;}
+.rw-r .dc .nd{font-size:10px;padding:0 5px;letter-spacing:-.3px;}
+.rw-r .dc .rb,.rw-r .dc .cxb{padding:0 4px;font-size:9.5px;letter-spacing:-.2px;}
+.rw-r .dc .rb .si{font-size:12px;margin-right:2px;}
+@media (max-width:1500px){
+ .rw-r{grid-template-columns:minmax(130px,1.1fr) repeat(5,minmax(64px,1fr));}
+ .rw-r:not(.hd):not(.sum) .dc.on,.rw-r:not(.hd):not(.sum) .dc.need,.rw-r:not(.hd):not(.sum) .dc.st{padding:3px 3px 3px 26px !important;gap:3px;}
+ .pm-mid .shi{left:3px;width:20px;height:28px;}.pm-mid .shi i{font-size:11px;}.pm-mid .shi b{font-size:7.5px;}
+ .rw-r .dc .nd{font-size:9.5px;padding:0 4px;}
+}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3708,7 +3726,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='190';
+const BUILD_NO='191';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10261,7 +10279,7 @@ function rtHTML(){
     h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
     days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd=rtShCls(D.ymd,d._uid);const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
-      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">＋ 배치</span>'+rtRepB(D.ymd,d._uid)+rtCxB(D.ymd,d._uid)+'</div>';
+      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">작업자 배치해야함</span>'+rtRepB(D.ymd,d._uid)+rtCxB(D.ymd,d._uid)+'</div>';
       else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'>'+(c.k==='js'?rtShB(D.ymd,d._uid):'')+'<span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span>'+rtCxB(D.ymd,d._uid)+'</div>';
       else h+='<div class="dc on'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtRepB(D.ymd,d._uid)+rtCxB(D.ymd,d._uid)+'</div>';});
     h+='</div>';});
@@ -10367,7 +10385,7 @@ document.getElementById('pNew')&&document.getElementById('pNew').addEventListene
    폰 앱(다음 단계) : 보고 = 공용 파일 'rtrep:날짜:사업uid:이름' (JSON) · 확인 = 'rtok:날짜:이름' — 사람마다 따로 저장 */
 function rtRepOf(dt,u){const x=rtCell(dt,u);if(!x)return null;if(x.rep&&x.rep.v)return x.rep;if(x.next==='O')return {v:'Y',t:''};if(x.next==='X')return {v:'N'};return null;}
 const RT_SH={D:['☀','주간'],N:['🌙','야간']};
-function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shi '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업">'+RT_SH[s][0]+'</span>':'';}
+function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shi '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업"><i>'+RT_SH[s][0]+'</i><b>'+RT_SH[s][1]+'</b></span>':'';}
 function rtShCls(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s==='D'?' shD':(s==='N'?' shN':'');}
 /* BUILD 188 : 내일 칸 「작업자 취소」 — 전날 현장 보고를 작업자가 취소함 · 누르면 확인 처리(표시 지움) */
 function rtCxB(dt,u){const x=rtCell(dt,u),cx=x&&x.cx;if(!cx||dt<=rtToday())return '';   /* 오늘·지난 칸은 보고 버튼이 「작업자 취소」로 보여 줘요 */
@@ -10379,7 +10397,10 @@ const RT_PUB={tm:0,last:{},day:''};
 function rtPubAuto(){if(IS_SUBWIN||!RT.loaded||!cCloudReady()||!(cAuth()||{}).token)return;clearTimeout(RT_PUB.tm);RT_PUB.tm=setTimeout(()=>{rtPubNow().catch(()=>{});},1500);}
 function rtPubDay(t){return {t,k:0,ymd:rtYmd(t),md:(t.getMonth()+1)+'/'+t.getDate(),w:'일월화수목금토'[t.getDay()]};}
 async function rtPubNow(){
-  const b=new Date();b.setHours(0,0,0,0);const Ds=[rtPubDay(b),rtPubDay(rtAdd(b,1))],rows=rtRows(Ds);
+  /* BUILD 191 : 저장 직전 서버 최신 배치를 받아 합침 (오래된 화면이 덮어쓰지 않게) · 못 읽으면 이번엔 저장 안 함 */
+  try{const f=await cRpc('gj_file_get',{p_key:RT_KEY});if(f&&f.d){const o=pjDec(cB64Buf(f.d));if(o&&o.days)RT.days=rtMerge(o.days,RT.days);}}catch(e){return;}
+  /* BUILD 191 : 어제 · 오늘 · 내일 3일 (탱고 야간 보정 — 새벽엔 전날을 오늘로 봐요) */
+  const b=new Date();b.setHours(0,0,0,0);const Ds=[rtPubDay(rtAdd(b,-1)),rtPubDay(b),rtPubDay(rtAdd(b,1))],rows=rtRows(Ds);
   for(const D of Ds){const K=kkData(D,rows),sig=JSON.stringify(K.L);if(RT_PUB.last[D.ymd]===sig)continue;
     const key='rtpub:'+D.ymd;let old=null;
     try{const f=await cRpc('gj_file_get',{p_key:key});old=f&&f.d?pjDec(cB64Buf(f.d)):null;}catch(e){continue;}   /* 못 읽으면 멘트를 지울 수 있어 건너뜀 */
