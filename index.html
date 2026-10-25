@@ -1442,6 +1442,29 @@ body.rt-nmdrag *{cursor:col-resize !important;}
 /* ===== BUILD 201 : 야간 칸 작업자 배지 = 회색 (카톡 카드와 같게) ===== */
 .rw-r .dc.shN .rk.s,.rw-r .dc.shN .rk.f{background:#F8FAFC;border:1.5px solid #64748B;}
 .rw-r .dc.shN .rk.ak{border-color:#475569;}
+/* ===== BUILD 203 : 작업자 취소 — 빨강 테두리 · 확인 창 · 관리자 확인(파랑) ===== */
+.rw-r .dc .cxb,.rw-r .dc .rb.c{background:#fff;border:1.5px solid #EA002C;color:#EA002C;}
+.rw-r .dc .cxb:hover,.rw-r .dc .rb.c:hover{background:#FFF1F2;}
+.rw-r .dc .cxb.h{border-color:#2563EB;color:#2563EB;}
+.rw-r .dc .cxb.h:hover{background:#EFF6FF;}
+.rw-r .dc.cxh .rk.s,.rw-r .dc.cxh .rk.f{background:#EFF6FF;border:1.5px solid #3B82F6;color:#1D4ED8;}
+#rtCxPop{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;}
+#rtCxPop .cb{background:#fff;border-radius:14px;width:min(430px,100%);box-shadow:0 20px 50px rgba(15,23,42,.3);overflow:hidden;}
+#rtCxPop .ch{display:flex;align-items:center;padding:12px 14px 10px 16px;border-bottom:3px solid #EA002C;}
+#rtCxPop .cb.h .ch{border-bottom-color:#2563EB;}
+#rtCxPop .ch b{font-size:15.5px;}
+#rtCxPop .ch .cx{margin-left:auto;width:28px;height:28px;border-radius:7px;border:1px solid #E2E8F0;background:#fff;color:#64748b;cursor:pointer;font-size:13px;}
+#rtCxPop .ch .cx:hover{background:#FEE2E2;border-color:#FCA5A5;color:#DC2626;}
+#rtCxPop .cbd{padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px;}
+#rtCxPop .cw{font-size:13.5px;font-weight:800;line-height:1.4;}
+#rtCxPop .cd{font-size:12.5px;color:#475569;}#rtCxPop .cd b{color:#0f172a;}
+#rtCxPop .cm{font-size:12.5px;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:7px 10px;font-weight:600;}
+#rtCxPop .cq{font-size:14px;font-weight:800;color:#0f172a;line-height:1.55;margin-top:2px;}
+#rtCxPop .cf{display:flex;gap:7px;justify-content:flex-end;padding:12px 16px 14px;flex-wrap:wrap;}
+#rtCxPop .cf button{border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;color:#334155;}
+#rtCxPop .cf .r{background:#EA002C;border-color:#EA002C;color:#fff;}
+#rtCxPop .cf .b{background:#2563EB;border-color:#2563EB;color:#fff;}
+#rtCxPop .cf .g{background:#16A34A;border-color:#16A34A;color:#fff;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3784,7 +3807,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='202';
+const BUILD_NO='203';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10449,12 +10472,36 @@ const RT_SH={D:['☀','주간'],N:['🌙','야간']};
 /* BUILD 192 : 주간 해 그림 (노란 해) */
 function rtSun(){return '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><g stroke="#D97706" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="1.8" x2="12" y2="4.6"/><line x1="12" y1="19.4" x2="12" y2="22.2"/><line x1="1.8" y1="12" x2="4.6" y2="12"/><line x1="19.4" y1="12" x2="22.2" y2="12"/><line x1="4.8" y1="4.8" x2="6.8" y2="6.8"/><line x1="17.2" y1="17.2" x2="19.2" y2="19.2"/><line x1="4.8" y1="19.2" x2="6.8" y2="17.2"/><line x1="17.2" y1="6.8" x2="19.2" y2="4.8"/></g><circle cx="12" cy="12" r="5.4" fill="#F59E0B" stroke="#D97706" stroke-width="1.4"/></svg>';}
 function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shi '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업"><i>'+(s==='D'?rtSun():RT_SH[s][0])+'</i><b>'+RT_SH[s][1]+'</b></span>':'';}
-function rtShCls(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s==='D'?' shD':(s==='N'?' shN':'');}
+function rtShCls(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return (s==='D'?' shD':(s==='N'?' shN':''))+(x&&x.cx&&x.cx.hold&&(x.w||[]).length?' cxh':'');}
 /* BUILD 188 : 내일 칸 「작업자 취소」 — 전날 현장 보고를 작업자가 취소함 · 누르면 확인 처리(표시 지움) */
 function rtCxB(dt,u){const x=rtCell(dt,u),cx=x&&x.cx;if(!cx||dt<=rtToday())return '';   /* 오늘·지난 칸은 보고 버튼이 「작업자 취소」로 보여 줘요 */
-  return '<button type="button" class="cxb" data-rt-cxx="'+esc(u)+'" data-rt-dt="'+dt+'" title="'+esc((cx.by||'')+' '+(cx.at?hhmm(new Date(cx.at)):'')+' 「내일 공사」 보고를 취소했어요 (일정 변경) · 확인했으면 눌러서 지워요')+'">작업자 취소</button>';}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rt-cxx]');if(!b)return;e.preventDefault();e.stopPropagation();
-  rtPut(b.dataset.rtDt,b.dataset.rtCxx,{cx:null});pjR();},true);
+  const H=!!cx.hold;
+  return '<button type="button" class="cxb'+(H?' h':'')+'" data-rt-cxx="'+esc(u)+'" data-rt-dt="'+dt+'" title="'+esc((cx.by||'')+' '+(cx.at?hhmm(new Date(cx.at)):'')+' 「내일 공사」 보고를 취소했어요 (일정 변경) · '+(H?'작업자는 우선 그대로 · 일정이 정해지면 눌러서 고르기':'눌러서 확인'))+'">'+(H?'취소 · 관리자 확인':'작업자 취소')+'</button>';}
+/* BUILD 203 : 「작업자 취소」 누르면 가운데 확인 창
+   ① 확인(작업자 빼기) → 칸 비움 · ② 작업자는 그대로 → 「취소 · 관리자 확인」(파랑) + 작업자 파랑으로 우선 배치 · ③ 취소 → 닫기
+   「취소 · 관리자 확인」 누르면 → 작업자 빼기 / 그대로 내일 작업 등록 / 취소 */
+function rtCxClose(){const p=document.getElementById('rtCxPop');if(p)p.remove();}
+function rtCxPop(dt,u){rtCxClose();const x=rtCell(dt,u);if(!x||!x.cx)return;const cx=x.cx,d=pjBiz(u),w=x.w||[],H=!!cx.hold;
+  const p=document.createElement('div');p.id='rtCxPop';
+  p.innerHTML='<div class="cb'+(H?' h':'')+'"><div class="ch"><b>'+(H?'관리자 확인 — 내일 일정 정하기':'작업자 취소 확인')+'</b><button type="button" class="cx" data-cx-a="x" title="닫기">✕</button></div>'+
+    '<div class="cbd"><div class="cw">'+esc((d&&d.work)||'')+'</div><div class="cd">'+rtLabel(dt)+' 배치 · '+(w.length?'작업자 <b>'+w.map(esc).join(', ')+'</b>':'작업자 없음')+'</div>'+
+    '<div class="cm">⚠ '+esc(cx.by||'작업자')+(cx.at?' '+hhmm(new Date(cx.at)):'')+' — 「내일 공사」 보고를 취소했어요 (일정 변경)</div>'+
+    '<div class="cq">'+(H?'내일 일정이 정해졌으면 골라 주세요.':'작업자 취소를 확인했나요?<br>작업자를 배치에서 뺄까요?')+'</div></div>'+
+    '<div class="cf">'+(H?'<button type="button" class="r" data-cx-a="rm">작업자 빼기</button><button type="button" class="g" data-cx-a="ok">그대로 내일 작업 등록</button>'
+      :'<button type="button" class="r" data-cx-a="rm">확인 (작업자 빼기)</button><button type="button" class="b" data-cx-a="hold">작업자는 그대로</button>')+'<button type="button" data-cx-a="x">취소</button></div></div>';
+  p.dataset.dt=dt;p.dataset.u=u;document.body.appendChild(p);}
+function rtCxPrevClr(dt,u){const pd=rtYmd(rtAdd(parseDate(dt),-1)),y=rtCell(pd,u);if(y&&y.cx)rtPut(pd,u,{cx:null});}
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-rt-cxx]');if(b){e.preventDefault();e.stopPropagation();rtCxPop(b.dataset.rtDt,b.dataset.rtCxx);return;}
+  const p=document.getElementById('rtCxPop');if(!p||!p.contains(e.target))return;e.stopPropagation();
+  if(e.target===p){rtCxClose();return;}
+  const a=e.target.closest('[data-cx-a]');if(!a)return;const dt=p.dataset.dt,u=p.dataset.u,x=rtCell(dt,u),v=a.dataset.cxA;
+  if(v==='x'){rtCxClose();return;}
+  if(v==='rm'){rtPut(dt,u,{del:true});rtCxPrevClr(dt,u);toast('작업자를 빼고 칸을 비웠어요');}
+  else if(v==='hold'&&x){rtPut(dt,u,{cx:Object.assign({},x.cx,{hold:true})});toast('작업자는 그대로 두었어요 · 일정이 정해지면 「취소 · 관리자 확인」을 눌러 주세요');}
+  else if(v==='ok'){rtPut(dt,u,{cx:null});rtCxPrevClr(dt,u);toast('그대로 내일 작업으로 등록했어요');}
+  rtCxClose();pjR();},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('rtCxPop'))rtCxClose();});
 /* BUILD 188 : 배치 요약 자동 저장 — 배치가 바뀌면 1.5초 모아서 오늘 · 내일 'rtpub:날짜' (보고 있는 주와 상관없이 · 멘트는 그대로) */
 const RT_PUB={tm:0,last:{},day:''};
 function rtPubAuto(){if(IS_SUBWIN||!RT.loaded||!cCloudReady()||!(cAuth()||{}).token)return;clearTimeout(RT_PUB.tm);RT_PUB.tm=setTimeout(()=>{rtPubNow().catch(()=>{});},1500);}
