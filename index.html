@@ -1439,6 +1439,9 @@ body.rt-nmdrag *{cursor:col-resize !important;}
 .pm-mid .rk.s,.pm-mid .rk.f{border:1.5px solid #22C55E;}
 .pm-mid .rk.ak{border-color:#16A34A;}
 .rw-r .dc .rb.y.yd{border:1.5px solid #0EA5E9;}
+/* ===== BUILD 201 : 야간 칸 작업자 배지 = 회색 (카톡 카드와 같게) ===== */
+.rw-r .dc.shN .rk.s,.rw-r .dc.shN .rk.f{background:#F8FAFC;border:1.5px solid #64748B;}
+.rw-r .dc.shN .rk.ak{border-color:#475569;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3781,7 +3784,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='200';
+const BUILD_NO='201';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
