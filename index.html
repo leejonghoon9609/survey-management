@@ -1417,6 +1417,11 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rw-r.hd .nm .rt-nmh:hover::after,.rw-r.hd .nm .rt-nmh.on::after{background:#2563EB;opacity:1;width:3px;left:4.5px;}
 body.rt-nmdrag{cursor:col-resize !important;user-select:none;}
 body.rt-nmdrag *{cursor:col-resize !important;}
+/* ===== BUILD 197 : 칸 안 간격 (작업자 ↔ 보고 표시 · 주간/야간 표시 ↔ 내용) ===== */
+.pm-mid .shi{left:2px;width:21px;}
+.rw-r .dc .ws+.rb,.rw-r .dc .ws+.cxb{margin-left:4px;}
+@media (max-width:1500px){.pm-mid .shi{left:2px;width:19px;}.rw-r .dc .ws+.rb,.rw-r .dc .ws+.cxb{margin-left:2px;}}
+#kkPop #kkKey{letter-spacing:2px;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3759,7 +3764,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='195';
+const BUILD_NO='197';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10541,11 +10546,11 @@ function kkOpen(){kkClose();const D=kkDay(),K=kkData(D);
   p.innerHTML='<div class="kk"><div class="kh"><b>💬 카톡으로 보내기</b><span>'+D.md+' ('+D.w+') 실시간 배치 · '+K.L.length+'곳 · '+K.ppl+'명'+(K.need?' · <em>미배치 '+K.need+'</em>':'')+'</span><button type="button" data-kk-x="1">✕</button></div>'+
     '<div class="kb"><div class="kl"><div class="kq">멘트</div><textarea id="kkMemo" placeholder="예) 내일 비 예보 있어요. 우의 챙겨 주세요.">'+esc(RT.kkMemo||'')+'</textarea>'+
     '<div class="kq">보낼 날짜</div><div class="kd">'+rtDays().map((x,i)=>'<button type="button" class="'+(x.ymd===D.ymd?'on':'')+'" data-kk-d="'+i+'">'+x.md+'<small>'+x.w+'</small></button>').join('')+'</div>'+
-    '<div class="kq">카카오 앱 키 <small>'+(kkKey()?'설정됨 — 완료를 누르면 카톡이 열려요 (그림 카드)':'없음 — 완료를 누르면 그림 · 링크 글을 차례로 복사해요')+'</small></div><div class="kk2"><input id="kkKey" placeholder="카카오 JavaScript 키 (공개용)" value="'+esc(kkKey())+'"><button type="button" data-kk-key="1">저장</button></div></div>'+
-    '<div class="kr"><div class="kq">미리보기 <small>단톡방에 보이는 모습 그대로</small></div><div class="kroom"><div class="kav">대원</div><div class="kmsg"><div class="knm">'+esc(cMe()||'관리자')+'</div><div class="kcard"><img id="kkImg" alt="배치 카드"><div class="ktx"><b>대원 현장팀 · '+esc(kkTitle(D))+'</b><small>눌러서 확인 · 오늘 현장 보고</small></div><div class="kbt">확인하러 가기</div></div></div></div><div class="kq">링크 글 <small>키가 없을 때 그림 다음에 붙여 넣는 글</small></div><pre id="kkLk"></pre></div></div>'+
+    '<div class="kq">카카오 앱 키 <small>'+(kkKey()?'설정됨 — 완료를 누르면 카톡이 열려요 (그림 카드)':'없음 — 완료를 누르면 그림 · 링크 글을 차례로 복사해요')+'</small></div><div class="kk2"><input id="kkKey" type="password" autocomplete="off" spellcheck="false" placeholder="카카오 JavaScript 키 (공개용)" value="'+esc(kkKey())+'"><button type="button" data-kk-key="1">저장</button></div></div>'+
+    '<div class="kr"><div class="kq">미리보기 <small>단톡방에 보이는 모습 그대로</small></div><div class="kroom"><div class="kav">대원</div><div class="kmsg"><div class="knm">'+esc(cMe()||'관리자')+'</div><div class="kcard"><img id="kkImg" alt="배치 카드"><div class="kbt">확인하러 가기 →</div></div></div></div><div class="kq">링크 글 <small>키가 없을 때 그림 다음에 붙여 넣는 글</small></div><pre id="kkLk"></pre></div></div>'+
     '<div class="kf"><button type="button" class="ok" data-kk-go="1">완료</button><button type="button" data-kk-x="1">취소</button></div></div>';
   p.dataset.d=D.ymd;document.body.appendChild(p);kkPrevDraw();setTimeout(()=>{const t=document.getElementById('kkMemo');if(t)t.focus();},0);}
-/* ===== BUILD 195 : 카톡 배치 카드 그림 — 공정관리가 그림을 만들어 카톡 카드로 (키 있으면) / 그림 · 링크 글 복사 (키 없으면) ===== */
+/* ===== BUILD 195~196 : 카톡 배치 카드 그림 — 공정관리가 그림을 만들어 카톡 카드로 (키 있으면) / 그림 · 링크 글 복사 (키 없으면) ===== */
 const KK={last:null,tm:0};
 const KK_F='"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
 function kkGroups(D){const K=kkData(D);const g={D:[],N:[],E:[]};
@@ -10563,28 +10568,29 @@ function kkCard(D,memo){
   const m0=document.createElement('canvas').getContext('2d');m0.font='600 31px '+KK_F;const ml=[];
   if(memo)String(memo).split(/\n/).forEach(par=>{let line='';for(const ch of par){if(m0.measureText(line+ch).width>W-2*P-90){ml.push(line);line=ch;}else line+=ch;}if(line)ml.push(line);});
   const M=ml.slice(0,4);if(ml.length>4)M[3]=M[3].slice(0,-1)+'…';
-  let H=HB;secs.forEach(s=>{const r=Math.ceil(g[s[0]].length/cols);H+=28+52+16+r*CH+(r-1)*GAP;});if(!secs.length)H+=90;
-  if(M.length)H+=28+24+M.length*44;H+=30;
+  let H=HB;secs.forEach(s=>{const r=Math.ceil(g[s[0]].length/cols);H+=26+72+18+r*CH+(r-1)*GAP;});if(!secs.length)H+=90;
+  if(M.length)H+=28+24+M.length*44;H+=16+18;
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
   c.fillStyle='#fff';c.fillRect(0,0,W,H);c.fillStyle='#EA002C';c.fillRect(0,0,W,HB);
   c.fillStyle='#fff';c.font='800 46px '+KK_F;c.fillText('📋 '+kkTitle(D),P,72);
   c.font='600 32px '+KK_F;c.globalAlpha=.93;c.fillText('실시간 '+places+'곳 · '+K.ppl+'명',P,122);c.globalAlpha=1;
   let y=HB;
   if(!secs.length){c.fillStyle='#64748b';c.font='600 32px '+KK_F;c.fillText('아직 배치된 작업자가 없어요',P,y+64);y+=90;}
-  secs.forEach(([k,t])=>{y+=28;c.font='800 32px '+KK_F;const io=k==='E'?20:k==='D'?66:58,tw=c.measureText(t).width,pw=tw+io+20;
-    kkRR(c,P,y,pw,52,10);
-    if(k==='D'){c.fillStyle='#F0F9FF';c.fill();c.strokeStyle='#BAE6FD';c.lineWidth=2;c.stroke();kkSunC(c,P+32,y+26,26);c.fillStyle='#0369A1';}
-    else if(k==='N'){c.fillStyle='#6B7280';c.fill();c.font='28px '+KK_F;c.fillStyle='#FACC15';c.fillText('🌙',P+13,y+37);c.fillStyle='#fff';}
+  secs.forEach(([k,t])=>{y+=26;c.font='800 44px '+KK_F;const io=k==='E'?24:k==='D'?84:76,tw=c.measureText(t).width,pw=tw+io+24;
+    kkRR(c,P,y,pw,72,12);
+    if(k==='D'){c.fillStyle='#F0F9FF';c.fill();c.strokeStyle='#7DD3FC';c.lineWidth=3;c.stroke();kkSunC(c,P+42,y+36,34);c.fillStyle='#0369A1';}
+    else if(k==='N'){c.fillStyle='#6B7280';c.fill();c.font='38px '+KK_F;c.fillStyle='#FACC15';c.fillText('🌙',P+18,y+50);c.fillStyle='#fff';}
     else{c.fillStyle='#F1F5F9';c.fill();c.fillStyle='#475569';}
-    c.font='800 32px '+KK_F;c.fillText(t,P+io,y+37);
-    c.fillStyle='#64748b';c.font='700 30px '+KK_F;c.fillText(g[k].length+'명',P+pw+14,y+37);
-    y+=52+16;const cw=(W-2*P-(cols-1)*GAP)/cols;
+    c.font='800 44px '+KK_F;c.fillText(t,P+io,y+51);
+    c.fillStyle='#334155';c.font='800 40px '+KK_F;c.fillText(g[k].length+'명',P+pw+18,y+50);
+    y+=72+18;const cw=(W-2*P-(cols-1)*GAP)/cols;
     g[k].forEach((n,i)=>{const x=P+(i%cols)*(cw+GAP),yy=y+Math.floor(i/cols)*(CH+GAP);kkRR(c,x,yy,cw,CH,8);
       c.fillStyle=k==='D'?'#F0FDF4':'#F8FAFC';c.fill();c.strokeStyle=k==='D'?'#86EFAC':'#CBD5E1';c.lineWidth=2.5;c.stroke();
       c.fillStyle='#0f172a';c.font='700 34px '+KK_F;c.textAlign='center';c.fillText(n,x+cw/2,yy+44,cw-16);c.textAlign='left';});
     const r=Math.ceil(g[k].length/cols);y+=r*CH+(r-1)*GAP;});
   if(M.length){y+=28;const mh=24+M.length*44;kkRR(c,P,y,W-2*P,mh,12);c.fillStyle='#FFFBEB';c.fill();c.strokeStyle='#FDE68A';c.lineWidth=2.5;c.stroke();
     c.fillStyle='#92400E';c.font='600 31px '+KK_F;M.forEach((l,i)=>c.fillText((i===0?'📢 ':'')+l,P+22+(i?44:0),y+47+i*44));}
+  c.fillStyle='#EA002C';c.fillRect(0,H-18,W,18);   /* BUILD 197 : 버튼 위 굵은 빨강 선 */
   return {cv,W,H,places,ppl:K.ppl,need:K.need};}
 function kkUrl(D){return KK_APP+'?gjrep=1&d='+D.ymd;}
 function kkShort(D,r){return '📋 '+kkTitle(D).replace(' (','(').replace(') ',') ')+' · 실시간 '+r.places+'곳 · '+r.ppl+'명\n👉 눌러서 확인 · 오늘 현장 보고\n'+kkUrl(D);}
@@ -10608,7 +10614,7 @@ async function kkGo(){const p=document.getElementById('kkPop');if(!p)return;cons
       const blob=await new Promise(res=>r.cv.toBlob(res,'image/png'));
       const up=await Kakao.Share.uploadImage({file:[new File([blob],'baechi_'+D.ymd+'.png',{type:'image/png'})]});
       const o=up&&up.infos&&up.infos.original;if(!o||!o.url)throw new Error('그림을 카카오에 올리지 못했어요');
-      Kakao.Share.sendDefault({objectType:'feed',content:{title:'대원 현장팀 · '+kkTitle(D),description:'실시간 '+r.places+'곳 · '+r.ppl+'명 · 눌러서 확인 · 오늘 현장 보고',imageUrl:o.url,imageWidth:r.W,imageHeight:r.H,link:{webUrl:url,mobileWebUrl:url}},buttons:[{title:'확인하러 가기',link:{webUrl:url,mobileWebUrl:url}}]});
+      Kakao.Share.sendDefault({objectType:'feed',content:{imageUrl:o.url,imageWidth:r.W,imageHeight:r.H,link:{webUrl:url,mobileWebUrl:url}},buttons:[{title:'확인하러 가기 →',link:{webUrl:url,mobileWebUrl:url}}]});
       kkClose();toast('카톡이 열렸어요 · 단톡방을 골라 보내 주세요');return;}
     catch(e){toast('카톡 카드를 못 열었어요 · '+(e&&e.message||e)+' — 그림 · 글 복사로 보내 주세요',true);ok=await kkCopyImg(r.cv);}}
   kkStep2(ok);}
