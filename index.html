@@ -3781,7 +3781,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='199';
+const BUILD_NO='200';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10588,7 +10588,7 @@ function kkCard(D,memo){
   if(memo)String(memo).split(/\n/).forEach(par=>{let line='';for(const ch of par){if(m0.measureText(line+ch).width>W-2*P-90){ml.push(line);line=ch;}else line+=ch;}if(line)ml.push(line);});
   const M=ml.slice(0,4);if(ml.length>4)M[3]=M[3].slice(0,-1)+'…';
   let H=HB;secs.forEach(s=>{const r=Math.ceil(g[s[0]].length/cols);H+=26+72+18+r*CH+(r-1)*GAP;});if(!secs.length)H+=90;
-  if(M.length)H+=28+24+M.length*44;H+=16+18;
+  if(M.length)H+=28+24+M.length*44;H+=24+8;
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
   c.fillStyle='#fff';c.fillRect(0,0,W,H);c.fillStyle='#EA002C';c.fillRect(0,0,W,HB);
   c.fillStyle='#fff';c.font='800 46px '+KK_F;c.fillText('📋 '+kkTitle(D),P,72);
@@ -10604,12 +10604,12 @@ function kkCard(D,memo){
     c.fillStyle='#334155';c.font='800 40px '+KK_F;c.fillText(g[k].length+'명',P+pw+18,y+50);
     y+=72+18;const cw=(W-2*P-(cols-1)*GAP)/cols;
     g[k].forEach((n,i)=>{const x=P+(i%cols)*(cw+GAP),yy=y+Math.floor(i/cols)*(CH+GAP);kkRR(c,x,yy,cw,CH,8);
-      c.fillStyle=k==='D'?'#F0FDF4':'#F8FAFC';c.fill();c.strokeStyle=k==='D'?'#86EFAC':'#CBD5E1';c.lineWidth=2.5;c.stroke();
+      c.fillStyle=k==='D'?'#F0FDF4':'#F8FAFC';c.fill();c.strokeStyle=k==='D'?'#22C55E':'#64748B';c.lineWidth=3;c.stroke();
       c.fillStyle='#0f172a';c.font='700 34px '+KK_F;c.textAlign='center';c.fillText(n,x+cw/2,yy+44,cw-16);c.textAlign='left';});
     const r=Math.ceil(g[k].length/cols);y+=r*CH+(r-1)*GAP;});
   if(M.length){y+=28;const mh=24+M.length*44;kkRR(c,P,y,W-2*P,mh,12);c.fillStyle='#FFFBEB';c.fill();c.strokeStyle='#FDE68A';c.lineWidth=2.5;c.stroke();
     c.fillStyle='#92400E';c.font='600 31px '+KK_F;M.forEach((l,i)=>c.fillText((i===0?'📢 ':'')+l,P+22+(i?44:0),y+47+i*44));}
-  c.fillStyle='#EA002C';c.fillRect(0,H-18,W,18);   /* BUILD 197 : 버튼 위 굵은 빨강 선 */
+  const gr=c.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#C8102E');gr.addColorStop(.5,'#FF4D6A');gr.addColorStop(1,'#C8102E');c.fillStyle=gr;c.fillRect(0,H-8,W,8);   /* BUILD 197 : 버튼 위 굵은 빨강 선 */
   return {cv,W,H,places,ppl:K.ppl,need:K.need};}
 function kkUrl(D){return KK_APP+'?gjrep=1&d='+D.ymd;}
 function kkShort(D,r){return '📋 '+kkTitle(D).replace(' (','(').replace(') ',') ')+' · 실시간 '+r.places+'곳 · '+r.ppl+'명\n👉 눌러서 확인 · 오늘 현장 보고\n'+kkUrl(D);}
