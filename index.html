@@ -1334,6 +1334,10 @@ body.rt-dragw .rw-r:not(.hd):not(.sum) .dc{outline:1px dashed #D9F99D;outline-of
 .rt-gbar .date{--c:#7C3AED;}.rt-gbar .region{--c:#0D9488;}.rt-gbar .jisa{--c:#2563EB;}
 .pm-gh b small.dd{font-size:10.5px;font-weight:700;margin-left:5px;opacity:.85;}
 @media (max-width:1500px){.rt-gbar{padding:6px 8px;gap:4px;}.rt-gbar button{height:25px;font-size:11.5px;}}
+/* ===== BUILD 188 : 작업자 취소 표시 ===== */
+.rw-r .dc .rb.c{background:#FFFBEB;color:#B45309;border:1px dashed #F59E0B;}
+.rw-r .dc .cxb{border:1px dashed #F59E0B;background:#FFFBEB;color:#B45309;border-radius:4px;font-family:inherit;font-size:9px;font-weight:800;line-height:15px;padding:0 5px;cursor:pointer;white-space:nowrap;}
+.rw-r .dc .cxb:hover{background:#FEF3C7;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -3676,7 +3680,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='187';
+const BUILD_NO='188';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -10173,7 +10177,7 @@ async function rtLoad(force){
   let D=loc&&loc.buf?(pjDec(loc.buf)||{}).days||{}:{},t=loc&&loc.cat||0;
   if(cCloudReady()){const fm=SYNC.files&&SYNC.files[RT_KEY],ft=fm?new Date(fm.t).getTime():0;
     if(force||!RT.loaded||ft>t){try{const f=await cRpc('gj_file_get',{p_key:RT_KEY});if(f&&f.d){const o=pjDec(cB64Buf(f.d));if(o&&o.days){D=rtMerge(D,o.days);t=new Date(f.t).getTime();}}}catch(e){}}}
-  RT.days=D;RT.t=t;RT.loaded=true;
+  RT.days=D;RT.t=t;RT.loaded=true;rtPubAuto();
 }
 async function rtSaveNow(){
   if(RT.busy){rtSave();return;}RT.busy=true;
@@ -10184,9 +10188,10 @@ async function rtSaveNow(){
     await tplPut(RT_KEY,v);
     if(await cFilePut(RT_KEY,'실시간공정.json',buf.byteLength,buf)){const f=SYNC.files[RT_KEY];if(f){v.cat=new Date(f.t).getTime();RT.t=v.cat;await tplPut(RT_KEY,v);}}
   }finally{RT.busy=false;}
+  rtPubAuto();
 }
 function rtSave(){clearTimeout(RT.timer);RT.timer=setTimeout(rtSaveNow,600);}
-setInterval(()=>{if(!RT.loaded||!cCloudReady()||PM_VIEW()!=='rt'||document.body.classList.contains('pj-dragging'))return;
+setInterval(()=>{if(IS_SUBWIN||!RT.loaded||!cCloudReady()||document.body.classList.contains('pj-dragging'))return;
   const fm=SYNC.files&&SYNC.files[RT_KEY];if(fm&&new Date(fm.t).getTime()>RT.t&&!RT.busy)rtLoad(true).then(()=>{if(PM_VIEW()==='rt')pjR();});},15000);
 function rtGet(dt,u){const D=RT.days[dt];const x=D&&D[u];return x&&!x.del?x:null;}
 function rtPut(dt,u,patch){RT.days[dt]=RT.days[dt]||{};const o=RT.days[dt][u]||{w:[],next:'',src:''};Object.assign(o,patch,{at:Date.now(),by:cMe()});RT.days[dt][u]=o;rtSave();}
@@ -10227,9 +10232,9 @@ function rtHTML(){
     h+='<div class="rw-r"><div class="nm">'+rtSrcB(d)+'<span data-pj-open="'+d._id+'" title="'+esc(d.work||'')+'"><b>'+esc(d.work||'(공사명 없음)')+'</b><small>📍 '+esc(d.region||'—')+(rq?' · 요청 '+rtMd(rq):'')+''+'</small></span><button type="button" class="rx" data-rt-rowx="'+esc(d._uid)+'" title="이번 주 일정에서 빼기">×</button></div>';
     days.forEach((D,i)=>{const c=rtKind(D.ymd,d),dd=rtShCls(D.ymd,d._uid);const at=' data-rt-cell="'+esc(d._uid)+'" data-rt-dt="'+D.ymd+'"';
       if(c.k==='none')h+='<div class="dc off'+cls(D)+dd+'"'+at+' title="일정 없음 · 누르면 「배치 필요」로"></div>';
-      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">＋ 배치</span>'+rtRepB(D.ymd,d._uid)+'</div>';
-      else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'>'+(c.k==='js'?rtShB(D.ymd,d._uid):'')+'<span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span></div>';
-      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtRepB(D.ymd,d._uid)+'</div>';});
+      else if(c.k==='need')h+='<div class="dc need'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<span class="nd">＋ 배치</span>'+rtRepB(D.ymd,d._uid)+rtCxB(D.ymd,d._uid)+'</div>';
+      else if(c.k==='js'||c.k==='end')h+='<div class="dc st'+cls(D)+dd+'"'+at+'>'+(c.k==='js'?rtShB(D.ymd,d._uid):'')+'<span class="tag '+c.k+'">'+(c.k==='js'?'결선':'측량 끝')+'</span>'+rtCxB(D.ymd,d._uid)+'</div>';
+      else h+='<div class="dc on'+cls(D)+dd+'"'+at+'>'+rtShB(D.ymd,d._uid)+'<div class="ws">'+c.w.map(n=>rtChip(n,D.ymd,d._uid)).join('')+'</div>'+rtRepB(D.ymd,d._uid)+rtCxB(D.ymd,d._uid)+'</div>';});
     h+='</div>';});
   /* 일별 합계 */
   h+='<div class="rw-r sum"><div class="nm"><b>일별 합계</b><small>사업 · 투입 / '+((PD.staff||[]).length||'—')+'명</small></div>'+days.map(D=>{let n=0,ng=0;const p=new Set();rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k==='on'||c.k==='need'){n++;if(c.k==='need')ng++;c.w.forEach(x=>p.add(x));}});
@@ -10335,20 +10340,41 @@ function rtRepOf(dt,u){const x=rtCell(dt,u);if(!x)return null;if(x.rep&&x.rep.v)
 const RT_SH={D:['☀','주간'],N:['🌙','야간']};
 function rtShB(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s&&RT_SH[s]?'<span class="shi '+(s==='D'?'d':'n')+'" title="'+RT_SH[s][1]+' 작업">'+RT_SH[s][0]+'</span>':'';}
 function rtShCls(dt,u){const x=rtCell(dt,u),s=x&&x.sh;return s==='D'?' shD':(s==='N'?' shN':'');}
+/* BUILD 188 : 내일 칸 「작업자 취소」 — 전날 현장 보고를 작업자가 취소함 · 누르면 확인 처리(표시 지움) */
+function rtCxB(dt,u){const x=rtCell(dt,u),cx=x&&x.cx;if(!cx||dt<=rtToday())return '';   /* 오늘·지난 칸은 보고 버튼이 「작업자 취소」로 보여 줘요 */
+  return '<button type="button" class="cxb" data-rt-cxx="'+esc(u)+'" data-rt-dt="'+dt+'" title="'+esc((cx.by||'')+' '+(cx.at?hhmm(new Date(cx.at)):'')+' 「내일 공사」 보고를 취소했어요 (일정 변경) · 확인했으면 눌러서 지워요')+'">작업자 취소</button>';}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rt-cxx]');if(!b)return;e.preventDefault();e.stopPropagation();
+  rtPut(b.dataset.rtDt,b.dataset.rtCxx,{cx:null});pjR();},true);
+/* BUILD 188 : 배치 요약 자동 저장 — 배치가 바뀌면 1.5초 모아서 오늘 · 내일 'rtpub:날짜' (보고 있는 주와 상관없이 · 멘트는 그대로) */
+const RT_PUB={tm:0,last:{},day:''};
+function rtPubAuto(){if(IS_SUBWIN||!RT.loaded||!cCloudReady()||!(cAuth()||{}).token)return;clearTimeout(RT_PUB.tm);RT_PUB.tm=setTimeout(()=>{rtPubNow().catch(()=>{});},1500);}
+function rtPubDay(t){return {t,k:0,ymd:rtYmd(t),md:(t.getMonth()+1)+'/'+t.getDate(),w:'일월화수목금토'[t.getDay()]};}
+async function rtPubNow(){
+  const b=new Date();b.setHours(0,0,0,0);const Ds=[rtPubDay(b),rtPubDay(rtAdd(b,1))],rows=rtRows(Ds);
+  for(const D of Ds){const K=kkData(D,rows),sig=JSON.stringify(K.L);if(RT_PUB.last[D.ymd]===sig)continue;
+    const key='rtpub:'+D.ymd;let old=null;
+    try{const f=await cRpc('gj_file_get',{p_key:key});old=f&&f.d?pjDec(cB64Buf(f.d)):null;}catch(e){continue;}   /* 못 읽으면 멘트를 지울 수 있어 건너뜀 */
+    if(old&&JSON.stringify(old.list||[])===sig){RT_PUB.last[D.ymd]=sig;continue;}
+    const buf=pjEnc({v:1,d:D.ymd,at:Date.now(),by:cMe(),memo:(old&&old.memo)||'',list:K.L});
+    try{const r=await cRpc('gj_file_put',{p_key:key,p_name:'배치_'+D.ymd+'.json',p_size:buf.byteLength,p_b64:cBufB64(buf),p_by:cMe()});
+      if(SYNC.files)SYNC.files[key]={t:(r&&r.t)||new Date().toISOString(),n:'배치_'+D.ymd+'.json',s:buf.byteLength,b:cMe()};RT_PUB.last[D.ymd]=sig;}catch(e){}
+  }
+}
 function rtRepB(dt,u){const r=rtRepOf(dt,u),td=rtToday(),t=r&&r.t&&RT_SH[r.t];
-  const tip=r?((r.by?r.by+' ':'')+(r.at?hhmm(new Date(r.at))+' ':'')+(r.src==='폰'?'· 폰 보고':'')+(r.memo?'\n'+r.memo:'')):'현장 작업자가 소장님께 내일 공사를 여쭤 보고 알려 줘요 · 눌러서 직접 넣을 수도 있어요';
+  const cx0=!r&&rtCell(dt,u)&&rtCell(dt,u).cx;
+  const tip=cx0?((cx0.by||'')+' '+(cx0.at?hhmm(new Date(cx0.at)):'')+' 보고 취소 (일정 변경) · 눌러서 직접 넣을 수도 있어요'):r?((r.by?r.by+' ':'')+(r.at?hhmm(new Date(r.at))+' ':'')+(r.src==='폰'?'· 폰 보고':'')+(r.memo?'\n'+r.memo:'')):'현장 작업자가 소장님께 내일 공사를 여쭤 보고 알려 줘요 · 눌러서 직접 넣을 수도 있어요';
   let c,txt;
   if(r&&r.v==='Y'){c='y';txt='내일 공사'+(t?' '+t[0]:'');}
   else if(r&&r.v==='N'){c='n';txt='오늘로 끝';}
-  else if(dt<=td){c='w';txt='보고 대기';}
+  else if(dt<=td){const x=rtCell(dt,u);if(x&&x.cx){c='c';txt='작업자 취소';}else{c='w';txt='보고 대기';}}
   else return '';   /* 앞날 칸은 그날이 되면 보고 */
   return '<button type="button" class="rb '+c+'" data-rt-rep="'+esc(u)+'" data-rt-dt="'+dt+'" title="'+esc(tip)+'">'+txt+(r&&r.memo?'<i class="mm">✎</i>':'')+'</button>';}
 function rtSetRep(dt,u,rep){
   const nd=rtYmd(rtAdd(parseDate(dt),1)),cur=rtCell(dt,u),nx=rtCell(nd,u);
   const R=rep?Object.assign({src:'관리자',by:cMe()},rep,{at:rep.at||Date.now()}):null;
-  rtPut(dt,u,{rep:R,next:'',w:cur?cur.w||[]:[],st:cur?cur.st||'':'',src:cur?cur.src||'':'auto',del:false});
-  if(R&&R.v==='Y'){if(!nx)rtPut(nd,u,{w:[],st:'',sh:R.t||'',src:'carry',del:false});else rtPut(nd,u,{st:nx.st==='끝'?'':(nx.st||''),sh:R.t||nx.sh||'',del:false});}
-  else if(R&&R.v==='N'){if(nx)rtPut(nd,u,{st:'끝',del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',del:false});}
+  rtPut(dt,u,{rep:R,next:'',cx:null,w:cur?cur.w||[]:[],st:cur?cur.st||'':'',src:cur?cur.src||'':'auto',del:false});
+  if(R&&R.v==='Y'){if(!nx)rtPut(nd,u,{w:[],st:'',sh:R.t||'',src:'carry',cx:null,del:false});else rtPut(nd,u,{st:nx.st==='끝'?'':(nx.st||''),sh:R.t||nx.sh||'',cx:null,del:false});}
+  else if(R&&R.v==='N'){if(nx)rtPut(nd,u,{st:'끝',cx:null,del:false});else rtPut(nd,u,{w:[],st:'끝',src:'carry',cx:null,del:false});}
   else if(nx){if(nx.src==='carry'&&!(nx.w||[]).length)rtPut(nd,u,{del:true});else if(nx.st==='끝')rtPut(nd,u,{st:''});}
 }
 /* 근태 · 폰에서 부를 자리 (O = 내일 공사 있음 · X = 오늘로 끝) */
@@ -10357,18 +10383,37 @@ window.gjRtSetNext=function(u,v,by){if(!/^[OX]$/.test(v))return false;rtSetRep(r
 function rtAck(dt,n){const f=SYNC.files&&SYNC.files['rtok:'+dt+':'+n];return f?new Date(f.t):null;}
 /* 폰 보고 받아서 반영 (새로 올라온 것만) */
 RT.repSeen=RT.repSeen||{};
+/* BUILD 188 : 폰(탱고) 보고 취소 {cancel:true} — 지금 걸린 보고가 「취소한 본인 것」일 때만 내림
+   → 같은 현장 다른 사람 보고가 있으면 그중 최근 것으로, 없으면 「작업자 취소」 표시(오늘 칸 · 내일 칸) */
+RT.repObj=RT.repObj||{};
+function rtRepAlt(dt,u,who){let b=null;Object.keys(RT.repObj).forEach(k=>{const r=RT.repObj[k];if(r.dt!==dt||r.u!==u||r.who===who||r.o.cancel||!/^[YN]$/.test(r.o.v))return;if(!b||r.at>b.at)b=r;});return b;}
+function rtCancelRep(dt,u,by,at){const nd=rtYmd(rtAdd(parseDate(dt),1)),nx=rtCell(nd,u),cx={by,at};
+  rtPut(dt,u,{rep:null,next:'',cx,del:false});
+  if(nx){const p={cx};if(nx.st==='끝')p.st='';rtPut(nd,u,p);}}
 async function rtPullReports(){
-  if(!cCloudReady()||!SYNC.files)return 0;const td=rtToday(),yd=rtYmd(rtAdd(parseDate(td),-1));let n=0;
+  if(IS_SUBWIN||!cCloudReady()||!SYNC.files||!RT.loaded)return 0;const td=rtToday(),yd=rtYmd(rtAdd(parseDate(td),-1));let n=0;
   for(const k of Object.keys(SYNC.files)){
     const m=k.match(/^rtrep:(\d{4}-\d{2}-\d{2}):([^:]+):(.+)$/);if(!m||(m[1]!==td&&m[1]!==yd))continue;
     const t=new Date(SYNC.files[k].t).getTime();if(RT.repSeen[k]>=t)continue;RT.repSeen[k]=t;
-    try{const f=await cRpc('gj_file_get',{p_key:k});if(!f||!f.d)continue;const o=pjDec(cB64Buf(f.d));if(!o||!/^[YN]$/.test(o.v))continue;
-      const cur=rtRepOf(m[1],m[2]),at=o.at||t;if(cur&&cur.at&&cur.at>=at)continue;
+    try{const f=await cRpc('gj_file_get',{p_key:k});if(!f||!f.d)continue;const o=pjDec(cB64Buf(f.d));if(!o)continue;
+      const who=m[3],at=o.at||t,cur=rtRepOf(m[1],m[2]);RT.repObj[k]={dt:m[1],u:m[2],who,o,at};
+      if(o.cancel){
+        if(!cur||cur.src!=='폰'||(cur.by!==who&&cur.by!==o.by)||(cur.at||0)>at)continue;   /* 다른 사람 · 관리자 보고는 그대로 */
+        const a=rtRepAlt(m[1],m[2],who);
+        if(a)rtSetRep(m[1],m[2],{v:a.o.v,t:a.o.t||'',memo:a.o.memo||'',by:a.o.by||a.who,src:'폰',at:a.at});
+        else rtCancelRep(m[1],m[2],o.by||who,at);
+        n++;continue;}
+      if(!/^[YN]$/.test(o.v))continue;
+      if(cur&&cur.at&&cur.at>=at)continue;
       rtSetRep(m[1],m[2],{v:o.v,t:o.t||'',memo:o.memo||'',by:o.by||m[3],src:'폰',at});n++;}catch(e){}
   }
   if(n&&PM_VIEW()==='rt')pjR();return n;
 }
-setInterval(()=>{if(RT.loaded&&PM_VIEW()==='rt')rtPullReports();},15000);
+/* BUILD 188 : 어느 탭에 있든 15초마다 — 배치표 불러오기 · 폰 보고 받기 · 자정 넘으면 요약 다시 저장 */
+setInterval(()=>{if(IS_SUBWIN||!cCloudReady()||!(cAuth()||{}).token)return;
+  if(!RT.loaded){if(!RT.loading){RT.loading=true;rtLoad().catch(()=>{}).finally(()=>{RT.loading=false;});}return;}
+  rtPullReports();
+  if(RT_PUB.day!==rtToday()){RT_PUB.day=rtToday();RT_PUB.last={};rtPubAuto();}},15000);
 /* 보고 · 시간 고르기 창 */
 function rtRepPop(el){rtPopClose();const u=el.dataset.rtRep,dt=el.dataset.rtDt,r=rtRepOf(dt,u),d=pjBiz(u);
   const p=document.createElement('div');p.id='rtPop';p.className='rep';
@@ -10392,19 +10437,19 @@ document.addEventListener('click',e=>{const p=document.getElementById('rtPop');i
 
 /* ===== BUILD 182 : 「💬 카톡으로 보내기」 — 멘트 창 → 완료 → (카카오 키 있으면) 카톡 공유 / (없으면) 글 복사해서 단톡방에 붙여 넣기 =====
    보낼 때 그날 배치 요약을 공용 파일 'rtpub:날짜' 로 저장 → 다음 단계 폰 앱이 이것만 불러와요 */
-const KK_LS='gongjeong_kakao_js_v1',KK_APP='https://leejonghoon9609.github.io/survey-mobile/';
+const KK_LS='gongjeong_kakao_js_v1',KK_APP='https://leejonghoon9609.github.io/survey-review/realtime.html';
 function kkKey(){try{return localStorage.getItem(KK_LS)||'';}catch(e){return '';}}
 function kkDay(){const D=rtDays();return D[Math.min(6,Math.max(0,RTW.focus))]||D[1];}
-function kkData(D){const rows=rtRows(rtDays()),L=[];let need=0;
+function kkData(D,rows){rows=rows||rtRows(rtDays());const L=[];let need=0;
   rows.forEach(d=>{const c=rtKind(D.ymd,d);if(c.k!=='on'&&c.k!=='need'&&c.k!=='js')return;const x=rtCell(D.ymd,d._uid)||{};
-    if(c.k==='need')need++;L.push({u:d._uid,src:pmSrc(d),work:d.work||'',region:d.region||'',w:c.w.slice(),sh:x.sh||'',st:c.k==='js'?'결선':''});});
+    if(c.k==='need')need++;L.push({u:d._uid,src:pmSrc(d),work:d.work||'',region:d.region||'',w:c.w.slice(),sh:x.sh||'',st:c.k==='js'?'결선':'',mk:workStage(d)==='후측량'?'후측량':'실시간'});});
   const o={D:L.filter(x=>x.sh==='D'),N:L.filter(x=>x.sh==='N'),E:L.filter(x=>x.sh!=='D'&&x.sh!=='N')};
   const ppl=new Set();L.forEach(x=>x.w.forEach(n=>ppl.add(n)));return {L,o,need,ppl:ppl.size};}
 const kkSrc=s=>/LG/i.test(s)?'LG':s==='SKT'?'T':s==='SKB'?'B':/원인자/.test(s)?'원':(s||'').slice(0,1);
 function kkText(D,memo,full){const K=kkData(D),head='📋 '+D.md+'('+D.w+') 실시간 배치 · '+K.L.length+'곳 · '+K.ppl+'명';
   if(!full)return head+(memo?'\n'+memo:'');
   const sec=(t,A)=>A.length?'\n'+t+'\n'+A.map((x,i)=>(i+1)+') ['+kkSrc(x.src)+'] '+x.work+(x.region?' ('+x.region+')':'')+'\n    → '+(x.w.length?x.w.join(', '):'미배치')+(x.st?' · '+x.st:'')).join('\n'):'';
-  return head+sec('☀ 주간',K.o.D)+sec('🌙 야간',K.o.N)+sec('· 시간 미정',K.o.E)+(K.need?'\n\n⚠ 미배치 '+K.need+'곳':'')+(memo?'\n\n'+memo:'')+'\n\n👉 확인 : '+KK_APP+'?d='+D.ymd;}
+  return head+sec('☀ 주간',K.o.D)+sec('🌙 야간',K.o.N)+sec('· 시간 미정',K.o.E)+(K.need?'\n\n⚠ 미배치 '+K.need+'곳':'')+(memo?'\n\n'+memo:'')+'\n\n👉 확인 : '+KK_APP+'?gjrep=1&d='+D.ymd;}
 function kkOpen(){kkClose();const D=kkDay(),K=kkData(D);
   const p=document.createElement('div');p.id='kkPop';
   p.innerHTML='<div class="kk"><div class="kh"><b>💬 카톡으로 보내기</b><span>'+D.md+' ('+D.w+') 실시간 배치 · '+K.L.length+'곳 · '+K.ppl+'명'+(K.need?' · <em>미배치 '+K.need+'</em>':'')+'</span><button type="button" data-kk-x="1">✕</button></div>'+
@@ -10423,7 +10468,7 @@ async function kkGo(){const p=document.getElementById('kkPop');if(!p)return;cons
   try{const buf=pjEnc({v:1,d:D.ymd,at:Date.now(),by:cMe(),memo,list:K.L}),k='rtpub:'+D.ymd,v={name:'배치_'+D.ymd+'.json',at:Date.now(),size:buf.byteLength,buf,by:cMe()};await tplPut(k,v);cFilePut(k,v.name,buf.byteLength,buf);}catch(e){}
   const copied=await kkCopy(full);const key=kkKey();
   if(key){try{await kkLoadSdk();if(!Kakao.isInitialized())Kakao.init(key);
-      Kakao.Share.sendDefault({objectType:'text',text:kkText(D,memo,false).slice(0,195),link:{webUrl:KK_APP+'?d='+D.ymd,mobileWebUrl:KK_APP+'?d='+D.ymd},buttonTitle:'내일 배치 확인'});
+      Kakao.Share.sendDefault({objectType:'text',text:kkText(D,memo,false).slice(0,195),link:{webUrl:KK_APP+'?gjrep=1&d='+D.ymd,mobileWebUrl:KK_APP+'?gjrep=1&d='+D.ymd},buttonTitle:'내일 배치 확인'});
       kkClose();toast('카톡이 열렸어요 · 단톡방을 골라 보내 주세요'+(copied?' (전체 글도 복사해 뒀어요)':''));return;}
     catch(e){toast('카톡 공유를 못 열었어요 · '+(e&&e.message||e)+' — 글을 복사해 뒀어요',true);kkClose();return;}}
   kkClose();toast(copied?'글을 복사했어요 · 카톡 단톡방에 붙여 넣기(Ctrl+V) 해 주세요':'복사하지 못했어요 · 미리보기 글을 직접 선택해 복사해 주세요',!copied);}
