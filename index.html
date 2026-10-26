@@ -2634,9 +2634,9 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
     </div>
     <div id="cpAdmin">
       <div id="cpRbox">
-        <div class="vp-sec">직원 비밀번호 초기화 <span style="color:#94a3b8;font-weight:400;">(관리자)</span></div>
+        <div class="vp-sec">직원 비밀번호 등록 <span style="color:#94a3b8;font-weight:400;">(관리자)</span></div>
         <div class="cp-row"><select id="cpRuser" class="cp-in"></select><input type="text" id="cpRpw" class="cp-in" placeholder="새 비밀번호 (비우면 1212)" style="max-width:170px;"></div>
-        <div class="cp-row" style="justify-content:flex-end;"><button class="btn" id="cpRgo" style="padding:6px 14px;">초기화</button></div>
+        <div class="cp-row" style="justify-content:flex-end;"><button class="btn" id="cpRgo" style="padding:6px 14px;">등록</button></div>
       </div>
       <details id="cpAdv" class="cp-adv"><summary>저장소 설정 (관리자)</summary>
         <div class="vp-sec" style="margin-top:8px;">주소</div>
@@ -3807,7 +3807,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='203';
+const BUILD_NO='204';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -8507,6 +8507,7 @@ async function cPull(force){
     if(R&&R.r>SYNC.lay.r){lay=cMergeLayout(R.v);const mine=cLayHash(cLayout());SYNC.lay={r:R.r,h:cLayHash(R.v||{})};if(mine!==SYNC.lay.h)SYNC.again=true;}
     st=cApplyRows(res.rows||[]);st.lay=lay;
     (res.files||[]).forEach(f=>{SYNC.files[f.k]={t:f.t,n:f.n,s:f.s,b:f.b};});
+    if((res.files||[]).some(f=>/^rt(ok|rep):/.test(f.k))&&typeof rtPullAcks==='function'&&RT.loaded)setTimeout(()=>{rtPullAcks();rtPullReports();},0);   /* BUILD 204 */
     SYNC.since=res.now;SYNC.fail=0;SYNC.last=new Date();
     if(st.mine)SYNC.again=true;
     cDot('ok','공용 저장소와 맞춤');
@@ -8727,10 +8728,10 @@ function bindCloudPop(){
   document.getElementById('cpRgo').addEventListener('click',()=>{
     const u=document.getElementById('cpRuser').value,n=document.getElementById('cpRpw').value||'1212';
     if(!u){toast('직원을 골라 주세요',true);return;}
-    askConfirm(u+' 님 비밀번호를 「'+n+'」(으)로 초기화할까요?\n그 직원은 다시 로그인해야 해요.',async()=>{
-      try{const ok=await cRpc('gj_admin_pw',{p_name:u,p_new:n});toast(ok?u+' 님 비밀번호를 초기화했어요':'초기화하지 못했어요 (관리자만 · 4자 이상)',!ok);}
-      catch(e){toast('초기화하지 못했어요 · '+(e.message||e),true);}
-    },{title:'비밀번호 초기화',ok:'초기화'});
+    askConfirm(u+' 님 비밀번호를 「'+n+'」(으)로 등록할까요?\n그 직원은 다시 로그인해야 해요.',async()=>{
+      try{const ok=await cRpc('gj_admin_pw',{p_name:u,p_new:n});toast(ok?u+' 님 비밀번호를 등록했어요':'등록하지 못했어요 (관리자만 · 4자 이상)',!ok);}
+      catch(e){toast('등록하지 못했어요 · '+(e.message||e),true);}
+    },{title:'비밀번호 등록',ok:'등록'});
   });
   document.getElementById('cpSave').addEventListener('click',async()=>{
     const url=document.getElementById('cpUrl').value.trim().replace(/\/+$/,''),key=document.getElementById('cpKey').value.trim();
@@ -10548,7 +10549,7 @@ async function rtPullAcks(){
   for(const k of Object.keys(SYNC.files)){const m=k.match(/^rtok:(\d{4}-\d{2}-\d{2}):(.+)$/);if(!m||m[1]<yd)continue;
     const t=new Date(SYNC.files[k].t).getTime();if(RT.okSeen[k]>=t)continue;RT.okSeen[k]=t;
     try{const f=await cRpc('gj_file_get',{p_key:k});const o=f&&f.d?pjDec(cB64Buf(f.d)):null,c=!!(o&&o.cancel);
-      if(!!(RT.okObj[k]&&RT.okObj[k].cancel)!==c)n++;RT.okObj[k]={cancel:c,at:(o&&o.at)||t};}catch(e){}}
+      if(!RT.okObj[k]||!!RT.okObj[k].cancel!==c||RT.okObj[k].at!==((o&&o.at)||t))n++;RT.okObj[k]={cancel:c,at:(o&&o.at)||t};}catch(e){}}
   if(n&&PM_VIEW()==='rt')pjR();return n;}
 /* 폰 보고 받아서 반영 (새로 올라온 것만) */
 RT.repSeen=RT.repSeen||{};
