@@ -1465,6 +1465,38 @@ body.rt-nmdrag *{cursor:col-resize !important;}
 #rtCxPop .cf .r{background:#EA002C;border-color:#EA002C;color:#fff;}
 #rtCxPop .cf .b{background:#2563EB;border-color:#2563EB;color:#fff;}
 #rtCxPop .cf .g{background:#16A34A;border-color:#16A34A;color:#fff;}
+/* ===== BUILD 205 : 사업 카드 도면삭제 · 도면 일괄 넣기 ===== */
+.tc2-up{display:inline-flex;align-items:center;gap:6px;}
+#tcDwDel{border-color:#64748B;color:#475569;background:#fff;}
+#tcDwDel:not(:disabled):hover{border-color:#EA002C;color:#fff;background:#EA002C;}
+#tcDwDel:disabled{border-color:#e2e8f0;color:#cbd5e1;cursor:default;}
+.rdw-tabs{flex-wrap:wrap;}
+.rdw-tabs button{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bd-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed #EA002C;border-radius:12px;background:#FFF5F6;padding:34px 16px;cursor:pointer;text-align:center;}
+.bd-drop b{font-size:15px;color:#0f172a;}.bd-drop span{font-size:12.5px;color:#64748b;}.bd-drop span b{font-size:12.5px;color:#EA002C;}
+.bd-drop.over{background:#FFE4E8;border-style:solid;}
+.bd-sum{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.bd-pill{font-size:12.5px;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:3px 11px;}
+.bd-pill b{color:#0f172a;}.bd-pill.r{background:#FFF1F3;border-color:#FECDD3;}.bd-pill.r b{color:#EA002C;}
+.bd-pill.g{background:#F0FDF4;border-color:#BBF7D0;}.bd-pill.g b{color:#15803D;}.bd-pill.y{background:#FFFBEB;border-color:#FDE68A;}.bd-pill.y b{color:#B45309;}
+.bd-tabs{display:flex;gap:6px;margin-bottom:8px;}
+.bd-tabs button{font-family:inherit;font-size:13px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:8px;padding:5px 12px;cursor:pointer;}
+.bd-tabs button.on{border-color:#EA002C;color:#EA002C;font-weight:800;background:#FFF5F6;}
+.gw-t.bd-t td{vertical-align:top;}
+.gw-t.bd-t td.l{min-width:0;font-weight:400;}
+.bd-no{color:#EA002C;font-size:13px;}
+.bd-biz{display:flex;align-items:center;gap:6px;font-weight:600;color:#0f172a;line-height:1.5;}
+.bd-src{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:18px;padding:0 5px;border-radius:5px;color:#fff;font-size:11px;font-weight:800;}
+.bd-many{font-size:11.5px;color:#B45309;margin-top:2px;}
+.bd-fs div{line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:470px;}
+.bd-fs small{color:#94a3b8;}
+.bd-k{display:inline-block;font-size:10.5px;font-weight:800;border:1px solid;border-radius:4px;padding:0 4px;margin-right:6px;line-height:15px;background:#fff;}
+.bd-why{color:#B45309;font-size:12px;white-space:normal;text-align:left;}
+.bd-run{border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.bd-rt{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}.bd-rt b{font-size:16px;color:#0f172a;}.bd-rt span{font-size:13px;color:#64748b;}
+.bd-bar{height:12px;border-radius:6px;background:#f1f5f9;overflow:hidden;margin-bottom:10px;}
+.bd-bar i{display:block;height:100%;background:linear-gradient(90deg,#EA002C,#FF5A78);border-radius:6px;transition:width .3s;}
+.bd-cur{font-size:12.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* ===== BUILD 149 : 측량예정일 → 진행 단계 고르기 ===== */
 .tc2-grid .kv.jinpick{cursor:pointer;}
 .tc2-grid .kv.jinpick .v{color:#1d4ed8;text-decoration:underline dotted #93c5fd;text-underline-offset:3px;}
@@ -2371,6 +2403,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
         <div class="ad-sec"><span class="no">3</span><b>관리</b><span>관리자에게만 보여요</span></div>
         <div class="card ad-adm">
           <div class="ln"><div class="d"><b>중복 정리 <span id="admDupN"></span></b><span>공사코드가 같은 건 — 어떤 사업끼리 겹치는지 먼저 보여 줘요</span></div><button type="button" class="btn" id="btnDedup">겹치는 사업 보기</button></div>
+          <div class="ln"><div class="d"><b>도면 일괄 넣기</b><span>관리번호별로 정리한 도면 폴더 → 사업마다 「의뢰 도면」으로 (먼저 표로 보여 줘요)</span></div><button type="button" class="btn" id="btnBulkDw">폴더 고르기</button></div>
           <div class="ln"><div class="d"><b>직전 목록 되살리기</b><span id="admPrevNote">마지막으로 비우거나 정리하기 전 상태로 되돌려요</span></div><button type="button" class="btn hide" id="btnPrev">되살리기</button></div>
           <div class="ln wlk" id="admWipeLn" title="잠겨 있어요 · 한 번 누르면 풀려요"><div class="d"><b>목록 비우기 <span class="lock">전 직원 화면에서 사라져요</span></b><span id="admWipeNote">누르면 한 번 더 물어봐요</span></div><span class="wlk-t" id="admWipeLk">잠김 · 한 번 누르면 풀려요</span><button type="button" class="btn dan" id="btnWipe" tabindex="-1">목록 비우기</button></div>
         </div>
@@ -3807,7 +3840,7 @@ body.swc-drag,body.swc-drag *{cursor:col-resize!important;user-select:none!impor
    BUILD 140: 사업 공정관리 — 측량방법(전체·실시간·탐사)을 공정판 카드 안, 「전체 물량」 제목 앞으로
    BUILD 141: 진행 단계에 「정산진행중」 추가 (정위치DB 와 완료 사이) — 일은 끝났는데 정산상황이 정산완료가 아닌 건
    ======================================================================== */
-const BUILD_NO='204';
+const BUILD_NO='205';
 const LEAD=2;   /* 표 맨 앞 고정 칸 수 : 체크바 + 순번 */
 document.getElementById('buildTag').textContent='BUILD '+BUILD_NO;
 
@@ -6280,7 +6313,7 @@ function openCard(id){
   let H='<div class="tc2-top"><div class="tc2-main"><div class="tc2-h" style="--c:#EA002C">진행 현황</div>'+h+'</div>'+
     '<div class="tc2-note"><div class="tc2-nh"><div class="tc2-h" style="--c:#D69E00">작업 특이사항</div><span class="pho-n" id="tcPhoN"></span><button type="button" class="pho-add" id="tcPhoAdd" title="현장 사진 올리기 (여러 장 · 폰에서는 바로 찍기)">사진 올리기 ＋</button></div><textarea id="tcNote" placeholder="작업 중 특이사항을 적어 주세요 · 적으면 자동 저장되고 공용으로 같이 보여요\n사진은 「사진 올리기 ＋」 또는 끌어다 놓기">'+esc(note)+'</textarea><div class="pho-strip" id="tcPho"></div><div class="tc2-sv" id="tcNoteSv"></div><input type="file" id="tcPhoFile" class="hide" accept="image/*" multiple></div></div>';
   H+='<div class="tc2-bot"><div class="tc2-info"><div class="tc2-ih"><div class="tc2-h" style="--c:#DB2777">사업 정보</div><span class="tc2-tip">값을 더블클릭하면 고쳐요 (빈 칸 「—」도 더블클릭해서 입력)</span><button class="btn" id="tcSave" disabled>수정 저장</button></div><div class="tc2-grid" id="tcInfo">'+cardInfoHTML(d)+'</div></div>'+
-    '<div class="tc2-dwg"><div class="tc2-dh"><button class="btn" id="tcUp">업로드 ↑</button><span class="tc2-dt"><b class="dtab on" data-dt="dwg">준공도면</b><b class="dtab hide" data-dt="req">의뢰 도면</b><button class="btn" id="tcTango" title="탱고 (준비 중)">탱고</button></span><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
+    '<div class="tc2-dwg"><div class="tc2-dh"><span class="tc2-up"><button class="btn" id="tcUp">업로드 ↑</button><button class="btn" id="tcDwDel" disabled>도면삭제</button></span><span class="tc2-dt"><b class="dtab on" data-dt="dwg">준공도면</b><b class="dtab hide" data-dt="req">의뢰 도면</b><button class="btn" id="tcTango" title="탱고 (준비 중)">탱고</button></span><button class="btn" id="tcDn" disabled>다운로드 ↓</button></div>'+
     '<div class="tc2-dv" id="tcDwg"><div class="tc2-empty">불러오는 중…</div></div><input type="file" id="tcDwgFile" class="hide"></div></div>';
   document.getElementById('tcBody').innerHTML=H;
   document.getElementById('cardPop').classList.remove('hide');
@@ -6560,11 +6593,11 @@ async function loadDwg(d){
   const box=document.getElementById('tcDwg'),dn=document.getElementById('tcDn');if(!box)return;
   if(DWG_MODE==='req')return loadRdw(d);
   dwgTabs(d);
-  let f=null;try{f=await cTplGet(dwgKey(d));}catch(e){}
+  let f=null;try{f=await cTplGet(dwgKey(d));}catch(e){}if(dwgGone(f))f=null;   /* BUILD 205 : 지운 준공도면 */
   if(String(CARD_ID)!==String(d._id)||DWG_MODE!=='dwg')return;
   /* 준공도면은 없고 의뢰 도면만 있으면, 카드를 열 때 의뢰 도면을 먼저 보여 준다 */
   if((!f||!f.buf)&&DWG_AUTO&&rdwRefs(d).length){DWG_AUTO=false;DWG_MODE='req';return loadRdw(d);}
-  DWG_AUTO=false;
+  DWG_AUTO=false;dwgDelBtn(!!(f&&f.buf));
   if(DWG_URL){URL.revokeObjectURL(DWG_URL);DWG_URL=null;}
   if(!f||!f.buf){box.innerHTML='<div class="tc2-empty">준공도면이 아직 없어요<br><span>위 「업로드 ↑」로 PDF·이미지·도면 파일을 올려 주세요</span></div>';dn.disabled=true;return;}
   const ext=(String(f.name).split('.').pop()||'').toLowerCase(),mime=DWG_MIME[ext]||'application/octet-stream';
@@ -9375,6 +9408,7 @@ function dwgTabs(d){
   const refs=rdwRefs(d);
   [...document.querySelectorAll('#cardPop .dtab')].forEach(b=>{b.classList.toggle('on',b.dataset.dt===DWG_MODE);if(b.dataset.dt==='req'){b.classList.toggle('hide',!refs.length);b.textContent='의뢰 도면'+(refs.length>1?' '+refs.length:'');}});
   const up=document.getElementById('tcUp');if(up)up.disabled=DWG_MODE==='req';
+  dwgDelBtn(DWG_MODE==='req'&&refs.length>0);   /* BUILD 205 */
 }
 async function loadRdw(d){
   const box=document.getElementById('tcDwg'),dn=document.getElementById('tcDn');if(!box)return;
@@ -10975,6 +11009,292 @@ updateUpMode();showPrevBtn();syncToolbar();syncHbar();
 renderAddForm();renderToday();renderUpSum();admVis();
 document.getElementById('mapBox').innerHTML='';
 bindCloudPop();cloudInit();
+/* ======================= BUILD 205 : 도면 일괄 넣기 · 도면삭제 ======================= */
+/* ---- 사업 카드 「도면삭제」 : 준공도면 = 지운 표시(같은 키에 덮어쓰기) · 의뢰 도면 = 지금 보이는 한 장을 목록에서 빼기 ---- */
+const DWG_GONE='(삭제됨)';
+function dwgGone(f){return !!(f&&f.name===DWG_GONE);}
+function dwgDelBtn(on){
+  const b=document.getElementById('tcDwDel');if(!b)return;
+  b.disabled=!on;
+  b.title=DWG_MODE==='req'?'지금 보이는 의뢰 도면을 지워요':'준공도면을 지워요';
+}
+function rdwSet(d,refs){d.row[cLabelIdx(RDW_LABEL)]=refs.map(r=>String(r.name).replace(/[@|]/g,' ')+'@'+r.key).join(' | ');markDirty();}
+document.getElementById('cardPop').addEventListener('click',e=>{
+  if(e.target.id!=='tcDwDel'||e.target.disabled)return;
+  const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(!d)return;
+  if(DWG_MODE==='req'){
+    const refs=rdwRefs(d),r=refs[RDW_I];if(!r)return;
+    askConfirm('지금 보이는 의뢰 도면을 지울까요?\n\n'+r.name+(refs.length>1?'\n(의뢰 도면 '+refs.length+'장 중 이 한 장만 지워요)':'')+'\n\n지우면 다른 직원 화면에서도 없어져요.',()=>{
+      const d2=DATA.find(z=>z._uid===d._uid);if(!d2)return;
+      rdwSet(d2,rdwRefs(d2).filter(z=>z.key!==r.key));saveState(true);
+      RDW_I=0;if(String(CARD_ID)===String(d2._id))loadRdw(d2);
+      toast('의뢰 도면을 지웠어요');
+    },{title:'의뢰 도면 지우기',ok:'지우기',danger:true});
+    return;
+  }
+  const nm=(document.getElementById('tcDn')||{dataset:{}}).dataset.name||'준공도면';
+  askConfirm('준공도면을 지울까요?\n\n'+nm+'\n\n지우면 다른 직원 화면에서도 없어지고 되돌릴 수 없어요.\n필요하면 먼저 「다운로드 ↓」로 받아 두세요.',async()=>{
+    const k=dwgKey(d),box=document.getElementById('tcDwg');
+    if(box)box.innerHTML='<div class="tc2-empty">지우는 중…</div>';
+    const v={name:DWG_GONE,at:Date.now(),size:0,buf:null,by:cMe()};
+    let ok=true;
+    if(cCloudReady()){
+      try{const r=await cRpc('gj_file_put',{p_key:k,p_name:DWG_GONE,p_size:1,p_b64:'AA==',p_by:cMe()});
+        SYNC.files[k]={t:r&&r.t||new Date().toISOString(),n:DWG_GONE,s:1,b:cMe()};v.cat=new Date(SYNC.files[k].t).getTime();cSaveMeta();}
+      catch(err){ok=false;}
+    }
+    if(!ok){toast('공용 저장소에서 지우지 못했어요 · 연결을 확인하고 다시 눌러 주세요',true);loadDwg(d);return;}
+    await tplPut(k,v);
+    try{await tplPut('pv:'+k,null);}catch(err){}
+    if(String(CARD_ID)===String(d._id)){DWG_MODE='dwg';loadDwg(d);}
+    toast('준공도면을 지웠어요'+(cCloudReady()?' · 다른 직원 화면에서도 없어져요':''));
+  },{title:'준공도면 지우기',ok:'지우기',danger:true});
+});
+
+/* ---- ③ 관리 「도면 일괄 넣기」 : 관리번호별로 정리한 도면 폴더 → 사업마다 「의뢰 도면」 ----
+   파일·폴더 이름 맨 앞 관리번호로 사업을 찾는다 : '1-1 …' · '3-220원인자…' · '1-94,99,118,136' · '2-50,51 …' · '7-34~43 …' · '23-1-109' · '2 …'
+   폴더 안 파일은 폴더 이름의 관리번호를 따른다. PDF·그림은 그대로, 엑셀은 도면 탭을 그림으로, DXF 는 그림으로 바꿔 넣는다. */
+function bdNums(name){
+  const m=/^\s*(\d{1,2}-\d{1,4}(?:-\d{1,4})?(?!\d)|\d{1,3}(?=\s))((?:\s*[,~]\s*(?:\d{1,2}-)?\d{1,4}(?!\d))*)/.exec(String(name||''));
+  if(!m)return [];
+  const first=m[1],out=[first],pre=first.includes('-')?first.slice(0,first.lastIndexOf('-')):'';
+  let last=first;const re=/([,~])\s*((?:\d{1,2}-)?\d{1,4})/g;let g;
+  while((g=re.exec(m[2]))){
+    const full=g[2].includes('-')?g[2]:(pre?pre+'-'+g[2]:g[2]);
+    if(g[1]==='~'){
+      const a=+last.split('-').pop(),b=+full.split('-').pop(),pp=full.includes('-')?full.slice(0,full.lastIndexOf('-')):'';
+      if(b>a&&b-a<=60){for(let k=a+1;k<=b;k++)out.push((pp?pp+'-':'')+k);}else out.push(full);
+    }else out.push(full);
+    last=full;
+  }
+  return [...new Set(out)];
+}
+/* 칸 값이 관리번호 모양일 때만 (예: '3-85' · '2' · '1-94,99') */
+function bdCellNums(v){
+  const s=String(v==null?'':v).trim();
+  if(!/^\d{1,2}(-\d{1,4}){0,2}(\s*[,~]\s*(\d{1,2}-)?\d{1,4})*$/.test(s))return [];
+  return bdNums(s+' ');
+}
+/* 관리번호 → 사업들 (관리번호 칸 · SKT/SKB 리스트의 「대원 관리번호」가 들어간 비고 2 칸) */
+function bdIndex(){
+  const idxs=new Set();
+  if(COL.순번!=null&&COL.순번>=0)idxs.add(COL.순번);
+  DISP.forEach(c=>{if(c.label==='관리번호'||c.label==='비고 2')idxs.add(c.idx);});
+  const m=new Map();
+  DATA.forEach(d=>{
+    const ks=new Set();idxs.forEach(i=>bdCellNums(d.row[i]).forEach(k=>ks.add(k)));
+    ks.forEach(k=>{if(!m.has(k))m.set(k,[]);m.get(k).push(d);});
+  });
+  return m;
+}
+const BD_IMG={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp',pdf:'application/pdf'};
+const BD_QUIET=/^(db|ini|tmp|lnk|ds_store|bak)$/i;
+function bdKind(name,size){
+  const ext=(String(name).split('.').pop()||'').toLowerCase();
+  if(BD_QUIET.test(ext)||/^(thumbs\.db|desktop\.ini|~\$)/i.test(name))return {k:'quiet'};
+  if(BD_IMG[ext])return size>20*1024*1024?{k:'skip',why:'20MB 넘음'}:{k:ext==='pdf'?'pdf':'img'};
+  if(ext==='xlsx'||ext==='xlsm')return {k:'xlsx'};
+  if(ext==='dxf')return size>DXF_MAX_MB*1024*1024?{k:'skip',why:'DXF '+DXF_MAX_MB+'MB 넘음'}:{k:'dxf'};
+  if(ext==='dwg')return {k:'skip',why:'DWG — 캐드에서 PDF·DXF 로 저장해 주세요'};
+  if(ext==='xls')return {k:'skip',why:'예전 엑셀(.xls) — .xlsx 로 저장해 주세요'};
+  return {k:'skip',why:'읽을 수 없는 형식 (.'+ext+')'};
+}
+/* 탭에 보일 이름 : 파일 이름에서 확장자와 맨 앞 관리번호를 뗀다 (같은 이름이면 이미 넣은 것으로 본다) */
+function bdLabel(name,sheet){
+  let b=String(name).replace(/\.[^.]+$/,'').replace(/^\s*\d{1,2}-\d{1,4}(?:-\d{1,4})?(?:\s*[,~]\s*(?:\d{1,2}-)?\d{1,4})*(?!\d)\s*/,'').replace(/[@|]/g,' ').trim()||String(name);
+  if(sheet)b=String(sheet).replace(/[@|]/g,' ').trim()+' · '+b;   /* 탭이 잘려도 구분되게 탭 이름을 앞에 */
+  return b.slice(0,120);
+}
+let BD=null,BD_LOCK=Promise.resolve();
+function bdSrcBadge(d){const s=d._src||d.baal||'';const c=SRC_C[s]||'#64748b';return '<span class="bd-src" style="background:'+c+'">'+esc(s==='원인자'?'원':(s||'?'))+'</span>';}
+/* 고른 파일들 → 넣을 계획 */
+function bdPlan(list){
+  const idx=bdIndex(),groups=new Map(),skip=[];let quiet=0,nonum=0;
+  list.forEach(it=>{
+    const parts=String(it.rel||it.file.name).split('/').filter(Boolean);
+    if(parts.length>1&&!bdNums(parts[0]).length)parts.shift();   /* 고른 맨 위 폴더(도면정리완료) 이름 빼기 */
+    const top=parts[0]||it.file.name,fn=parts[parts.length-1]||it.file.name;
+    const nums=bdNums(parts.length>1?top:fn);
+    const kd=bdKind(fn,it.file.size);
+    if(kd.k==='quiet'){quiet++;return;}
+    if(!nums.length){skip.push({rel:parts.join('/'),why:'이름 앞에 관리번호가 없음'});nonum++;return;}
+    if(kd.k==='skip'){skip.push({rel:parts.join('/'),why:kd.why,nums:nums});return;}
+    const f={file:it.file,rel:parts.join('/'),name:fn,kind:kd.k,nums:nums};
+    nums.forEach(n=>{if(!groups.has(n))groups.set(n,{num:n,rows:idx.get(n)||[],files:[]});groups.get(n).files.push(f);});
+  });
+  const G=[...groups.values()].sort((a,b)=>bdCmp(a.num,b.num));
+  /* 파일 하나 → 넣을 사업들 (여러 관리번호면 모두) · 이미 같은 이름이 있는 사업은 뺀다 */
+  const fmap=new Map();
+  G.forEach(g=>g.files.forEach(f=>{if(!fmap.has(f))fmap.set(f,new Set());g.rows.forEach(d=>fmap.get(f).add(d));}));
+  const jobs=[];let already=0;
+  fmap.forEach((rows,f)=>{
+    if(!rows.size)return;
+    const lb=bdLabel(f.name);
+    const need=[...rows].filter(d=>!rdwRefs(d).some(r=>r.name===lb||(f.kind==='xlsx'&&r.name.endsWith(' · '+lb))));
+    if(!need.length){already++;f.done=true;return;}
+    jobs.push({f:f,rows:need.map(d=>d._uid)});
+  });
+  const noRow=G.filter(g=>!g.rows.length);
+  const bizN=new Set();jobs.forEach(j=>j.rows.forEach(u=>bizN.add(u)));
+  return {G,skip,quiet,nonum,noRow,jobs,already,bizN:bizN.size,files:list.length};
+}
+function bdCmp(a,b){const A=a.split('-').map(Number),B=b.split('-').map(Number);for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]==null?-1:A[i],y=B[i]==null?-1:B[i];if(x!==y)return x-y;}return 0;}
+const BD_KIND={pdf:['PDF','#DC2626'],img:['그림','#2563EB'],xlsx:['엑셀→그림','#15803D'],dxf:['DXF→그림','#7C3AED']};
+function bdKindTag(k){const t=BD_KIND[k]||[k,'#64748b'];return '<span class="bd-k" style="color:'+t[1]+';border-color:'+t[1]+'">'+t[0]+'</span>';}
+function openBulkDw(){
+  if(!DATA.length){toast('먼저 목록을 불러와 주세요',true);return;}
+  if(!(SYNC&&SYNC.on)||!cCloudReady()){toast('공용 저장소에 연결한 뒤에 써 주세요 · 도면은 공용 저장소에 올라가요',true);return;}
+  if(!cIsAdmin()){toast('도면 일괄 넣기는 관리자만 할 수 있어요',true);return;}
+  BD={tab:'go',plan:null,run:null};
+  gwOpen('도면 일괄 넣기','관리번호별로 정리한 도면 폴더 → 사업마다 「의뢰 도면」으로',bdPickHTML(),[{t:'폴더 고르기',cls:'btn-primary',fn:()=>document.getElementById('bdDir').click()}],{sm:true,onClose:()=>{if(BD&&BD.run&&!BD.run.end)BD.run.stop=true;BD=null;}});
+  bdBindPick();
+}
+function bdPickHTML(){
+  return '<div class="gw-pad"><label class="bd-drop" id="bdDrop"><b>도면 폴더를 여기에 끌어다 놓거나 「폴더 고르기」를 눌러 주세요</b>'+
+    '<span>예) 바탕화면 › SK 측량공정관리 › <b>도면정리완료</b> 폴더 통째로</span>'+
+    '<input type="file" id="bdDir" webkitdirectory directory multiple class="hide"></label>'+
+    '<div class="gw-note"><b>이렇게 찾아요</b> — 파일·폴더 이름 맨 앞의 관리번호(대원 관리번호)로 사업을 찾아요.<br>'+
+    '「1-1 샛골로 준공도면.pdf」 · 「3-220원인자…」 · 폴더 「1-94,99,118,136」(4개 사업) · 「7-34~43」(10개 사업) · 폴더 안 파일은 폴더 번호를 따라요.<br>'+
+    '<b>이렇게 넣어요</b> — 사업 카드의 「의뢰 도면」 칸에 한 장씩 쌓여요(여러 장 가능). PDF·그림은 그대로, 엑셀은 도면 탭을 그림으로, DXF 는 그림으로 바꿔 넣어요. DWG 는 읽지 못해서 빼고 알려 드려요.<br>'+
+    '<b>먼저 보여 드려요</b> — 고르면 바로 올리지 않고, 어느 사업에 어떤 파일이 들어가는지 표로 먼저 보여 줘요. 같은 파일을 두 번 넣으면 이미 있는 건 건너뛰어요.</div></div>';
+}
+function bdBindPick(){
+  const inp=document.getElementById('bdDir'),z=document.getElementById('bdDrop');if(!inp)return;
+  inp.addEventListener('change',()=>{const fs=[...inp.files].map(f=>({file:f,rel:f.webkitRelativePath||f.name}));inp.value='';if(fs.length)bdShowPlan(fs);});
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over');});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',async e=>{
+    e.preventDefault();z.classList.remove('over');
+    const items=[...(e.dataTransfer.items||[])].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);
+    if(!items.length){const fs=[...e.dataTransfer.files].map(f=>({file:f,rel:f.name}));if(fs.length)bdShowPlan(fs);return;}
+    document.getElementById('gwB').innerHTML='<div class="gw-pad"><div class="tc2-empty">폴더를 읽는 중…</div></div>';
+    const out=[];
+    const walk=async(en,path)=>{
+      if(en.isFile){const f=await new Promise((res,rej)=>en.file(res,rej)).catch(()=>null);if(f)out.push({file:f,rel:path+en.name});return;}
+      if(en.isDirectory){const rd=en.createReader();let batch;do{batch=await new Promise((res,rej)=>rd.readEntries(res,rej)).catch(()=>[]);for(const c of batch)await walk(c,path+en.name+'/');}while(batch.length);}
+    };
+    for(const en of items)await walk(en,'');
+    if(out.length)bdShowPlan(out);else{document.getElementById('gwB').innerHTML=bdPickHTML();bdBindPick();toast('읽을 파일이 없어요',true);}
+  });
+}
+function bdShowPlan(list){
+  if(!BD)return;
+  BD.list=list;BD.plan=bdPlan(list);BD.tab='go';bdRenderPlan();
+}
+function bdRenderPlan(){
+  const P=BD.plan;if(!P)return;
+  const goG=P.G.filter(g=>g.rows.length),tabs=[['go','넣을 것',goG.length],['norow','시스템에 없는 관리번호',P.noRow.length],['skip','건너뛰는 파일',P.skip.length]];
+  let h='<div class="gw-pad"><div class="bd-sum">'+
+    '<span class="bd-pill r">관리번호 <b>'+P.G.length+'</b>개</span>'+
+    '<span class="bd-pill g">사업 <b>'+P.bizN+'</b>건에 넣을 파일 <b>'+P.jobs.length+'</b>개</span>'+
+    (P.already?'<span class="bd-pill">이미 넣은 파일 <b>'+P.already+'</b>개 (건너뜀)</span>':'')+
+    '<span class="bd-pill y">시스템에 없는 관리번호 <b>'+P.noRow.length+'</b>개</span>'+
+    '<span class="bd-pill">건너뛰는 파일 <b>'+P.skip.length+'</b>개'+(P.quiet?' · 정리 파일(Thumbs.db 등) '+P.quiet+'개':'')+'</span></div>'+
+    '<div class="bd-tabs">'+tabs.map(t=>'<button type="button" data-bdt="'+t[0]+'" class="'+(BD.tab===t[0]?'on':'')+'">'+t[1]+' <b>'+t[2]+'</b></button>').join('')+'</div>';
+  if(BD.tab==='skip'){
+    h+=P.skip.length?'<table class="gw-t bd-t"><tr><th>파일</th><th>이유</th></tr>'+P.skip.map(s=>'<tr><td class="l">'+esc(s.rel)+'</td><td class="bd-why">'+esc(s.why)+'</td></tr>').join('')+'</table>':'<div class="tc2-empty">건너뛰는 파일이 없어요</div>';
+  }else{
+    const G=BD.tab==='norow'?P.noRow:goG;
+    h+=G.length?'<table class="gw-t bd-t"><tr><th style="width:84px">관리번호</th><th>사업 (시스템)</th><th>파일</th></tr>'+G.map(g=>
+      '<tr><td><b class="bd-no">'+esc(g.num)+'</b></td><td class="l">'+(g.rows.length?g.rows.map(d=>'<div class="bd-biz">'+bdSrcBadge(d)+esc(String(d.work||'').slice(0,60))+'</div>').join('')+(g.rows.length>1?'<div class="bd-many">같은 관리번호 사업 '+g.rows.length+'건 — 모두 넣어요</div>':''):'<span class="bd-why">리스트에 이 관리번호가 없어요 · 사업을 먼저 추가하거나 관리번호를 넣어 주세요</span>')+'</td>'+
+      '<td class="l bd-fs">'+g.files.map(f=>'<div>'+bdKindTag(f.kind)+(f.done?'<span class="bd-k" style="color:#64748b;border-color:#cbd5e1">이미 있음</span>':'')+'<span title="'+esc(f.rel)+'">'+esc(f.name)+'</span>'+(f.file.size?' <small>'+bdMB(f.file.size)+'</small>':'')+'</div>').join('')+'</td></tr>').join('')+'</table>':'<div class="tc2-empty">'+(BD.tab==='norow'?'모든 관리번호가 시스템에 있어요':'넣을 파일이 없어요')+'</div>';
+  }
+  h+='</div>';
+  document.getElementById('gwB').innerHTML=h;
+  gwButtons([{t:'폴더 다시 고르기',fn:()=>{document.getElementById('gwB').innerHTML=bdPickHTML();bdBindPick();gwButtons([{t:'폴더 고르기',cls:'btn-primary',fn:()=>document.getElementById('bdDir').click()}]);}},
+    {t:'넣기 시작 · 파일 '+P.jobs.length+'개 → 사업 '+P.bizN+'건',cls:'btn-primary',dis:!P.jobs.length,fn:bdAskStart}],'공용 저장소에 올라가서 다른 직원도 바로 봐요');
+}
+function bdMB(n){return n>=1048576?(n/1048576).toFixed(1)+'MB':Math.max(1,Math.round(n/1024))+'KB';}
+document.getElementById('gwB').addEventListener('click',e=>{const t=e.target.closest('[data-bdt]');if(!t||!BD)return;BD.tab=t.dataset.bdt;bdRenderPlan();});
+function bdAskStart(){
+  const P=BD&&BD.plan;if(!P||!P.jobs.length)return;
+  const mb=P.jobs.reduce((a,j)=>a+(j.f.file.size||0),0);
+  askConfirm('의뢰 도면 파일 '+P.jobs.length+'개를 사업 '+P.bizN+'건에 넣어요.\n(원본 '+bdMB(mb)+' · 엑셀·DXF 는 그림으로 바꿔서 올라가요)\n\n공용 저장소에 올라가서 다른 직원 화면에도 바로 보여요.\n파일이 많으면 시간이 걸려요 — 이 창을 닫으면 멈추고, 다시 하면 이어서 넣어요.',bdStart,{title:'도면 일괄 넣기',ok:'넣기 시작'});
+}
+async function bdPut(name,buf){
+  const k='rdw:'+cUid();let err=null;
+  for(let t=0;t<3;t++){
+    try{const r=await cRpc('gj_file_put',{p_key:k,p_name:name,p_size:buf.byteLength,p_b64:cBufB64(buf),p_by:cMe()});
+      SYNC.files[k]={t:r&&r.t||new Date().toISOString(),n:name,s:buf.byteLength,b:cMe()};return k;}
+    catch(e){err=e;if(e&&(e.status===401||e.status===403))break;await new Promise(r=>setTimeout(r,1500*(t+1)));}
+  }
+  throw err||new Error('올리지 못했어요');
+}
+/* 파일 하나 → 올릴 조각들 [{label,name,buf}] */
+async function bdPieces(f){
+  if(f.kind==='pdf'||f.kind==='img')return [{label:bdLabel(f.name),name:f.name,buf:await f.file.arrayBuffer()}];
+  const toB=(cv,type,q)=>new Promise(res=>cv.toBlob(res,type,q));
+  const base=String(f.name).replace(/\.[^.]+$/,'');
+  if(f.kind==='dxf'){
+    let r=await gjDxf.render(new Uint8Array(await f.file.arrayBuffer()),{maxSide:6000});
+    let blob=await toB(r.canvas,'image/png'),nm=base+'.png';
+    if(blob&&blob.size>4*1024*1024){const j=await toB(r.canvas,'image/jpeg',0.88);if(j&&j.size<blob.size){blob=j;nm=base+'.jpg';}}
+    r.canvas.width=1;r.canvas.height=1;
+    if(!blob)throw new Error('DXF 를 그림으로 만들지 못했어요');
+    return [{label:bdLabel(f.name),name:nm,buf:await blob.arrayBuffer()}];
+  }
+  const u8=new Uint8Array(await f.file.arrayBuffer());
+  const ls=gjDrawing.list(u8).filter(s=>s.pics>0||s.shapes>=5);
+  if(!ls.length)throw new Error('엑셀에 도면·개황도 탭이 없어요');
+  const out=[];
+  for(const g of ls){
+    const r=await gjDrawing.render(u8,g.sheet,{maxSide:6000});
+    const blob=await toB(r.canvas,'image/jpeg',0.85);r.canvas.width=1;r.canvas.height=1;
+    if(blob)out.push({label:bdLabel(f.name,ls.length>1?g.sheet:''),name:base+'_'+g.sheet+'.jpg',buf:await blob.arrayBuffer()});
+  }
+  if(!out.length)throw new Error('엑셀 도면을 그림으로 바꾸지 못했어요');
+  return out;
+}
+async function bdStart(){
+  const P=BD&&BD.plan;if(!P)return;
+  const n0=DISP.length;cLabelIdx(RDW_LABEL);if(DISP.length!==n0){repairCols();buildHead();buildColPanel();}
+  const R=BD.run={i:0,n:P.jobs.length,ok:0,pcs:0,biz:new Set(),fail:[],stop:false,end:false,cur:'',t0:Date.now()};
+  bdRenderRun();
+  const q=P.jobs.slice();let dirty=0;
+  const work=async()=>{
+    while(q.length&&!R.stop){
+      const j=q.shift();R.cur=j.f.rel;bdRenderRun();
+      try{
+        let pcs;
+        if(j.f.kind==='xlsx'||j.f.kind==='dxf'){const run=BD_LOCK.then(()=>bdPieces(j.f));BD_LOCK=run.catch(()=>{});pcs=await run;}   /* 큰 엑셀·DXF 는 한 번에 하나씩 바꾼다 (메모리) */
+        else pcs=await bdPieces(j.f);
+        for(const pc of pcs){
+          if(R.stop)break;
+          const rows=j.rows.map(u=>DATA.find(d=>d._uid===u)).filter(Boolean).filter(d=>!rdwRefs(d).some(r=>r.name===pc.label));
+          if(!rows.length)continue;
+          const k=await bdPut(pc.name,pc.buf);
+          rows.forEach(d=>{const refs=rdwRefs(d);refs.push({name:pc.label,key:k});d.row[cLabelIdx(RDW_LABEL)]=refs.map(r=>String(r.name).replace(/[@|]/g,' ')+'@'+r.key).join(' | ');R.biz.add(d._uid);});
+          R.pcs++;dirty++;
+        }
+        R.ok++;
+      }catch(e){console.error(e);R.fail.push({rel:j.f.rel,why:String(e&&e.message||e)});}
+      R.i++;
+      if(dirty>=5){dirty=0;saveState(true);cSaveMeta();}
+      bdRenderRun();
+    }
+  };
+  await Promise.all([work(),work(),work()]);
+  saveState(true);cSaveMeta();
+  R.end=true;R.cur='';
+  if(CARD_ID!=null){const d=DATA.find(x=>String(x._id)===String(CARD_ID));if(d){DWG_MODE='dwg';RDW_I=0;DWG_AUTO=true;loadDwg(d);}}
+  bdRenderRun();
+  toast(R.stop?'도면 넣기를 멈췄어요 · '+R.ok+'개 넣음':'도면 '+R.ok+'개를 사업 '+R.biz.size+'건에 넣었어요'+(R.fail.length?' · 못 넣은 것 '+R.fail.length+'개':''),!!R.fail.length);
+}
+function bdRenderRun(){
+  const R=BD&&BD.run;if(!R)return;
+  const pct=R.n?Math.round(R.i/R.n*100):100;
+  const sec=(Date.now()-R.t0)/1000,left=R.i&&!R.end?Math.round(sec/R.i*(R.n-R.i)/60):0;
+  let h='<div class="gw-pad"><div class="bd-run"><div class="bd-rt"><b>'+(R.end?(R.stop?'멈췄어요':'다 넣었어요'):'넣는 중…')+'</b><span>'+R.i+' / '+R.n+' 파일'+(left?' · 남은 시간 약 '+left+'분':'')+'</span></div>'+
+    '<div class="bd-bar"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="bd-sum"><span class="bd-pill g">넣은 파일 <b>'+R.ok+'</b>개 (그림 '+R.pcs+'장)</span><span class="bd-pill r">사업 <b>'+R.biz.size+'</b>건</span>'+(R.fail.length?'<span class="bd-pill y">못 넣은 것 <b>'+R.fail.length+'</b>개</span>':'')+'</div>'+
+    (R.cur?'<div class="bd-cur">지금: '+esc(R.cur)+'</div>':'')+'</div>'+
+    (R.fail.length?'<table class="gw-t bd-t"><tr><th>못 넣은 파일</th><th>이유</th></tr>'+R.fail.map(f=>'<tr><td class="l">'+esc(f.rel)+'</td><td class="bd-why">'+esc(f.why)+'</td></tr>').join('')+'</table>':'')+
+    (R.end?'<div class="gw-note">사업 카드를 열면 오른쪽 「의뢰 도면」 칸에서 볼 수 있어요. 잘못 들어간 한 장은 카드의 「도면삭제」로 지워요.'+(R.stop?' 다시 「넣기 시작」을 누르면 남은 것부터 이어서 넣어요.':'')+'</div>':'')+'</div>';
+  const b=document.getElementById('gwB');if(b)b.innerHTML=h;
+  if(R.end)gwButtons([{t:'다시 하기 (남은 것·못 넣은 것)',fn:()=>{if(BD&&BD.list){BD.run=null;bdShowPlan(BD.list);}},dis:!(R.stop||R.fail.length)},{t:'닫기',cls:'btn-primary',fn:gwClose}]);
+  else if(!R._btn){R._btn=1;gwButtons([{t:'멈추기',cls:'dan',fn:()=>{R.stop=true;toast('지금 올리는 것까지만 넣고 멈춰요');}}],'창을 닫아도 멈춰요');}
+}
+document.getElementById('btnBulkDw').addEventListener('click',openBulkDw);
 </script>
 </body>
 </html>
